@@ -1,0 +1,26 @@
+{
+  "name": "@fengru/engine-db",
+  "version": "0.1.0",
+  "description": "Pluggable SQLite engine database ¡ª session, event, checkpoint, capability, memory, skill, and repair persistence",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "license": "MIT",
+  "keywords": ["sqlite", "database", "engine", "persistence", "session"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "repository": { "type": "git", "url": "https://github.com/fengru/engine-db" }
+}

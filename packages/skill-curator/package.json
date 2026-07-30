@@ -1,0 +1,29 @@
+{
+  "name": "@fengru/skill-curator",
+  "version": "0.1.0",
+  "description": "Automated skill library curation ¡ª archive stale skills, pin popular ones, quality review with LLM or heuristics",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["skill", "curation", "archive", "quality", "agent"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fengru/skill-curator"
+  }
+}

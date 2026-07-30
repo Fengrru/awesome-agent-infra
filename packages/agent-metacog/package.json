@@ -1,0 +1,35 @@
+{
+  "name": "@fengru/agent-metacog",
+  "version": "0.1.0",
+  "description": "Agent metacognitive monitoring — knowledge boundary detection, Ebbinghaus forgetting alerts, consolidation triggers, and self-reflection",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "keywords": [
+    "metacognition",
+    "self-awareness",
+    "knowledge-boundary",
+    "forgetting-curve",
+    "ebbinghaus",
+    "memory-consolidation",
+    "self-reflection",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+﻿{
+  "name": "@fengru/guardrail",
+  "version": "0.1.0",
+  "description": "Runtime safety guard for AI agents — risk classification, entropy monitoring, and execution gating",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "keywords": ["ai-agent", "guardrail", "safety", "risk-assessment", "entropy", "agent-safety"],
+  "license": "MIT",
+  "scripts": { "test": "bun test", "build": "tsc", "typecheck": "tsc --noEmit", "prepublishOnly": "bun run build" },
+  "devDependencies": { "typescript": "^5.0.0" }
+}

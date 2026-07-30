@@ -1,0 +1,34 @@
+{
+  "name": "@fengru/fuzzy-patch",
+  "version": "0.1.0",
+  "description": "Multi-strategy fuzzy matching engine for AI agent file patching â€?8 progressively-degraded strategies from exact match to Levenshtein fuzzy",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "keywords": [
+    "fuzzy-match", "fuzzy-patch", "ai-agent", "file-patch", "string-matching",
+    "levenshtein", "diff", "code-editing", "llm-agent", "agent-tool"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fengru/fuzzy-patch"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
+  ,
+
+    "typecheck": "tsc --noEmit"},
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

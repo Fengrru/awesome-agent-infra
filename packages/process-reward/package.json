@@ -1,0 +1,38 @@
+{
+  "name": "@fengru/process-reward",
+  "version": "0.1.0",
+  "description": "Unified Process Reward Model — step-level reasoning quality scoring, 3-tier MC/heuristic/weak-supervision labeling, confidence-weighted MSE training, step segmentation, multi-domain verification, and PRM-guided inference",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "keywords": [
+    "process-reward-model",
+    "prm",
+    "step-scoring",
+    "step-labeling",
+    "prm-training",
+    "guided-inference",
+    "verification",
+    "reasoning",
+    "monte-carlo-rollout",
+    "heuristic-evaluation",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

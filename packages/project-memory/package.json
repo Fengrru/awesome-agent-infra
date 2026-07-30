@@ -1,0 +1,25 @@
+{
+  "name": "@fengru/project-memory",
+  "version": "0.1.0",
+  "description": "File-based project memory with MEMORY.md persistence, Markdown parsing, fact promotion from stable checkpoints, and full-text search",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["memory", "markdown", "project-knowledge", "persistence", "agent"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

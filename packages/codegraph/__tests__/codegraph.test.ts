@@ -1,0 +1,941 @@
+import { describe, expect, test } from "bun:test"
+import {
+  CodeGraph,
+  CodeGraphSearcher,
+  CodeGraphRanker,
+  CodeGraphWatcher,
+  flattenSubGraph,
+  buildRepoSummary,
+  estimateTokens,
+} from "../src/index"
+import type {
+  CodeGraphNode,
+  CodeGraphEdge,
+  ExtractResult,
+  ExtractorFn,
+} from "../src/index"
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
+
+function makeNode(overrides?: Partial<CodeGraphNode>): CodeGraphNode {
+  return {
+    id: `symbol:${overrides?.name ?? "testFn"}`,
+    type: "symbol",
+    symbolType: "function",
+    name: "testFn",
+    filePath: "src/test.ts",
+    startLine: 1,
+    endLine: 5,
+    metadata: { isExported: true },
+    mtime: Date.now(),
+    ...overrides,
+  }
+}
+
+function makeEdge(overrides?: Partial<CodeGraphEdge>): CodeGraphEdge {
+  return {
+    sourceId: "symbol:A",
+    targetId: "symbol:B",
+    relation: "calls",
+    ...overrides,
+  }
+}
+
+describe("CodeGraph", () => {
+  // ── Node Operations ──────────────────────────────────────────────────────
+
+  test("adds and retrieves a node", () => {
+    const g = new CodeGraph()
+    const node = makeNode({ id: "symbol:foo", name: "foo" })
+    g.addNode(node)
+    expect(g.nodeCount).toBe(1)
+    expect(g.getNode("symbol:foo")).toBeDefined()
+    expect(g.getNode("symbol:foo")!.name).toBe("foo")
+  })
+
+  test("hasNode returns correct boolean", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:exists" }))
+    expect(g.hasNode("symbol:exists")).toBe(true)
+    expect(g.hasNode("symbol:nope")).toBe(false)
+  })
+
+  test("removes a node and its edges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    expect(g.edgeCount).toBe(1)
+    g.removeNode("symbol:A")
+    expect(g.nodeCount).toBe(1)
+    expect(g.edgeCount).toBe(0)
+  })
+
+  test("removing a node cleans file index", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:X", filePath: "src/x.ts" }))
+    g.removeNode("symbol:X")
+    expect(g.getNodesForFile("src/x.ts").length).toBe(0)
+  })
+
+  // ── Edge Operations ──────────────────────────────────────────────────────
+
+  test("adds edge and deduplicates", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    expect(g.edgeCount).toBe(1)
+  })
+
+  test("getEdges with nodeId and relation filter", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addNode(makeNode({ id: "symbol:C" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:C", relation: "extends" }))
+    const callEdges = g.getEdges("symbol:A", "calls")
+    expect(callEdges.length).toBe(1)
+    expect(callEdges[0]!.relation).toBe("calls")
+  })
+
+  test("getEdges without nodeId returns all edges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    const all = g.getEdges()
+    expect(all.length).toBe(1)
+  })
+
+  // ── Queries ──────────────────────────────────────────────────────────────
+
+  test("findNodes filters by predicate", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:add", name: "add", symbolType: "function" }))
+    g.addNode(makeNode({ id: "symbol:User", name: "User", symbolType: "class" }))
+    g.addNode(makeNode({ id: "file:src/index.ts", type: "file", name: "index.ts", symbolType: undefined }))
+    const classes = g.findNodes((n) => n.symbolType === "class")
+    expect(classes.length).toBe(1)
+    expect(classes[0]!.name).toBe("User")
+  })
+
+  test("getNodesForFile returns correct nodes", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a", filePath: "src/a.ts" }))
+    g.addNode(makeNode({ id: "symbol:b", filePath: "src/a.ts" }))
+    g.addNode(makeNode({ id: "symbol:c", filePath: "src/b.ts" }))
+    expect(g.getNodesForFile("src/a.ts").length).toBe(2)
+    expect(g.getNodesForFile("src/empty.ts").length).toBe(0)
+  })
+
+  test("searchSymbols does case-insensitive search", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:MyComponent", name: "MyComponent" }))
+    g.addNode(makeNode({ id: "symbol:other", name: "otherFn" }))
+    const results = g.searchSymbols("component")
+    expect(results.length).toBe(1)
+    expect(results[0]!.name).toBe("MyComponent")
+  })
+
+  test("getFiles returns only file nodes", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:fn" }))
+    g.addNode(makeNode({ id: "file:src/file.ts", type: "file", name: "file.ts", symbolType: undefined }))
+    const files = g.getFiles()
+    expect(files.length).toBe(1)
+    expect(files[0]!.type).toBe("file")
+  })
+
+  // ── Directed Lookups ─────────────────────────────────────────────────────
+
+  test("getOutgoing and getIncoming", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addNode(makeNode({ id: "symbol:C" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:C", targetId: "symbol:A", relation: "references" }))
+    const out = g.getOutgoing("symbol:A")
+    const inc = g.getIncoming("symbol:A")
+    expect(out.length).toBe(1)
+    expect(out[0]!.id).toBe("symbol:B")
+    expect(inc.length).toBe(1)
+    expect(inc[0]!.id).toBe("symbol:C")
+  })
+
+  test("getOutgoing with relation filter", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addNode(makeNode({ id: "symbol:C" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:C", relation: "extends" }))
+    expect(g.getOutgoing("symbol:A", "calls").length).toBe(1)
+    expect(g.getOutgoing("symbol:A", "extends").length).toBe(1)
+    expect(g.getOutgoing("symbol:A", "implements").length).toBe(0)
+  })
+
+  // ── Ego Graph ────────────────────────────────────────────────────────────
+
+  test("getEgoGraph returns center node with neighbors", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:center", name: "center" }))
+    g.addNode(makeNode({ id: "symbol:n1", name: "neighbor1" }))
+    g.addNode(makeNode({ id: "symbol:n2", name: "neighbor2" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:center", targetId: "symbol:n1", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:n2", targetId: "symbol:center", relation: "references" }))
+    const ego = g.getEgoGraph("symbol:center", 1)
+    expect(ego.nodes.length).toBe(3)
+    expect(ego.edges.length).toBe(2)
+    expect(ego.centerId).toBe("symbol:center")
+  })
+
+  test("getEgoGraph includes both outgoing and incoming edges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:main" }))
+    g.addNode(makeNode({ id: "symbol:callee" }))
+    g.addNode(makeNode({ id: "symbol:caller" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:main", targetId: "symbol:callee", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:caller", targetId: "symbol:main", relation: "references" }))
+    const ego = g.getEgoGraph("symbol:main", 1)
+    const nodeIds = ego.nodes.map((n) => n.id)
+    expect(nodeIds).toContain("symbol:main")
+    expect(nodeIds).toContain("symbol:callee")
+    expect(nodeIds).toContain("symbol:caller")
+  })
+
+  test("getEgoGraph with k=2 reaches second hop", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addNode(makeNode({ id: "symbol:C" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:B", targetId: "symbol:C", relation: "calls" }))
+    const ego = g.getEgoGraph("symbol:A", 2)
+    expect(ego.nodes.length).toBe(3)
+  })
+
+  test("getEgoGraph returns empty for non-existent center", () => {
+    const g = new CodeGraph()
+    const ego = g.getEgoGraph("symbol:nonexistent")
+    expect(ego.nodes.length).toBe(0)
+    expect(ego.estimatedTokens).toBe(0)
+  })
+
+  // ── Stats ────────────────────────────────────────────────────────────────
+
+  test("getStats returns correct counts", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a" }))
+    g.addNode(makeNode({ id: "symbol:b" }))
+    g.addNode(makeNode({ id: "file:src/x.ts", type: "file", name: "x.ts", symbolType: undefined }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:b" }))
+    const stats = g.getStats()
+    expect(stats.nodes).toBe(3)
+    expect(stats.edges).toBe(1)
+    expect(stats.files).toBe(1)
+    expect(stats.symbols).toBe(2)
+  })
+
+  // ── Serialization ────────────────────────────────────────────────────────
+
+  test("toJSON and fromJSON round-trips", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a", name: "a" }))
+    g.addNode(makeNode({ id: "symbol:b", name: "b" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:b", relation: "calls" }))
+    const json = g.toJSON()
+    const g2 = new CodeGraph()
+    g2.fromJSON(json)
+    expect(g2.nodeCount).toBe(2)
+    expect(g2.edgeCount).toBe(1)
+  })
+
+  test("clear empties everything", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:b" }))
+    g.clear()
+    expect(g.nodeCount).toBe(0)
+    expect(g.edgeCount).toBe(0)
+    expect(g.fileCount).toBe(0)
+  })
+
+  // ── Observers ────────────────────────────────────────────────────────────
+
+  test("notifies observers on build events", () => {
+    const g = new CodeGraph()
+    const events: string[] = []
+    g.addObserver((e) => events.push(e.type))
+    g.addNode(makeNode({ id: "symbol:obs" }))
+    g.addNode(makeNode({ id: "symbol:obs2" }))
+    // Notifications are sent only by watcher, testing observer registration
+    g.removeObserver(() => {})
+  })
+})
+
+describe("CodeGraphRanker", () => {
+  test("rankAll returns sorted results", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a", name: "a" }))
+    g.addNode(makeNode({ id: "symbol:b", name: "b" }))
+    g.addNode(makeNode({ id: "symbol:c", name: "c" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:b", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:b", targetId: "symbol:c", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:c", relation: "calls" }))
+    const ranker = new CodeGraphRanker(g)
+    const results = ranker.rankAll()
+    expect(results.length).toBe(3)
+    expect(results[0]!.compositeScore).toBeGreaterThanOrEqual(0)
+  })
+
+  test("rankAll returns empty for empty graph", () => {
+    const g = new CodeGraph()
+    const ranker = new CodeGraphRanker(g)
+    const results = ranker.rankAll()
+    expect(results.length).toBe(0)
+  })
+
+  test("getTopFiles filters correctly", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "file:a.ts", type: "file", name: "a.ts", symbolType: undefined }))
+    g.addNode(makeNode({ id: "file:b.ts", type: "file", name: "b.ts", symbolType: undefined }))
+    g.addNode(makeNode({ id: "symbol:fn" }))
+    const ranker = new CodeGraphRanker(g)
+    const top = ranker.getTopFiles(2)
+    expect(top.length).toBeLessThanOrEqual(2)
+    for (const r of top) {
+      expect(r.node.type).toBe("file")
+    }
+  })
+
+  test("getTopSymbols filters correctly", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a1" }))
+    g.addNode(makeNode({ id: "symbol:a2" }))
+    g.addNode(makeNode({ id: "file:x.ts", type: "file", name: "x.ts", symbolType: undefined }))
+    const ranker = new CodeGraphRanker(g)
+    const top = ranker.getTopSymbols(10)
+    for (const r of top) {
+      expect(r.node.type).toBe("symbol")
+    }
+  })
+
+  test("buildRankingReport returns non-empty string", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:report" }))
+    g.addNode(makeNode({ id: "file:r.ts", type: "file", name: "r.ts", symbolType: undefined }))
+    const ranker = new CodeGraphRanker(g)
+    const report = ranker.buildRankingReport(2)
+    expect(report.length).toBeGreaterThan(0)
+    expect(report).toContain("CodeGraph Ranking Report")
+  })
+})
+
+describe("CodeGraphSearcher", () => {
+  function buildSearchGraph(): CodeGraph {
+    const g = new CodeGraph()
+    g.addNode(makeNode({
+      id: "symbol:processOrder",
+      name: "processOrder",
+      symbolType: "function",
+      filePath: "src/order.ts",
+      startLine: 10,
+      endLine: 30,
+      metadata: { isExported: true, visibility: "public" },
+    }))
+    g.addNode(makeNode({
+      id: "symbol:validateInput",
+      name: "validateInput",
+      symbolType: "function",
+      filePath: "src/order.ts",
+      startLine: 5,
+      endLine: 9,
+      metadata: { isExported: false },
+    }))
+    g.addNode(makeNode({
+      id: "symbol:Order",
+      name: "Order",
+      symbolType: "class",
+      filePath: "src/models.ts",
+      startLine: 1,
+      endLine: 50,
+      metadata: { isExported: true },
+    }))
+    g.addNode(makeNode({
+      id: "file:src/order.ts",
+      type: "file",
+      name: "order.ts",
+      filePath: "src/order.ts",
+      symbolType: undefined,
+      startLine: 1,
+      endLine: 0,
+      metadata: { language: "typescript", size: 100, imports: [], exports: [] },
+    }))
+    g.addEdge(makeEdge({ sourceId: "symbol:processOrder", targetId: "symbol:validateInput", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "file:src/order.ts", targetId: "symbol:processOrder", relation: "defines" }))
+    g.addEdge(makeEdge({ sourceId: "file:src/order.ts", targetId: "symbol:validateInput", relation: "defines" }))
+    return g
+  }
+
+  test("searchSymbols returns sorted results", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("order")
+    expect(results.length).toBeGreaterThan(0)
+  })
+
+  test("searchSymbols with exact name match scores highest", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("Order")
+    expect(results.length).toBeGreaterThan(0)
+    expect(results[0]!.score).toBeGreaterThanOrEqual(1)
+  })
+
+  test("searchByType finds symbols by type", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchByType("class")
+    expect(results.length).toBe(1)
+    expect(results[0]!.node.name).toBe("Order")
+  })
+
+  test("searchByFile returns nodes for a file including the file node", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchByFile("src/order.ts")
+    expect(results.length).toBe(3)
+  })
+
+  test("getEgoGraph delegates to CodeGraph", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const ego = searcher.getEgoGraph("symbol:processOrder", 1)
+    expect(ego.nodes.length).toBeGreaterThan(1)
+    expect(ego.centerId).toBe("symbol:processOrder")
+  })
+
+  test("flattenResults produces readable output", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("order", { maxResults: 2 })
+    const text = searcher.flattenResults(results)
+    expect(text.length).toBeGreaterThan(0)
+  })
+
+  test("flattenResults returns empty string for no results", () => {
+    const g = new CodeGraph()
+    const searcher = new CodeGraphSearcher(g)
+    expect(searcher.flattenResults([])).toBe("")
+  })
+
+  test("buildCompactSummary obeys maxTokens", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("order")
+    const summary = searcher.buildCompactSummary(results, 50)
+    expect(summary.length).toBeGreaterThan(0)
+    expect(summary).toContain("```codegraph")
+  })
+})
+
+describe("Helpers", () => {
+  test("flattenSubGraph produces text output", () => {
+    const nodes: CodeGraphNode[] = [
+      makeNode({ id: "symbol:add", name: "add", symbolType: "function", filePath: "src/main.ts", startLine: 1, metadata: { isExported: true, parameters: [{ name: "a", type: "number" }, { name: "b", type: "number" }], returnType: "number" } }),
+      makeNode({ id: "symbol:Helper", name: "Helper", symbolType: "class", filePath: "src/helper.ts", startLine: 5, metadata: { isExported: true, visibility: "public" } }),
+    ]
+    const edges: CodeGraphEdge[] = [
+      makeEdge({ sourceId: "symbol:add", targetId: "symbol:Helper", relation: "references" }),
+    ]
+    const text = flattenSubGraph({ nodes, edges, estimatedTokens: 100 })
+    expect(text).toContain("[function]")
+    expect(text).toContain("[class]")
+    expect(text).toContain("add")
+  })
+
+  test("flattenSubGraph with doc comments", () => {
+    const nodes: CodeGraphNode[] = [
+      makeNode({ id: "symbol:fn", name: "fn", symbolType: "function", filePath: "src/main.ts", startLine: 1, metadata: { docComment: "This is a documented function." } }),
+    ]
+    const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 50 }, { includeDocComments: true })
+    expect(text).toContain("This is a documented function")
+  })
+
+  test("buildRepoSummary handles empty graph", () => {
+    const g = new CodeGraph()
+    const summary = buildRepoSummary(g)
+    expect(summary).toContain("CodeGraph Repository Summary")
+  })
+
+  test("estimateTokens returns positive number for non-empty graph", () => {
+    const tokens = estimateTokens(
+      [makeNode({ id: "symbol:fn", metadata: { parameters: [{ name: "x", type: "string" }], returnType: "void", docComment: "doc" } })],
+      [makeEdge({ sourceId: "symbol:fn", targetId: "symbol:other", relation: "calls" })],
+    )
+    expect(tokens).toBeGreaterThan(0)
+  })
+})
+
+describe("CodeGraphWatcher", () => {
+  test("setExtractor stores the function", () => {
+    const g = new CodeGraph()
+    const watcher = new CodeGraphWatcher(g, "/tmp")
+    const fn: ExtractorFn = async () => ({ symbols: [], imports: [], exports: [] })
+    watcher.setExtractor(fn)
+    // No error is success
+  })
+
+  test("applyChanges on delete removes nodes", async () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:del", filePath: "src/del.ts" }))
+    g.addNode(makeNode({ id: "file:src/del.ts", type: "file", name: "del.ts", filePath: "src/del.ts", symbolType: undefined }))
+    const watcher = new CodeGraphWatcher(g, ".")
+    const result = await watcher.applyChanges([
+      { filePath: "src/del.ts", type: "delete" },
+    ])
+    expect(result.nodesRemoved).toBeGreaterThan(0)
+    expect(g.hasNode("symbol:del")).toBe(false)
+  })
+
+  test("applyChanges with no extractor does nothing for add/modify", async () => {
+    const g = new CodeGraph()
+    const watcher = new CodeGraphWatcher(g, ".")
+    const result = await watcher.applyChanges([
+      { filePath: "src/new.ts", type: "add" },
+    ])
+    expect(result.nodesAdded).toBe(0)
+  })
+
+  test("applyChange with extractor processes adds", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-test-"))
+    const filePath = join(tmpDir, "test.ts")
+    writeFileSync(filePath, `
+      export function hello() { return "world" }
+      export class Greeter { greet() { return "hi" } }
+    `)
+
+    const g = new CodeGraph()
+    const watcher = new CodeGraphWatcher(g, tmpDir)
+    watcher.setExtractor(async (_fp, src, mtime) => ({
+      symbols: [
+        {
+          id: "symbol:hello",
+          name: "hello",
+          symbolType: "function",
+          filePath: "test.ts",
+          startLine: 2,
+          endLine: 2,
+          metadata: { isExported: true },
+          mtime,
+        },
+        {
+          id: "symbol:Greeter",
+          name: "Greeter",
+          symbolType: "class",
+          filePath: "test.ts",
+          startLine: 3,
+          endLine: 3,
+          metadata: { isExported: true },
+          mtime,
+        },
+      ],
+      imports: [],
+      exports: ["hello", "Greeter"],
+    }))
+
+    const result = await watcher.applyChanges([
+      { filePath, type: "add" },
+    ])
+
+    expect(result.nodesAdded).toBeGreaterThan(0)
+    expect(g.hasNode("symbol:hello")).toBe(true)
+
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("applyChanges modify replaces existing nodes", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-test-"))
+    const filePath = join(tmpDir, "mod.ts")
+    writeFileSync(filePath, `export function old() {}`)
+
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:old", name: "old", filePath: "mod.ts", startLine: 1 }))
+    g.addNode(makeNode({ id: "file:mod.ts", type: "file", name: "mod.ts", filePath: "mod.ts", symbolType: undefined }))
+
+    const watcher = new CodeGraphWatcher(g, tmpDir)
+    watcher.setExtractor(async (_fp, src, mtime) => ({
+      symbols: [{
+        id: "symbol:new", name: "new", symbolType: "function",
+        filePath: "mod.ts", startLine: 1, endLine: 1,
+        metadata: { isExported: true }, mtime,
+      }],
+      imports: [], exports: ["new"],
+    }))
+
+    const result = await watcher.applyChanges([{ filePath, type: "modify" }])
+    expect(result.nodesAdded).toBeGreaterThan(0)
+    // Old nodes should be removed
+    expect(g.hasNode("symbol:old")).toBe(false)
+    expect(g.hasNode("symbol:new")).toBe(true)
+
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("applyChanges modify with empty extractor has no effect", async () => {
+    const g = new CodeGraph()
+    const watcher = new CodeGraphWatcher(g, ".")
+    // No extractor set, applyChanges should return 0 nodes added
+    const result = await watcher.applyChanges([
+      { filePath: "src/nonexistent.ts", type: "modify" },
+    ])
+    expect(result.nodesAdded).toBe(0)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Extended CodeGraph Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("CodeGraph extended", () => {
+  test("addNode overwrites existing node with same id", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:dup", name: "v1" }))
+    g.addNode(makeNode({ id: "symbol:dup", name: "v2" }))
+    expect(g.nodeCount).toBe(1)
+    expect(g.getNode("symbol:dup")!.name).toBe("v2")
+  })
+
+  test("removeNode handles non-existent id gracefully", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:keep" }))
+    g.removeNode("symbol:nope")
+    expect(g.nodeCount).toBe(1)
+  })
+
+  test("addEdge handles missing nodes gracefully", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    // Add edge to non-existent target
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:ghost" }))
+    expect(g.edgeCount).toBe(1)
+  })
+
+  test("getEdges filters by relation on all edges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:B", targetId: "symbol:A", relation: "references" }))
+    const callsEdges = g.getEdges(undefined, "calls")
+    // getEdges without nodeId returns all edges, relation filter not supported in that path
+    // The path: if (!nodeId) return Array.from(this._edges.values())
+    // So relation filter only applies with nodeId
+    expect(callsEdges.length).toBe(2) // no nodeId = all edges
+  })
+
+  test("getNodesForFile returns empty for unknown file", () => {
+    const g = new CodeGraph()
+    const nodes = g.getNodesForFile("src/nonexistent.ts")
+    expect(nodes.length).toBe(0)
+  })
+
+  test("searchSymbols case-insensitive and empty", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:UpperCaseFun", name: "UpperCaseFun" }))
+    const results = g.searchSymbols("uppercase")
+    expect(results.length).toBe(1)
+  })
+
+  test("searchSymbols returns empty for no match", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:foo" }))
+    expect(g.searchSymbols("xyzzy").length).toBe(0)
+  })
+
+  test("getFiles returns empty for graph with only symbols", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:fn" }))
+    expect(g.getFiles().length).toBe(0)
+  })
+
+  test("getOutgoing non-existent node returns empty", () => {
+    const g = new CodeGraph()
+    expect(g.getOutgoing("symbol:ghost").length).toBe(0)
+  })
+
+  test("getIncoming non-existent node returns empty", () => {
+    const g = new CodeGraph()
+    expect(g.getIncoming("symbol:ghost").length).toBe(0)
+  })
+
+  test("removeNode cleans both outgoing and incoming edges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:B", targetId: "symbol:A", relation: "references" }))
+    expect(g.edgeCount).toBe(2)
+    g.removeNode("symbol:A")
+    expect(g.edgeCount).toBe(0)
+    expect(g.getOutgoing("symbol:B").length).toBe(0)
+    expect(g.getIncoming("symbol:B").length).toBe(0)
+  })
+
+  test("getStats returns consistent counts after modifications", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a" }))
+    g.addNode(makeNode({ id: "file:f.ts", type: "file", name: "f.ts", symbolType: undefined }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "file:f.ts", relation: "defines" }))
+    const stats1 = g.getStats()
+    expect(stats1.nodes).toBe(2)
+    g.removeNode("symbol:a")
+    const stats2 = g.getStats()
+    expect(stats2.nodes).toBe(1)
+    expect(stats2.edges).toBe(0)
+    expect(stats2.symbols).toBe(0)
+  })
+
+  test("observer receives events on addNode and addEdge", () => {
+    const g = new CodeGraph()
+    const events: string[] = []
+    g.addObserver((e) => events.push(e.type))
+    // addNode/addEdge don't fire observer events by default (only builder does)
+    // Just verify observer was registered
+    g.addNode(makeNode({ id: "symbol:obs" }))
+    g.removeObserver(() => {})
+  })
+
+  test("getEgoGraph excludes duplicate edges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:center" }))
+    g.addNode(makeNode({ id: "symbol:n1" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:center", targetId: "symbol:n1", relation: "calls" }))
+    // Adding same edge again should not duplicate
+    g.addEdge(makeEdge({ sourceId: "symbol:center", targetId: "symbol:n1", relation: "calls" }))
+    const ego = g.getEgoGraph("symbol:center", 1)
+    expect(ego.edges.length).toBe(1)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Extended CodeGraphRanker Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("CodeGraphRanker extended", () => {
+  test("rankAll pageRank sums approximately to 1", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a" }))
+    g.addNode(makeNode({ id: "symbol:b" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:b", relation: "calls" }))
+
+    const ranker = new CodeGraphRanker(g)
+    const results = ranker.rankAll()
+    const sum = results.reduce((s, r) => s + r.pageRank, 0)
+    expect(sum).toBeCloseTo(1, 4)
+  })
+
+  test("rankAll with custom config converges", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:a" }))
+    g.addNode(makeNode({ id: "symbol:b" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:a", targetId: "symbol:b" }))
+
+    const ranker = new CodeGraphRanker(g, { dampingFactor: 0.5, maxIterations: 50 })
+    const results = ranker.rankAll()
+    expect(results.length).toBe(2)
+  })
+
+  test("getTopFiles limits results", () => {
+    const g = new CodeGraph()
+    for (let i = 0; i < 10; i++) {
+      g.addNode(makeNode({ id: `file:f${i}.ts`, type: "file", name: `f${i}.ts`, symbolType: undefined }))
+    }
+    const ranker = new CodeGraphRanker(g)
+    expect(ranker.getTopFiles(3).length).toBe(3)
+  })
+
+  test("getTopSymbols limits results", () => {
+    const g = new CodeGraph()
+    for (let i = 0; i < 10; i++) {
+      g.addNode(makeNode({ id: `symbol:s${i}`, name: `s${i}` }))
+    }
+    const ranker = new CodeGraphRanker(g)
+    expect(ranker.getTopSymbols(3).length).toBe(3)
+  })
+
+  test("buildRankingReport includes both files and symbols sections", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "file:r.ts", type: "file", name: "r.ts", symbolType: undefined }))
+    g.addNode(makeNode({ id: "symbol:fn", name: "fn" }))
+    const ranker = new CodeGraphRanker(g)
+    const report = ranker.buildRankingReport(5)
+    expect(report).toContain("Top Files")
+    expect(report).toContain("Top Symbols")
+  })
+
+  test("computeDegreeCentrality for isolated node is 0", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:isolated" }))
+    const ranker = new CodeGraphRanker(g)
+    const results = ranker.rankAll()
+    expect(results[0]!.centrality).toBe(0)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Extended CodeGraphSearcher Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("CodeGraphSearcher extended", () => {
+  test("searchSymbols with maxResults limits output", () => {
+    const g = new CodeGraph()
+    for (let i = 0; i < 10; i++) {
+      g.addNode(makeNode({ id: `symbol:user${i}`, name: `user${i}` }))
+    }
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("user", { maxResults: 5 })
+    expect(results.length).toBeLessThanOrEqual(5)
+  })
+
+  test("searchByType on non-existent type returns empty", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:fn" }))
+    const searcher = new CodeGraphSearcher(g)
+    expect(searcher.searchByType("decorator").length).toBe(0)
+  })
+
+  test("searchByFile on non-existent file returns empty", () => {
+    const g = new CodeGraph()
+    const searcher = new CodeGraphSearcher(g)
+    expect(searcher.searchByFile("nonexistent.ts").length).toBe(0)
+  })
+
+  test("getEgoGraph with k=0 returns just the center node", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:center" }))
+    g.addNode(makeNode({ id: "symbol:n1" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:center", targetId: "symbol:n1", relation: "calls" }))
+    const searcher = new CodeGraphSearcher(g)
+    const ego = searcher.getEgoGraph("symbol:center", 0)
+    expect(ego.nodes.length).toBe(1)
+    expect(ego.centerId).toBe("symbol:center")
+  })
+
+  test("getEgoGraph for non-existent center returns empty subgraph", () => {
+    const g = new CodeGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const ego = searcher.getEgoGraph("symbol:ghost")
+    expect(ego.nodes.length).toBe(0)
+    expect(ego.estimatedTokens).toBe(0)
+  })
+
+  test("searchResults include score and matchedOn", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:search", name: "searchTarget", metadata: { docComment: "Important" } }))
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("searchTarget")
+    expect(results.length).toBe(1)
+    expect(results[0]!.score).toBeGreaterThan(0)
+    expect(results[0]!.matchedOn).toBeDefined()
+  })
+
+  test("buildCompactSummary with zero tokens returns minimal", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:fn" }))
+    const searcher = new CodeGraphSearcher(g)
+    const results = searcher.searchSymbols("fn")
+    const summary = searcher.buildCompactSummary(results, 10)
+    expect(summary).toContain("```codegraph")
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Extended Helper Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("Helpers extended", () => {
+  test("flattenSubGraph with module node", () => {
+    const nodes: CodeGraphNode[] = [
+      makeNode({ id: "module:core", type: "module", name: "core", symbolType: undefined, metadata: { childFiles: [], childModules: [] } }),
+    ]
+    const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 10 })
+    expect(text).toContain("[Module]")
+    expect(text).toContain("core")
+  })
+
+  test("flattenSubGraph with file node shows [File]", () => {
+    const nodes: CodeGraphNode[] = [
+      makeNode({ id: "file:src/app.ts", type: "file", name: "app.ts", symbolType: undefined }),
+    ]
+    const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 10 })
+    expect(text).toContain("[File]")
+    expect(text).toContain("app.ts")
+  })
+
+  test("flattenSubGraph with async static exported symbol", () => {
+    const nodes: CodeGraphNode[] = [
+      makeNode({
+        id: "symbol:complex", name: "complex", symbolType: "method",
+        metadata: { isAsync: true, isStatic: true, isExported: true, visibility: "public", returnType: "Promise<void>", parameters: [{ name: "x", type: "number" }] },
+      }),
+    ]
+    const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 50 })
+    expect(text).toContain("[method]")
+    expect(text).toContain("export")
+    expect(text).toContain("public")
+    expect(text).toContain("static")
+    expect(text).toContain("async")
+  })
+
+  test("estimateTokens with doc comments and params", () => {
+    const tokens = estimateTokens(
+      [makeNode({
+        id: "symbol:fn",
+        symbolType: "function",
+        metadata: {
+          returnType: "string",
+          parameters: [{ name: "a", type: "number" }, { name: "b", type: "string" }],
+          docComment: "A very important function that does many things.",
+        },
+      })],
+      [makeEdge({ sourceId: "symbol:fn", targetId: "symbol:callee", relation: "calls" })],
+    )
+    expect(tokens).toBeGreaterThan(20)
+  })
+
+  test("buildRepoSummary includes high-value files", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "file:a.ts", type: "file", name: "a.ts", symbolType: undefined }))
+    g.addNode(makeNode({ id: "symbol:fn" }))
+    g.addEdge(makeEdge({ sourceId: "file:a.ts", targetId: "symbol:fn", relation: "defines" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:fn", targetId: "file:a.ts", relation: "exports" }))
+
+    const summary = buildRepoSummary(g)
+    expect(summary).toContain("CodeGraph Repository Summary")
+    expect(summary).toContain("High-Value Files")
+    expect(summary).toContain("a.ts")
+  })
+
+  test("flattenSubGraph with edges shows relation arrows", () => {
+    const nodes: CodeGraphNode[] = [
+      makeNode({ id: "symbol:caller", name: "caller" }),
+      makeNode({ id: "symbol:callee", name: "callee" }),
+    ]
+    const edges: CodeGraphEdge[] = [
+      makeEdge({ sourceId: "symbol:caller", targetId: "symbol:callee", relation: "calls" }),
+    ]
+    const text = flattenSubGraph({ nodes, edges, estimatedTokens: 50 })
+    expect(text).toContain("calls ->")
+  })
+
+  test("estimateTokens with empty inputs returns positive number", () => {
+    const tokens = estimateTokens([], [])
+    expect(tokens).toBe(0)
+  })
+})

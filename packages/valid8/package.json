@@ -1,0 +1,31 @@
+{
+  "name": "@fengru/valid8",
+  "version": "0.1.0",
+  "description": "Multi-layer AI output validation ¡ª syntax, semantic, runtime, security ¡ª with LLM reviewer and external scanner support",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": { "optional": true }
+  },
+  "keywords": ["validation", "security", "syntax-check", "ai-output", "code-quality"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

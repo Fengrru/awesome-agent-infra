@@ -1,0 +1,25 @@
+{
+  "name": "@fengru/checkpoint-writer",
+  "version": "0.1.0",
+  "description": "LLM-driven structured checkpoint writer ¡ª 11-field state extraction, discovery stability tracking with fact promotion to project memory",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["checkpoint", "state-extraction", "llm", "memory", "agent"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

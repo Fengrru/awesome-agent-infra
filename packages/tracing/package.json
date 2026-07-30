@@ -1,0 +1,26 @@
+{
+  "name": "@fengru/tracing",
+  "version": "0.1.0",
+  "description": "Lightweight OpenTelemetry tracing abstraction with zero runtime dependencies â€?lazy OTel init with no-op fallback",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["opentelemetry", "tracing", "span", "agent", "telemetry"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,17 @@
+﻿{
+  "name": "@fengru/agent-memory",
+  "version": "0.1.0",
+  "description": "4-tier memory system for AI agents — L1 transient, L2 working, L3 long-term (Ebbinghaus decay), L4 core rules",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "keywords": ["ai-agent", "memory", "ebbinghaus", "forgetting-curve", "agent-memory", "vector-retrieval"],
+  "license": "MIT",
+  "scripts": { "test": "bun test", "build": "tsc", "typecheck": "tsc --noEmit", "prepublishOnly": "bun run build" },
+  "dependencies": {
+    "@fengru/memory-engine-v2": "workspace:*"
+  },
+  "devDependencies": { "typescript": "^5.0.0" }
+}

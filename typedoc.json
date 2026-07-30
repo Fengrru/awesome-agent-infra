@@ -1,0 +1,124 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Agent Kit — AI Agent Infrastructure",
+  "entryPoints": [
+    "packages/agent-memory",
+    "packages/archiver",
+    "packages/codegraph",
+    "packages/dreamdistill",
+    "packages/embedding",
+    "packages/engine-db",
+    "packages/fuzzy-patch",
+    "packages/hallucination-detector",
+    "packages/pomdp-planner",
+    "packages/project-memory",
+    "packages/reasoning-search"
+  ],
+  "entryPointStrategy": "packages",
+  "includeVersion": true,
+  "readme": "./README.md",
+  "out": "./docs/api",
+  "json": "./docs/api.json",
+  "plugin": [],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "visibilityFilters": {
+    "protected": true,
+    "private": false,
+    "inherited": true,
+    "external": false
+  },
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true,
+    "includeFolders": true
+  },
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Memory",
+    "Database",
+    "Embedding",
+    "Search",
+    "Planning",
+    "Reasoning",
+    "Evolution",
+    "Validation",
+    "Patching",
+    "*"
+  ],
+  "sort": [
+    "source-order",
+    "kind"
+  ],
+  "kindSortOrder": [
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Function",
+    "Enum",
+    "Variable"
+  ],
+  "searchInComments": true,
+  "searchInDocuments": true,
+  "cleanOutputDir": true,
+  "githubPages": false,
+  "gitRevision": "main",
+  "hostedBaseUrl": "https://fengru.github.io/awesome-agent-infra",
+  "useTsLinkResolution": true,
+  "preserveWatchOutput": true,
+  "compilerOptions": {
+    "skipLibCheck": true
+  },
+  "blockTags": [
+    "@module",
+    "@deprecated",
+    "@param",
+    "@returns",
+    "@throws",
+    "@example",
+    "@see",
+    "@since",
+    "@category",
+    "@typeParam",
+    "@defaultValue"
+  ],
+  "inlineTags": [
+    "@link",
+    "@linkcode",
+    "@linkplain"
+  ],
+  "modifierTags": [
+    "@public",
+    "@protected",
+    "@private",
+    "@internal",
+    "@readonly",
+    "@experimental",
+    "@alpha",
+    "@beta"
+  ],
+  "logLevel": "Info",
+  "skipErrorChecking": false,
+  "treatWarningsAsErrors": false,
+  "treatValidationWarningsAsErrors": false,
+  "commentStyle": "jsdoc",
+  "useHTMLEncodedBrackets": false,
+  "hideGenerator": false,
+  "customCss": "",
+  "markedOptions": {},
+  "maxTypeConversionDepth": 10
+}

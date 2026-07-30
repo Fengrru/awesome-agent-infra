@@ -1,0 +1,35 @@
+{
+  "name": "@fengru/confidence-gate",
+  "version": "0.1.0",
+  "description": "LLM output confidence calibration — ECE scoring, temperature scaling, hallucination risk gating, and dynamic answer thresholds",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "keywords": [
+    "llm",
+    "confidence",
+    "calibration",
+    "ece",
+    "brier-score",
+    "hallucination",
+    "temperature-scaling",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

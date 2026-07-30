@@ -1,0 +1,25 @@
+{
+  "name": "@fengru/max-mode-sampler",
+  "version": "0.1.0",
+  "description": "Best-of-N parallel plan sampling ¡ª generate N candidates with high temperature, judge with low temperature, select the winner. Blue ocean: no TypeScript npm equivalent",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["best-of-n", "sampling", "parallel", "plan", "llm", "agent"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

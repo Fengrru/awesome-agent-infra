@@ -1,0 +1,14 @@
+﻿{
+  "name": "@fengru/agent-checkpoint",
+  "version": "0.1.0",
+  "description": "3-tier checkpoint system for AI agents — L1 lightweight snapshot, L2 context summary, L3 archive reference with LRU cache",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "keywords": ["ai-agent", "checkpoint", "snapshot", "resume", "recovery", "state-management"],
+  "license": "MIT",
+  "scripts": { "test": "bun test", "build": "tsc", "typecheck": "tsc --noEmit", "prepublishOnly": "bun run build" },
+  "devDependencies": { "typescript": "^5.0.0" }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": ["dist/**", "*.tsbuildinfo"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["__tests__/**", "src/**", "package.json", "tsconfig.json"],
+      "outputs": [],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": [],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "__tests__/**", "package.json", "tsconfig.json"],
+      "outputs": [],
+      "cache": true
+    },
+    "integration": {
+      "dependsOn": ["build"],
+      "inputs": ["__tests__/**/integration*.test.ts", "src/**", "package.json"],
+      "outputs": [],
+      "cache": true
+    }
+  }
+}

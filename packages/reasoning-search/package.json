@@ -1,0 +1,36 @@
+{
+  "name": "@fengru/reasoning-search",
+  "version": "0.1.0",
+  "description": "MCTS tree search reasoning engine with guided beam search and importance sampling — model-agnostic search over reasoning trajectories",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "keywords": [
+    "mcts",
+    "monte-carlo-tree-search",
+    "reasoning",
+    "beam-search",
+    "tree-of-thoughts",
+    "planning",
+    "ai-agent",
+    "uct",
+    "guided-search"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

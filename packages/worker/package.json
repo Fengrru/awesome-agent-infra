@@ -1,0 +1,23 @@
+{
+  "name": "@fengru/worker",
+  "version": "0.1.0",
+  "description": "Zero-dependency stateless worker pool for parallel task execution with capability routing, concurrency control, and metrics",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["worker-pool", "task-execution", "concurrency", "parallel", "ai-agent"],
+  "license": "MIT"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@fengru/event-bus",
+  "version": "0.1.0",
+  "description": "Zero-dependency event bus for AI agents â€?priority levels, batch flushing, waitForEvent, persistence",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["event-bus", "pubsub", "ai-agent", "priority-queue", "batch-processing"],
+  "license": "MIT"
+}

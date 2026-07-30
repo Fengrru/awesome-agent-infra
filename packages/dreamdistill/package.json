@@ -1,0 +1,29 @@
+{
+  "name": "@fengru/dreamdistill",
+  "version": "0.1.0",
+  "description": "AI memory consolidation (Dream) and workflow crystallization (Distill) ¡ª 7-day and 30-day self-improvement cycles",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "license": "MIT",
+  "keywords": ["memory", "consolidation", "distillation", "ai", "self-improvement", "knowledge"],
+  "scripts": {
+    "test": "bun test", "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fengru/dreamdistill"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@fengru/notes-manager",
+  "version": "0.1.0",
+  "description": "Session scratchpad manager for AI agents â€?append, read, filter, compact JSONL notes with fs or in-memory fallback",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["ai-agent", "notes", "scratchpad", "jsonl", "session-manager"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

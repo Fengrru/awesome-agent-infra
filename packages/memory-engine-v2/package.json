@@ -1,0 +1,26 @@
+{
+  "name": "@fengru/memory-engine-v2",
+  "version": "0.1.0",
+  "description": "Zero-dependency 5-layer memory engine with sleep consolidation, meta-memory, and attention retrieval for AI agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@fengru/internal-tfidf": "workspace:*"
+  },
+  "keywords": ["memory", "memory-engine", "ai-agent", "sleep-consolidation", "meta-memory", "attention-retrieval"],
+  "license": "MIT"
+}

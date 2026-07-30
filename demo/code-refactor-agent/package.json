@@ -1,0 +1,30 @@
+{
+  "name": "code-refactor-agent-demo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "End-to-end demo showcasing awesome-agent-infra packages in a code refactoring scenario",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@fengru/project-memory": "workspace:*",
+    "@fengru/codegraph": "workspace:*",
+    "@fengru/embedding": "workspace:*",
+    "@fengru/taskdag": "workspace:*",
+    "@fengru/llm-dag-generator": "workspace:*",
+    "@fengru/valid8": "workspace:*",
+    "@fengru/fuzzy-patch": "workspace:*",
+    "@fengru/event-bus": "workspace:*",
+    "@fengru/archiver": "workspace:*",
+    "@fengru/state-machine": "workspace:*",
+    "@fengru/confidence-gate": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^26.1.2",
+    "bun-types": "^1.3.14"
+  },
+  "license": "MIT"
+}
