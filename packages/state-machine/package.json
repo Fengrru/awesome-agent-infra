@@ -1,7 +1,7 @@
 {
   "name": "@fengru/state-machine",
   "version": "0.1.0",
-  "description": "Typed finite state machine for AI agent sessions ¡ª 15 states, 40+ valid transitions, metrics, snapshots, and checkpoint restore",
+  "description": "Typed finite state machine for AI agent sessions ï¿½ï¿½ 15 states, 40+ valid transitions, metrics, snapshots, and checkpoint restore",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

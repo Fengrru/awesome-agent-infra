@@ -1,7 +1,7 @@
 {
   "name": "@fengru/skillforge",
   "version": "0.1.0",
-  "description": "Agent-writeable skill creation, curation, and management system ¡ª SKILL.md format with progressive L0/L1/L2 loading",
+  "description": "Agent-writeable skill creation, curation, and management system ï¿½ï¿½ SKILL.md format with progressive L0/L1/L2 loading",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

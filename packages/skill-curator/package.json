@@ -1,7 +1,7 @@
 {
   "name": "@fengru/skill-curator",
   "version": "0.1.0",
-  "description": "Automated skill library curation ¡ª archive stale skills, pin popular ones, quality review with LLM or heuristics",
+  "description": "Automated skill library curation ï¿½ï¿½ archive stale skills, pin popular ones, quality review with LLM or heuristics",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

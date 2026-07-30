@@ -1,7 +1,7 @@
 {
   "name": "@fengru/llm-dag-generator",
   "version": "0.1.0",
-  "description": "LLM-driven DAG generator ¡ª AI-powered task planning with fallback heuristic, replan on failure, and K-parallel variant generation",
+  "description": "LLM-driven DAG generator ï¿½ï¿½ AI-powered task planning with fallback heuristic, replan on failure, and K-parallel variant generation",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

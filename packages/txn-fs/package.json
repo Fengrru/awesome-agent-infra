@@ -1,7 +1,7 @@
 {
   "name": "@fengru/txn-fs",
   "version": "0.1.0",
-  "description": "Transactional filesystem ¡ª Git-style transactions with three-way merge, TOCTOU validation, and rollback",
+  "description": "Transactional filesystem ï¿½ï¿½ Git-style transactions with three-way merge, TOCTOU validation, and rollback",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,7 +1,7 @@
 {
   "name": "@fengru/goal-verifier",
   "version": "0.1.0",
-  "description": "Independent goal completion verification ¡ª prevents false completions with LLM-based review, gap analysis, and dead-loop protection",
+  "description": "Independent goal completion verification ï¿½ï¿½ prevents false completions with LLM-based review, gap analysis, and dead-loop protection",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

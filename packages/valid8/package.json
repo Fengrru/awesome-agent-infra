@@ -1,7 +1,7 @@
 {
   "name": "@fengru/valid8",
   "version": "0.1.0",
-  "description": "Multi-layer AI output validation ¡ª syntax, semantic, runtime, security ¡ª with LLM reviewer and external scanner support",
+  "description": "Multi-layer AI output validation ï¿½ï¿½ syntax, semantic, runtime, security ï¿½ï¿½ with LLM reviewer and external scanner support",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
