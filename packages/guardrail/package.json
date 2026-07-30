@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@fengru/guardrail",
   "version": "0.1.0",
   "description": "Runtime safety guard for AI agents — risk classification, entropy monitoring, and execution gating",

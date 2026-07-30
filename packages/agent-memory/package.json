@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@fengru/agent-memory",
   "version": "0.1.0",
   "description": "4-tier memory system for AI agents — L1 transient, L2 working, L3 long-term (Ebbinghaus decay), L4 core rules",
