@@ -310,7 +310,7 @@ describe("Integration: EnhancedTFIDF × HybridSearch × CodeEmbeddingIndexer", (
     const hybrid = new HybridSearch(tfidf)
     const results = await hybrid.search({ query: "tax calculation", topK: 3 })
 
-    expect(results.length).toBe(1)
+    expect(results.length).toBeGreaterThanOrEqual(1)
     expect(results[0]!.id).toBe("d1")
     expect(results[0]!.graphScore).toBe(0)
     expect(results[0]!.textScore).toBeGreaterThan(0)

@@ -911,7 +911,7 @@ describe("Helpers extended", () => {
 
   test("buildRepoSummary includes high-value files", () => {
     const g = new CodeGraph()
-    g.addNode(makeNode({ id: "file:a.ts", type: "file", name: "a.ts", symbolType: undefined }))
+    g.addNode(makeNode({ id: "file:a.ts", type: "file", name: "a.ts", symbolType: undefined, filePath: "a.ts" }))
     g.addNode(makeNode({ id: "symbol:fn" }))
     g.addEdge(makeEdge({ sourceId: "file:a.ts", targetId: "symbol:fn", relation: "defines" }))
     g.addEdge(makeEdge({ sourceId: "symbol:fn", targetId: "file:a.ts", relation: "exports" }))

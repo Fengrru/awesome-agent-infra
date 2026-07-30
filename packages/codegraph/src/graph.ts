@@ -82,7 +82,7 @@ export class CodeGraph {
       for (const [rel, targets] of outgoing) {
         for (const targetId of targets) {
           this._edges.delete(edgeKey(nodeId, rel, targetId))
-          this.removeFromIncoming(nodeId, targetId)
+          this.removeFromIncoming(targetId, nodeId)
         }
       }
       this._outgoing.delete(nodeId)
