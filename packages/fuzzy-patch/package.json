@@ -1,7 +1,7 @@
 {
   "name": "@fengru/fuzzy-patch",
   "version": "0.1.0",
-  "description": "Multi-strategy fuzzy matching engine for AI agent file patching �?8 progressively-degraded strategies from exact match to Levenshtein fuzzy",
+  "description": "Multi-strategy fuzzy matching engine for AI agent file patching ?8 progressively-degraded strategies from exact match to Levenshtein fuzzy",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

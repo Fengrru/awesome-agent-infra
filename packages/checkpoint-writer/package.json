@@ -1,7 +1,7 @@
 {
   "name": "@fengru/checkpoint-writer",
   "version": "0.1.0",
-  "description": "LLM-driven structured checkpoint writer �� 11-field state extraction, discovery stability tracking with fact promotion to project memory",
+  "description": "LLM-driven structured checkpoint writer  11-field state extraction, discovery stability tracking with fact promotion to project memory",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

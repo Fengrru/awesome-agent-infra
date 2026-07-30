@@ -1,7 +1,7 @@
 {
   "name": "@fengru/engine-db",
   "version": "0.1.0",
-  "description": "Pluggable SQLite engine database �� session, event, checkpoint, capability, memory, skill, and repair persistence",
+  "description": "Pluggable SQLite engine database  session, event, checkpoint, capability, memory, skill, and repair persistence",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

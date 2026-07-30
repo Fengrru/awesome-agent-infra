@@ -1,7 +1,7 @@
 {
   "name": "@fengru/lifecycle-manager",
   "version": "0.1.0",
-  "description": "Declarative module lifecycle manager �� hot-pluggable modules with priority-based state and phase hooks",
+  "description": "Declarative module lifecycle manager  hot-pluggable modules with priority-based state and phase hooks",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

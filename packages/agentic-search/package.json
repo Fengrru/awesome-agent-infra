@@ -1,7 +1,7 @@
 {
   "name": "@fengru/agentic-search",
   "version": "0.1.0",
-  "description": "Four-layer agentic search orchestrator �� Intent Parsing �� Strategy Planning �� Parallel Execution �� Result Fusion",
+  "description": "Four-layer agentic search orchestrator  Intent Parsing  Strategy Planning  Parallel Execution  Result Fusion",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

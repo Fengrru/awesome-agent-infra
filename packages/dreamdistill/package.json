@@ -1,7 +1,7 @@
 {
   "name": "@fengru/dreamdistill",
   "version": "0.1.0",
-  "description": "AI memory consolidation (Dream) and workflow crystallization (Distill) �� 7-day and 30-day self-improvement cycles",
+  "description": "AI memory consolidation (Dream) and workflow crystallization (Distill)  7-day and 30-day self-improvement cycles",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

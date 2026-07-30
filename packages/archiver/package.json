@@ -1,7 +1,7 @@
 {
   "name": "@fengru/archiver",
   "version": "0.1.0",
-  "description": "Event archiver with hot/cold tiering â€?archive events to cold storage with optional gzip compression",
+  "description": "Event archiver with hot/cold tiering â€”?archive events to cold storage with optional gzip compression",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

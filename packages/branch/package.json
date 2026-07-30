@@ -1,7 +1,7 @@
 {
   "name": "@fengru/branch",
   "version": "0.1.0",
-  "description": "Session forking/branching manager for AI agent sessions â€?fork, merge, abandon branches with zero dependencies",
+  "description": "Session forking/branching manager for AI agent sessions â€”?fork, merge, abandon branches with zero dependencies",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

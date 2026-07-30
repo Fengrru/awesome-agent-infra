@@ -1,7 +1,7 @@
 {
   "name": "@fengru/replay",
   "version": "0.1.0",
-  "description": "Session event replay engine â€?replay events across dry-run, read-only and full modes with state trajectory tracking",
+  "description": "Session event replay engine â€”?replay events across dry-run, read-only and full modes with state trajectory tracking",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

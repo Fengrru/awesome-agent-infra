@@ -1,7 +1,7 @@
 {
   "name": "@fengru/embedding",
   "version": "0.1.0",
-  "description": "TF-IDF vector indexing and hybrid search for code intelligence �?n-gram expansion, CamelCase/snake_case splitting, vector + graph + text fusion",
+  "description": "TF-IDF vector indexing and hybrid search for code intelligence ?n-gram expansion, CamelCase/snake_case splitting, vector + graph + text fusion",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,7 +1,7 @@
 {
   "name": "@fengru/cycle-controller",
   "version": "0.1.0",
-  "description": "Context window cycle manager for AI agents â€?token utilization monitoring, checkpoint thresholds, and context rebuild triggers",
+  "description": "Context window cycle manager for AI agents â€”?token utilization monitoring, checkpoint thresholds, and context rebuild triggers",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
