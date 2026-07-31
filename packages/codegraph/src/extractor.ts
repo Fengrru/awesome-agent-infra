@@ -1,4 +1,5 @@
 import type { CodeGraphNode, SymbolType, SymbolMetadata } from "./types"
+import { hashString } from "./hashing"
 
 export interface TreeSitterNode {
   type: string
@@ -38,7 +39,28 @@ export interface ExtractResult {
   symbols: CodeGraphNode[]
   imports: Array<{ source: string; names: string[] }>
   exports: string[]
+  /** Call expressions extracted from function/method bodies */
+  calls: ExtractedCall[]
   durationMs: number
+}
+
+export interface ExtractedCall {
+  /** The name of the enclosing function/method (the caller) */
+  callerName: string
+  /** The name being called (identifier in call_expression) */
+  calleeName: string
+  /** Byte range of the call expression */
+  startByte: number
+  endByte: number
+  /** Line range */
+  startLine: number
+  endLine: number
+  /** Argument count (number of arguments in the call) */
+  argCount: number
+  /** Named/kwarg-like args */
+  keywordArgNames: string[]
+  /** Whether *args or ...spread is used */
+  hasSpread: boolean
 }
 
 let _parserInit: Promise<LanguageParser[]> | null = null
@@ -129,27 +151,20 @@ function parserForFile(parsers: LanguageParser[], filePath: string): LanguagePar
   return parsers.find((p) => p.filePatterns.includes(`.${ext}`)) ?? null
 }
 
-export async function extractFromFile(filePath: string, source: string, mtime: number, deps?: ExtractorDependencies): Promise<ExtractResult> {
+export async function extractFromFile(
+  filePath: string,
+  source: string,
+  mtime: number,
+  deps?: ExtractorDependencies,
+  tokenizerName?: string,
+): Promise<ExtractResult> {
   const startTime = Date.now()
   try {
     const parsers = await getParsers(deps)
     const langParser = parserForFile(parsers, filePath)
-    if (langParser) return treeSitterExtract(langParser, filePath, source, mtime)
+    if (langParser) return treeSitterExtract(langParser, filePath, source, mtime, tokenizerName)
   } catch { /* Fall through to fallback */ }
-  return fallbackExtract(filePath, source, mtime)
-}
-
-function treeSitterExtract(langParser: LanguageParser, filePath: string, source: string, mtime: number): ExtractResult {
-  const startMs = Date.now()
-  const parser = langParser.parser as TreeSitterParser
-  const tree = parser.parse(source)
-  const root = tree.rootNode
-  const imports: Array<{ source: string; names: string[] }> = []
-  const exports: string[] = []
-  const extracted: ExtractedSymbol[] = []
-  walkTree(root, source, extracted, imports, exports)
-  const symbols = flattenSymbols(extracted, filePath, mtime)
-  return { symbols, imports, exports, durationMs: Date.now() - startMs }
+  return fallbackExtract(filePath, source, mtime, tokenizerName)
 }
 
 interface ExtractedSymbol {
@@ -157,12 +172,52 @@ interface ExtractedSymbol {
   symbolType: SymbolType
   startLine: number
   endLine: number
+  startByte: number
+  endByte: number
   metadata: SymbolMetadata
   children?: ExtractedSymbol[]
 }
 
-function walkTree(node: TreeSitterNode, source: string, results: ExtractedSymbol[], imports: Array<{ source: string; names: string[] }>, exports: string[]): void {
+function treeSitterExtract(
+  langParser: LanguageParser,
+  filePath: string,
+  source: string,
+  mtime: number,
+  tokenizerName?: string,
+): ExtractResult {
+  const startMs = Date.now()
+  const parser = langParser.parser as TreeSitterParser
+  const tree = parser.parse(source)
+  const root = tree.rootNode
+  const imports: Array<{ source: string; names: string[] }> = []
+  const exports: string[] = []
+  const extracted: ExtractedSymbol[] = []
+  const calls: ExtractedCall[] = []
+  walkTree(root, source, extracted, imports, exports, calls, null)
+  const symbols = flattenSymbols(extracted, filePath, mtime, tokenizerName, source)
+  return { symbols, imports, exports, calls, durationMs: Date.now() - startMs }
+}
+
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 3)
+}
+
+function walkTree(
+  node: TreeSitterNode,
+  source: string,
+  results: ExtractedSymbol[],
+  imports: Array<{ source: string; names: string[] }>,
+  exports: string[],
+  calls: ExtractedCall[],
+  currentCaller: string | null,
+): void {
   const type = node.type
+
+  if (type === "call_expression" && currentCaller) {
+    parseCallExpression(node, source, currentCaller, calls)
+    return
+  }
+
   switch (type) {
     case "import_statement":
     case "import_declaration":
@@ -176,12 +231,15 @@ function walkTree(node: TreeSitterNode, source: string, results: ExtractedSymbol
     case "function": {
       const sym = parseFunctionDeclaration(node, source)
       if (sym) results.push(sym)
+      const body = node.childForFieldName("body")
+      if (body) walkChildren(body, source, results, imports, exports, calls, sym?.name ?? currentCaller)
       break
     }
     case "class_declaration":
     case "class": {
       const sym = parseClassDeclaration(node, source)
       if (sym) results.push(sym)
+      walkChildren(node, source, results, imports, exports, calls, currentCaller)
       break
     }
     case "interface_declaration": {
@@ -191,9 +249,12 @@ function walkTree(node: TreeSitterNode, source: string, results: ExtractedSymbol
     }
     case "method_definition":
     case "method":
-    case "public_field_definition": {
+    case "public_field_definition":
+    case "abstract_method_signature": {
       const sym = parseMethodDeclaration(node, source)
       if (sym) results.push(sym)
+      const body = node.childForFieldName("body")
+      if (body) walkChildren(body, source, results, imports, exports, calls, sym?.name ?? currentCaller)
       break
     }
     case "lexical_declaration":
@@ -218,14 +279,81 @@ function walkTree(node: TreeSitterNode, source: string, results: ExtractedSymbol
       if (sym) results.push(sym)
       break
     }
+    case "arrow_function": {
+      const body = node.childForFieldName("body")
+      if (body) walkChildren(body, source, results, imports, exports, calls, currentCaller)
+      break
+    }
     default:
       if (node.childCount > 0 && shouldRecurseInto(type)) {
-        for (let i = 0; i < node.childCount; i++) {
-          const child = node.child(i)
-          if (child) walkTree(child, source, results, imports, exports)
-        }
+        walkChildren(node, source, results, imports, exports, calls, currentCaller)
       }
   }
+}
+
+function walkChildren(
+  node: TreeSitterNode,
+  source: string,
+  results: ExtractedSymbol[],
+  imports: Array<{ source: string; names: string[] }>,
+  exports: string[],
+  calls: ExtractedCall[],
+  currentCaller: string | null,
+): void {
+  for (let i = 0; i < node.childCount; i++) {
+    const child = node.child(i)
+    if (child) walkTree(child, source, results, imports, exports, calls, currentCaller)
+  }
+}
+
+function parseCallExpression(
+  node: TreeSitterNode,
+  source: string,
+  callerName: string,
+  calls: ExtractedCall[],
+): void {
+  const funcNode = node.childForFieldName("function")
+  if (!funcNode) return
+
+  let calleeName = ""
+  if (funcNode.type === "identifier") {
+    calleeName = getNodeText(funcNode, source)
+  } else if (funcNode.type === "member_expression") {
+    const prop = funcNode.childForFieldName("property")
+    if (prop) calleeName = getNodeText(prop, source)
+  }
+
+  if (!calleeName || calleeName === callerName) return
+
+  const argsNode = node.childForFieldName("arguments")
+  let argCount = 0
+  const keywordArgNames: string[] = []
+  let hasSpread = false
+
+  if (argsNode) {
+    for (let i = 0; i < argsNode.namedChildCount; i++) {
+      const arg = argsNode.namedChild(i)
+      if (!arg) continue
+      argCount++
+      if (arg.type === "spread_element") hasSpread = true
+      if (arg.type === "assignment_expression") {
+        const left = arg.childForFieldName("left")
+        if (left && left.type === "identifier") keywordArgNames.push(getNodeText(left, source))
+      }
+    }
+  }
+
+  calls.push({
+    callerName,
+    calleeName,
+    startByte: node.startIndex,
+    endByte: node.endIndex,
+    startLine: node.startPosition.row + 1,
+    endLine: node.endPosition.row + 1,
+    argCount,
+    keywordArgNames,
+    hasSpread,
+  })
 }
 
 function shouldRecurseInto(nodeType: string): boolean {
@@ -235,6 +363,15 @@ function shouldRecurseInto(nodeType: string): boolean {
     "enum_body", "interface_body", "object_type",
     "expression_statement", "return_statement", "class_body",
     "formal_parameters", "arrow_function",
+    "if_statement", "else_clause", "while_statement", "do_statement",
+    "for_statement", "for_in_statement", "switch_statement",
+    "switch_body", "switch_case", "try_statement", "catch_clause",
+    "finally_clause", "block", "parenthesized_expression",
+    "ternary_expression", "binary_expression", "unary_expression",
+    "assignment_expression", "sequence_expression",
+    "call_expression", "arguments", "new_expression",
+    "template_substitution", "subscript_expression",
+    "array", "object", "pair",
   ])
   return containerTypes.has(nodeType)
 }
@@ -320,7 +457,7 @@ function parseExport(node: TreeSitterNode, source: string, exports: string[]): v
     if (child.type === "declaration" || child.type === "function_declaration"
         || child.type === "class_declaration" || child.type === "variable_declaration"
         || child.type === "lexical_declaration") {
-      walkTree(child, source, [], [], exports)
+      walkTree(child, source, [], [], exports, [], null)
       return
     }
     if (child.type === "export_clause") {
@@ -340,18 +477,27 @@ function parseFunctionDeclaration(node: TreeSitterNode, source: string): Extract
   const nameNode = node.childForFieldName("name")
   if (!nameNode) return null
   const modifiers = extractModifierTexts(node, source)
+  const params = resolveParameters(node, source)
+  const retType = resolveReturnType(node, source)
+  const body = source.slice(node.startIndex, node.endIndex)
+  const sigSource = `${getNodeText(nameNode, source)}(${params.map((p) => `${p.name}:${p.type}`).join(",")})${retType ? `:${retType}` : ""}`
   return {
     name: getNodeText(nameNode, source),
     symbolType: "function",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
+    startByte: node.startIndex,
+    endByte: node.endIndex,
     metadata: {
       isAsync: hasModifierText(modifiers, "async"),
       isStatic: hasModifierText(modifiers, "static"),
       isExported: isNodeExported(node, source),
-      returnType: resolveReturnType(node, source),
-      parameters: resolveParameters(node, source),
+      returnType: retType,
+      parameters: params,
       docComment: extractDocComment(node, source),
+      signatureHash: hashString(sigSource),
+      contentHash: hashString(body),
+      scopeRange: [estimateTokens(source.slice(0, node.startIndex)), estimateTokens(source.slice(0, node.endIndex))],
     },
   }
 }
@@ -373,16 +519,20 @@ function parseClassDeclaration(node: TreeSitterNode, source: string): ExtractedS
     }
   }
   const modifiers = extractModifierTexts(node, source)
+  const body = source.slice(node.startIndex, node.endIndex)
   return {
     name: getNodeText(nameNode, source),
     symbolType: "class",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
+    startByte: node.startIndex,
+    endByte: node.endIndex,
     metadata: {
       isExported: isNodeExported(node, source),
       isAbstract: hasModifierText(modifiers, "abstract"),
       typeParams: resolveTypeParameters(node, source),
       docComment: extractDocComment(node, source),
+      contentHash: hashString(body),
     },
     children,
   }
@@ -405,6 +555,8 @@ function parseInterfaceDeclaration(node: TreeSitterNode, source: string): Extrac
           symbolType: "method",
           startLine: child.startPosition.row + 1,
           endLine: child.endPosition.row + 1,
+          startByte: child.startIndex,
+          endByte: child.endIndex,
           metadata: {
             parameters: resolveParameters(child, source),
             returnType: resolveReturnType(child, source),
@@ -419,6 +571,8 @@ function parseInterfaceDeclaration(node: TreeSitterNode, source: string): Extrac
     symbolType: "interface",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
+    startByte: node.startIndex,
+    endByte: node.endIndex,
     metadata: {
       isExported: isNodeExported(node, source),
       typeParams: resolveTypeParameters(node, source),
@@ -428,25 +582,40 @@ function parseInterfaceDeclaration(node: TreeSitterNode, source: string): Extrac
   }
 }
 
-function parseMethodDeclaration(node: TreeSitterNode, source: string, parentName?: string): ExtractedSymbol | null {
+function parseMethodDeclaration(
+  node: TreeSitterNode,
+  source: string,
+  parentName?: string,
+): ExtractedSymbol | null {
   const nameNode = node.childForFieldName("name")
   if (!nameNode) return null
   const modifiers = extractModifierTexts(node, source)
   const isField = node.type === "public_field_definition"
+  const params = isField ? undefined : resolveParameters(node, source)
+  const retType = isField ? undefined : resolveReturnType(node, source)
+  const body = source.slice(node.startIndex, node.endIndex)
+  const sigSource = params
+    ? `${getNodeText(nameNode, source)}(${params.map((p) => `${p.name}:${p.type}`).join(",")})${retType ? `:${retType}` : ""}`
+    : body
   return {
     name: getNodeText(nameNode, source),
     symbolType: isField ? "variable" : "method",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
+    startByte: node.startIndex,
+    endByte: node.endIndex,
     metadata: {
       visibility: getVisibility(modifiers),
       isAsync: hasModifierText(modifiers, "async"),
       isStatic: hasModifierText(modifiers, "static"),
       isAbstract: hasModifierText(modifiers, "abstract") || node.type === "abstract_method_signature",
-      returnType: isField ? undefined : resolveReturnType(node, source),
-      parameters: isField ? undefined : resolveParameters(node, source),
+      returnType: retType,
+      parameters: params,
       docComment: extractDocComment(node, source),
       parentId: parentName ? `symbol:class:${parentName}` : undefined,
+      signatureHash: hashString(sigSource),
+      contentHash: hashString(body),
+      scopeRange: [estimateTokens(source.slice(0, node.startIndex)), estimateTokens(source.slice(0, node.endIndex))],
     },
   }
 }
@@ -466,7 +635,13 @@ function parseVariableDeclaration(node: TreeSitterNode, source: string): Extract
       symbolType: "variable",
       startLine: nameNode.startPosition.row + 1,
       endLine: child.endPosition.row + 1,
-      metadata: { isExported, docComment: extractDocComment(node, source) },
+      startByte: nameNode.startIndex,
+      endByte: child.endIndex,
+      metadata: {
+        isExported,
+        docComment: extractDocComment(node, source),
+        contentHash: hashString(getNodeText(nameNode, source)),
+      },
     })
   }
   return results
@@ -480,10 +655,13 @@ function parseTypeAlias(node: TreeSitterNode, source: string): ExtractedSymbol |
     symbolType: "type",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
+    startByte: node.startIndex,
+    endByte: node.endIndex,
     metadata: {
       typeParams: resolveTypeParameters(node, source),
       isExported: isNodeExported(node, source),
       docComment: extractDocComment(node, source),
+      contentHash: hashString(source.slice(node.startIndex, node.endIndex)),
     },
   }
 }
@@ -496,7 +674,13 @@ function parseEnumDeclaration(node: TreeSitterNode, source: string): ExtractedSy
     symbolType: "enum",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
-    metadata: { isExported: isNodeExported(node, source), docComment: extractDocComment(node, source) },
+    startByte: node.startIndex,
+    endByte: node.endIndex,
+    metadata: {
+      isExported: isNodeExported(node, source),
+      docComment: extractDocComment(node, source),
+      contentHash: hashString(source.slice(node.startIndex, node.endIndex)),
+    },
   }
 }
 
@@ -508,11 +692,20 @@ function parseNamespaceDeclaration(node: TreeSitterNode, source: string): Extrac
     symbolType: "namespace",
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
-    metadata: { isExported: isNodeExported(node, source), docComment: extractDocComment(node, source) },
+    startByte: node.startIndex,
+    endByte: node.endIndex,
+    metadata: {
+      isExported: isNodeExported(node, source),
+      docComment: extractDocComment(node, source),
+      contentHash: hashString(source.slice(node.startIndex, node.endIndex)),
+    },
   }
 }
 
-function resolveParameters(node: TreeSitterNode, source: string): Array<{ name: string; type: string; optional?: boolean }> {
+function resolveParameters(
+  node: TreeSitterNode,
+  source: string,
+): Array<{ name: string; type: string; optional?: boolean }> {
   const params: Array<{ name: string; type: string; optional?: boolean }> = []
   const paramNode = node.childForFieldName("parameters") ?? node.childForFieldName("formal_parameters")
   if (!paramNode) return params
@@ -556,14 +749,49 @@ function resolveTypeParameters(node: TreeSitterNode, source: string): string[] |
   return params.length > 0 ? params : undefined
 }
 
-function flattenSymbols(extracted: ExtractedSymbol[], filePath: string, mtime: number): CodeGraphNode[] {
+let _tokenCache = new Map<string, number>()
+
+function getTokenIndex(source: string, byteOffset: number, filePath: string): number {
+  const key = `${filePath}:${byteOffset}`
+  const cached = _tokenCache.get(key)
+  if (cached !== undefined) return cached
+
+  const prefix = source.slice(0, byteOffset)
+  const tokenEstimate = estimateTokens(prefix)
+  _tokenCache.set(key, tokenEstimate)
+  return tokenEstimate
+}
+
+function flattenSymbols(
+  extracted: ExtractedSymbol[],
+  filePath: string,
+  mtime: number,
+  tokenizerName: string | undefined,
+  source: string,
+): CodeGraphNode[] {
   const results: CodeGraphNode[] = []
+  const tName = tokenizerName ?? "simple"
+
   function flatten(sym: ExtractedSymbol, parentId?: string) {
     const nodeId = makeSymbolId(sym.symbolType, sym.name, parentId)
+    const startToken = getTokenIndex(source, sym.startByte, filePath)
+    const endToken = getTokenIndex(source, sym.endByte, filePath)
+
     results.push({
-      id: nodeId, type: "symbol", symbolType: sym.symbolType, name: sym.name,
-      filePath, startLine: sym.startLine, endLine: sym.endLine,
-      metadata: { ...sym.metadata }, mtime,
+      id: nodeId,
+      type: "symbol",
+      symbolType: sym.symbolType,
+      name: sym.name,
+      filePath,
+      startLine: sym.startLine,
+      endLine: sym.endLine,
+      startByte: sym.startByte,
+      endByte: sym.endByte,
+      startToken,
+      endToken,
+      tokenizerName: tName,
+      metadata: { ...sym.metadata },
+      mtime,
     })
     if (sym.children) {
       for (const child of sym.children) flatten(child, nodeId)
@@ -578,11 +806,17 @@ function makeSymbolId(symbolType: SymbolType, name: string, parentId?: string): 
   return `symbol:${symbolType}:${name}`
 }
 
-function fallbackExtract(filePath: string, source: string, mtime: number): ExtractResult {
+function fallbackExtract(
+  filePath: string,
+  source: string,
+  mtime: number,
+  tokenizerName?: string,
+): ExtractResult {
   const startMs = Date.now()
   const symbols: CodeGraphNode[] = []
   const imports: Array<{ source: string; names: string[] }> = []
   const exports: string[] = []
+  const tName = tokenizerName ?? "simple"
 
   const importRe = /import\s+(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+['"]([^'"]+)['"]/g
   let m: RegExpExecArray | null
@@ -590,43 +824,101 @@ function fallbackExtract(filePath: string, source: string, mtime: number): Extra
     if (m[1]) imports.push({ source: m[1], names: [] })
   }
 
+  const lineOffsets = [0]
+  for (let i = 0; i < source.length; i++) {
+    if (source[i] === "\n") lineOffsets.push(i + 1)
+  }
+  function byteAtLine(line: number): number {
+    return lineOffsets[line - 1] ?? 0
+  }
+
   const funcRe = /^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm
   while ((m = funcRe.exec(source)) !== null) {
     const lineNum = source.slice(0, m.index).split("\n").length
+    const startB = byteAtLine(lineNum)
+    const st = getTokenIndex(source, startB, filePath)
+    const et = getTokenIndex(source, startB + (m[0].length), filePath)
     symbols.push({
-      id: makeSymbolId("function", m[1]), type: "symbol", symbolType: "function", name: m[1],
-      filePath, startLine: lineNum, endLine: lineNum,
-      metadata: { isExported: m[0].includes("export") }, mtime,
+      id: makeSymbolId("function", m[1]),
+      type: "symbol",
+      symbolType: "function",
+      name: m[1],
+      filePath,
+      startLine: lineNum,
+      endLine: lineNum,
+      startByte: startB,
+      endByte: startB + (m[0].length),
+      startToken: st,
+      endToken: et,
+      tokenizerName: tName,
+      metadata: { isExported: m[0].includes("export") },
+      mtime,
     })
   }
 
   const classRe = /^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/gm
   while ((m = classRe.exec(source)) !== null) {
     const lineNum = source.slice(0, m.index).split("\n").length
+    const startB = byteAtLine(lineNum)
     symbols.push({
-      id: makeSymbolId("class", m[1]), type: "symbol", symbolType: "class", name: m[1],
-      filePath, startLine: lineNum, endLine: lineNum,
-      metadata: { isExported: m[0].includes("export") }, mtime,
+      id: makeSymbolId("class", m[1]),
+      type: "symbol",
+      symbolType: "class",
+      name: m[1],
+      filePath,
+      startLine: lineNum,
+      endLine: lineNum,
+      startByte: startB,
+      endByte: startB + (m[0].length),
+      startToken: getTokenIndex(source, startB, filePath),
+      endToken: getTokenIndex(source, startB + (m[0].length), filePath),
+      tokenizerName: tName,
+      metadata: { isExported: m[0].includes("export") },
+      mtime,
     })
   }
 
   const ifaceRe = /^\s*(?:export\s+)?interface\s+(\w+)/gm
   while ((m = ifaceRe.exec(source)) !== null) {
     const lineNum = source.slice(0, m.index).split("\n").length
+    const startB = byteAtLine(lineNum)
     symbols.push({
-      id: makeSymbolId("interface", m[1]), type: "symbol", symbolType: "interface", name: m[1],
-      filePath, startLine: lineNum, endLine: lineNum,
-      metadata: { isExported: m[0].includes("export") }, mtime,
+      id: makeSymbolId("interface", m[1]),
+      type: "symbol",
+      symbolType: "interface",
+      name: m[1],
+      filePath,
+      startLine: lineNum,
+      endLine: lineNum,
+      startByte: startB,
+      endByte: startB + (m[0].length),
+      startToken: getTokenIndex(source, startB, filePath),
+      endToken: getTokenIndex(source, startB + (m[0].length), filePath),
+      tokenizerName: tName,
+      metadata: { isExported: m[0].includes("export") },
+      mtime,
     })
   }
 
   const varRe = /^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*(?::|=)/gm
   while ((m = varRe.exec(source)) !== null) {
     const lineNum = source.slice(0, m.index).split("\n").length
+    const startB = byteAtLine(lineNum)
     symbols.push({
-      id: makeSymbolId("variable", m[1]), type: "symbol", symbolType: "variable", name: m[1],
-      filePath, startLine: lineNum, endLine: lineNum,
-      metadata: { isExported: m[0].includes("export") }, mtime,
+      id: makeSymbolId("variable", m[1]),
+      type: "symbol",
+      symbolType: "variable",
+      name: m[1],
+      filePath,
+      startLine: lineNum,
+      endLine: lineNum,
+      startByte: startB,
+      endByte: startB + (m[0].length),
+      startToken: getTokenIndex(source, startB, filePath),
+      endToken: getTokenIndex(source, startB + (m[0].length), filePath),
+      tokenizerName: tName,
+      metadata: { isExported: m[0].includes("export") },
+      mtime,
     })
   }
 
@@ -636,5 +928,5 @@ function fallbackExtract(filePath: string, source: string, mtime: number): Extra
     exports.push(...names)
   }
 
-  return { symbols, imports, exports, durationMs: Date.now() - startMs }
+  return { symbols, imports, exports, calls: [], durationMs: Date.now() - startMs }
 }

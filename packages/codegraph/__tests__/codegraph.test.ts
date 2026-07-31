@@ -7,12 +7,23 @@ import {
   flattenSubGraph,
   buildRepoSummary,
   estimateTokens,
+  CallSiteStore,
+  createCallSite,
+  GraphPersistence,
+  IncrementalParser,
+  ImpactAnalyzer,
+  hashString,
+  hashesEqual,
+  computeEntityHashes,
+  buildSignatureSource,
+  signatureChanged,
 } from "../src/index"
 import type {
   CodeGraphNode,
   CodeGraphEdge,
   ExtractResult,
   ExtractorFn,
+  CallSite,
 } from "../src/index"
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
@@ -27,10 +38,34 @@ function makeNode(overrides?: Partial<CodeGraphNode>): CodeGraphNode {
     filePath: "src/test.ts",
     startLine: 1,
     endLine: 5,
+    startByte: 0,
+    endByte: 0,
+    startToken: 0,
+    endToken: 0,
+    tokenizerName: "simple",
     metadata: { isExported: true },
     mtime: Date.now(),
     ...overrides,
   }
+}
+
+function makeCS(overrides?: Partial<CallSite>): CallSite {
+  return createCallSite({
+    callerId: "symbol:caller",
+    calleeName: "target",
+    calleeId: "symbol:target",
+    filePath: "src/main.ts",
+    startByte: 0,
+    endByte: 20,
+    startToken: 0,
+    endToken: 5,
+    startLine: 1,
+    endLine: 2,
+    argCount: 2,
+    keywordArgs: ["timeout"],
+    tokenizerName: "simple",
+    ...overrides,
+  })
 }
 
 function makeEdge(overrides?: Partial<CodeGraphEdge>): CodeGraphEdge {
@@ -63,6 +98,7 @@ describe("CodeGraph", () => {
 
   test("removes a node and its edges", () => {
     const g = new CodeGraph()
+    g.setBidirectional(false)
     g.addNode(makeNode({ id: "symbol:A" }))
     g.addNode(makeNode({ id: "symbol:B" }))
     g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
@@ -937,5 +973,494 @@ describe("Helpers extended", () => {
   test("estimateTokens with empty inputs returns positive number", () => {
     const tokens = estimateTokens([], [])
     expect(tokens).toBe(0)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Bidirectional Edge Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("Bidirectional edges", () => {
+  test("calls edge creates called_by reverse edge", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:A" }))
+    g.addNode(makeNode({ id: "symbol:B" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    expect(g.edgeCount).toBe(2)
+    const callers = g.getCallersOf("symbol:B")
+    expect(callers.length).toBe(1)
+    expect(callers[0]!.id).toBe("symbol:A")
+  })
+
+  test("getCallersOf returns empty for entities with no callers", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:lonely" }))
+    expect(g.getCallersOf("symbol:lonely").length).toBe(0)
+  })
+
+  test("getTransitiveCallers returns depth-keyed map", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:A", name: "A" }))
+    g.addNode(makeNode({ id: "symbol:B", name: "B" }))
+    g.addNode(makeNode({ id: "symbol:C", name: "C" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:B", targetId: "symbol:C", relation: "calls" }))
+    const transitive = g.getTransitiveCallers("symbol:C", 3)
+    expect(transitive.has(1)).toBe(true)
+    expect(transitive.get(1)!.length).toBe(1)
+    expect(transitive.has(2)).toBe(true)
+  })
+
+  test("getAffectedFiles collects files from callers", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:A", filePath: "src/a.ts" }))
+    g.addNode(makeNode({ id: "symbol:B", filePath: "src/b.ts" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:A", targetId: "symbol:B", relation: "calls" }))
+    const files = g.getAffectedFiles("symbol:B", 3)
+    expect(files.length).toBeGreaterThanOrEqual(1)
+  })
+
+  test("findEntity resolves by name and kind", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:function:myFunc", name: "myFunc", symbolType: "function", filePath: "src/main.ts" }))
+    const found = g.findEntity("myFunc", "function", "src/main.ts")
+    expect(found).toBeDefined()
+    expect(found!.name).toBe("myFunc")
+  })
+
+  test("findEntity returns undefined for no match", () => {
+    const g = new CodeGraph()
+    expect(g.findEntity("nope", "function")).toBeUndefined()
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CallSite Store Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("CallSiteStore", () => {
+  test("adds and retrieves a call site", () => {
+    const store = new CallSiteStore()
+    const cs = makeCS()
+    store.add(cs)
+    expect(store.size).toBe(1)
+    expect(store.get(cs.id)).toBeDefined()
+  })
+
+  test("getByCaller returns matching call sites", () => {
+    const store = new CallSiteStore()
+    const cs = makeCS()
+    store.add(cs)
+    expect(store.getByCaller("symbol:caller").length).toBe(1)
+    expect(store.getByCaller("symbol:none").length).toBe(0)
+  })
+
+  test("getByCallee returns matching call sites", () => {
+    const store = new CallSiteStore()
+    const cs = makeCS()
+    store.add(cs)
+    expect(store.getByCallee("symbol:target").length).toBe(1)
+    expect(store.getByCallee("symbol:none").length).toBe(0)
+  })
+
+  test("getByCalleeName works for unresolved calls", () => {
+    const store = new CallSiteStore()
+    const cs = makeCS({ calleeId: "" })
+    store.add(cs)
+    expect(store.getByCalleeName("target").length).toBe(1)
+    expect(store.getByCalleeName("TARGET").length).toBe(1)
+  })
+
+  test("getByFile returns call sites in a file", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ filePath: "src/a.ts" }))
+    store.add(makeCS({ filePath: "src/a.ts", calleeName: "other" }))
+    store.add(makeCS({ filePath: "src/b.ts" }))
+    expect(store.getByFile("src/a.ts").length).toBe(2)
+    expect(store.getByFile("src/b.ts").length).toBe(1)
+  })
+
+  test("removeByFile cleans all call sites for a file", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ filePath: "src/a.ts" }))
+    store.add(makeCS({ filePath: "src/b.ts" }))
+    store.removeByFile("src/a.ts")
+    expect(store.size).toBe(1)
+  })
+
+  test("getStaleCallSites detects missing required args", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ argCount: 1, keywordArgs: [] }))
+    const stale = store.getStaleCallSites("symbol:target", 3, 2, ["x", "y", "z"])
+    expect(stale.length).toBe(1)
+  })
+
+  test("getStaleCallSites detects renamed keyword args", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ argCount: 3, keywordArgs: ["old_param"] }))
+    const stale = store.getStaleCallSites("symbol:target", 3, 2, ["new_param"])
+    expect(stale.length).toBe(1)
+  })
+
+  test("getByTokenRange finds overlapping call sites", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ startToken: 10, endToken: 20, filePath: "src/f.ts" }))
+    const results = store.getByTokenRange("src/f.ts", 5, 15)
+    expect(results.length).toBe(1)
+  })
+
+  test("toJSON and fromJSON round-trips", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS())
+    store.add(makeCS({ calleeName: "other" }))
+    const json = store.toJSON()
+    const store2 = new CallSiteStore()
+    store2.fromJSON(json)
+    expect(store2.size).toBe(2)
+  })
+
+  test("clears all call sites", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS())
+    store.clear()
+    expect(store.size).toBe(0)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Hashing Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("Hashing", () => {
+  test("hashString produces 64-char hex string", () => {
+    const h = hashString("hello world")
+    expect(h.length).toBe(64)
+  })
+
+  test("hashString is deterministic", () => {
+    expect(hashString("abc")).toBe(hashString("abc"))
+  })
+
+  test("different inputs produce different hashes", () => {
+    expect(hashString("abc")).not.toBe(hashString("def"))
+  })
+
+  test("hashesEqual returns false for different hashes", () => {
+    expect(hashesEqual("aaa", "aaa")).toBe(true)
+    expect(hashesEqual("aaa", "bbb")).toBe(false)
+    expect(hashesEqual(undefined, "aaa")).toBe(false)
+  })
+
+  test("signatureChanged detects changes", () => {
+    expect(signatureChanged("aaa", "aaa")).toBe(false)
+    expect(signatureChanged("aaa", "bbb")).toBe(true)
+    expect(signatureChanged(undefined, "aaa")).toBe(true)
+  })
+
+  test("buildSignatureSource formats correctly", () => {
+    const src = buildSignatureSource(
+      "myFunc",
+      [{ name: "x", type: "number" }, { name: "y", type: "string", optional: true }],
+      "boolean",
+    )
+    expect(src).toBe("myFunc(x:number,y:string?):boolean")
+  })
+
+  test("computeEntityHashes returns both hashes", () => {
+    const hashes = computeEntityHashes({
+      name: "test",
+      body: "function test() {}",
+      signatureSource: "test()",
+    })
+    expect(hashes.signatureHash.length).toBe(64)
+    expect(hashes.contentHash.length).toBe(64)
+    expect(hashes.signatureHash).not.toBe(hashes.contentHash)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ImpactAnalyzer Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("ImpactAnalyzer", () => {
+  function buildImpactGraph(): { graph: CodeGraph; callSites: CallSiteStore } {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+
+    g.addNode(makeNode({ id: "symbol:function:target", name: "target", symbolType: "function", filePath: "src/target.ts", startLine: 10 }))
+    g.addNode(makeNode({ id: "symbol:function:caller1", name: "caller1", symbolType: "function", filePath: "src/caller1.ts", startLine: 5 }))
+    g.addNode(makeNode({ id: "symbol:function:caller2", name: "caller2", symbolType: "function", filePath: "src/caller2.ts", startLine: 15 }))
+    g.addNode(makeNode({ id: "symbol:function:test_target", name: "test_target", symbolType: "function", filePath: "src/__tests__/target.test.ts", startLine: 1 }))
+    g.addNode(makeNode({ id: "symbol:class:MyClass", name: "MyClass", symbolType: "class", filePath: "src/MyClass.ts" }))
+
+    g.addEdge(makeEdge({ sourceId: "symbol:function:caller1", targetId: "symbol:function:target", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:function:caller2", targetId: "symbol:function:target", relation: "calls" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:function:test_target", targetId: "symbol:function:target", relation: "test_covers" }))
+
+    cs.add(createCallSite({
+      callerId: "symbol:function:caller1",
+      calleeName: "target",
+      calleeId: "symbol:function:target",
+      filePath: "src/caller1.ts",
+      startByte: 0,
+      endByte: 20,
+      startToken: 5,
+      endToken: 15,
+      startLine: 5,
+      endLine: 6,
+      argCount: 1,
+      keywordArgs: [],
+    }))
+
+    cs.add(createCallSite({
+      callerId: "symbol:function:caller2",
+      calleeName: "target",
+      calleeId: "symbol:function:target",
+      filePath: "src/caller2.ts",
+      startByte: 0,
+      endByte: 25,
+      startToken: 10,
+      endToken: 20,
+      startLine: 15,
+      endLine: 16,
+      argCount: 2,
+      keywordArgs: ["old_param"],
+    }))
+
+    return { graph: g, callSites: cs }
+  }
+
+  test("analyzeImpact finds direct callers", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_body")
+    expect(result.directCallers.length).toBe(2)
+    expect(result.riskScore).toBeGreaterThan(0)
+  })
+
+  test("analyzeImpact detects signature breaks", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_signature", {
+      paramCount: 3,
+      requiredParamCount: 3,
+      paramNames: ["a", "b", "c"],
+    })
+    expect(result.signatureBreaks.length).toBeGreaterThan(0)
+  })
+
+  test("analyzeImpact assigns higher risk for public API", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+
+    const pubResult = analyzer.analyzeImpact("symbol:function:target", "modify_body")
+
+    const g2 = new CodeGraph()
+    g2.setBidirectional(true)
+    g2.addNode(makeNode({ id: "symbol:function:_private", name: "_private", symbolType: "function", filePath: "src/p.ts" }))
+    const analyzer2 = new ImpactAnalyzer(g2)
+    const privResult = analyzer2.analyzeImpact("symbol:function:_private", "modify_body")
+
+    expect(pubResult.riskScore).toBeGreaterThanOrEqual(privResult.riskScore)
+  })
+
+  test("analyzeImpact includes affected files", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_body")
+    expect(result.affectedFiles.length).toBeGreaterThan(0)
+  })
+
+  test("analyzeImpact finds tests via test_covers edge", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_body")
+    expect(result.affectedTests.length).toBeGreaterThan(0)
+  })
+
+  test("analyzeImpact builds impact chains", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_body")
+    expect(result.impactChains.length).toBeGreaterThan(0)
+    expect(result.impactChains[0]!.depth).toBe(1)
+  })
+
+  test("analyzeImpact delete type has no signature breaks", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "delete")
+    expect(result.signatureBreaks.length).toBe(0)
+  })
+
+  test("formatImpactSummary produces readable output", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_body")
+    const summary = analyzer.formatImpactSummary(result)
+    expect(summary).toContain("Impact Analysis")
+    expect(summary).toContain("Risk Score")
+    expect(summary).toContain("Direct Callers")
+  })
+
+  test("riskScore is bounded 0-1", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const analyzer = new ImpactAnalyzer(graph, callSites)
+    const result = analyzer.analyzeImpact("symbol:function:target", "modify_signature", {
+      paramCount: 5,
+      requiredParamCount: 5,
+      paramNames: ["a", "b", "c", "d", "e"],
+    })
+    expect(result.riskScore).toBeGreaterThanOrEqual(0)
+    expect(result.riskScore).toBeLessThanOrEqual(1)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GraphPersistence Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("GraphPersistence", () => {
+  test("persists and loads graph data", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-persist-"))
+    const p = new GraphPersistence(tmpDir)
+
+    const nodes: CodeGraphNode[] = [makeNode({ id: "symbol:persisted" })]
+    const edges: CodeGraphEdge[] = [makeEdge({ sourceId: "symbol:persisted", targetId: "symbol:target" })]
+    const callSites: CallSite[] = [makeCS()]
+
+    await p.save(nodes, edges, callSites)
+    const loaded = await p.load()
+    expect(loaded).not.toBeNull()
+    expect(loaded!.nodes.length).toBe(1)
+    expect(loaded!.edges.length).toBe(1)
+    expect(loaded!.callSites.length).toBe(1)
+
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("hasPersistedData detects existing data", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-persist-"))
+    const p = new GraphPersistence(tmpDir)
+    expect(await p.hasPersistedData()).toBe(false)
+    await p.save([], [], [])
+    expect(await p.hasPersistedData()).toBe(true)
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("load returns null for non-existent data", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-persist-"))
+    const p = new GraphPersistence(tmpDir)
+    const result = await p.load()
+    expect(result).toBeNull()
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IncrementalParser Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("IncrementalParser", () => {
+  test("processEdit delete removes entities and call sites", async () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+
+    g.addNode(makeNode({ id: "symbol:toDelete", filePath: "delete.ts" }))
+    cs.add(makeCS({ callerId: "symbol:toDelete", filePath: "delete.ts" }))
+
+    const result = await parser.processEdit({
+      filePath: "delete.ts",
+      editType: "delete",
+    })
+
+    expect(result.removedEntityIds.length).toBeGreaterThan(0)
+    expect(cs.size).toBe(0)
+    expect(parser.isStale("symbol:toDelete")).toBe(true)
+  })
+
+  test("processEdit modify returns empty when file doesn't exist", async () => {
+    const g = new CodeGraph()
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+
+    const result = await parser.processEdit({
+      filePath: "nonexistent.ts",
+      editType: "modify",
+    })
+
+    expect(result.entities.length).toBe(0)
+  })
+
+  test("processEdit delete marks entity as stale", async () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+
+    g.addNode(makeNode({ id: "symbol:gone", filePath: "gone.ts" }))
+
+    const parser = new IncrementalParser(g, cs, ".")
+    await parser.processEdit({ filePath: "gone.ts", editType: "delete" })
+
+    const stale = parser.getStaleEntities()
+    expect(stale.length).toBeGreaterThan(0)
+    expect(stale[0]!.entityId).toBe("symbol:gone")
+  })
+
+  test("getStaleEntities returns empty initially", () => {
+    const g = new CodeGraph()
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+    expect(parser.getStaleEntities().length).toBe(0)
+  })
+
+  test("isStale returns true for stalely marked entity after delete", async () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+
+    g.addNode(makeNode({ id: "symbol:del", filePath: "del.ts" }))
+
+    const parser = new IncrementalParser(g, cs, ".")
+    await parser.processEdit({ filePath: "del.ts", editType: "delete" })
+
+    expect(parser.isStale("symbol:del")).toBe(true)
+  })
+
+  test("clearStale resets all markers", async () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+
+    g.addNode(makeNode({ id: "symbol:clearMe", filePath: "clear.ts" }))
+
+    const parser = new IncrementalParser(g, cs, ".")
+    await parser.processEdit({ filePath: "clear.ts", editType: "delete" })
+    expect(parser.getStaleEntities().length).toBeGreaterThan(0)
+
+    parser.clearStale()
+    expect(parser.getStaleEntities().length).toBe(0)
+  })
+
+  test("hasSignatureChanged detects signature hash difference", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+
+    g.addNode(makeNode({
+      id: "symbol:sig", name: "sig", symbolType: "function",
+      metadata: { signatureHash: hashString("old_sig") },
+    }))
+
+    const parser = new IncrementalParser(g, cs, ".")
+    expect(parser.hasSignatureChanged("symbol:sig", hashString("old_sig"))).toBe(false)
+    expect(parser.hasSignatureChanged("symbol:sig", hashString("new_sig"))).toBe(true)
   })
 })

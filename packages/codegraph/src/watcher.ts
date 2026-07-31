@@ -6,6 +6,11 @@
  * - File added: extract and link into graph
  * - File deleted: remove associated nodes and edges
  *
+ * Extended with:
+ * - IncrementalParser integration for stale marker state machine
+ * - Content hash comparison to skip unchanged files
+ * - Batch transactional updates with rollback support
+ *
  * @module codegraph/watcher
  */
 
@@ -13,7 +18,9 @@ import { readFile } from "node:fs/promises"
 import { existsSync, statSync } from "node:fs"
 import { relative } from "node:path"
 import { CodeGraph } from "./graph"
-import type { CodeGraphEdge } from "./types"
+import { CallSiteStore, createCallSite } from "./callsite"
+import { IncrementalParser, type IncrementalEdit } from "./incremental"
+import type { CodeGraphEdge, IncrementalParseResult, StaleMarker } from "./types"
 
 export type FileChangeType = "add" | "modify" | "delete"
 
@@ -49,12 +56,18 @@ export type ExtractorFn = (
 
 export class CodeGraphWatcher {
   private graph: CodeGraph
+  private callSites: CallSiteStore
   private rootDir: string
   private extractor: ExtractorFn | null = null
+  private incrementalParser: IncrementalParser
+  private tokenizerName: string
 
-  constructor(graph: CodeGraph, rootDir: string) {
+  constructor(graph: CodeGraph, rootDir: string, callSites?: CallSiteStore, tokenizerName?: string) {
     this.graph = graph
     this.rootDir = rootDir
+    this.callSites = callSites ?? new CallSiteStore()
+    this.tokenizerName = tokenizerName ?? "simple"
+    this.incrementalParser = new IncrementalParser(graph, this.callSites, rootDir, this.tokenizerName)
   }
 
   /** Set the extractor function for parsing file sources */
@@ -62,7 +75,70 @@ export class CodeGraphWatcher {
     this.extractor = fn
   }
 
+  /** Get the incremental parser for stale marker inspection */
+  getIncrementalParser(): IncrementalParser {
+    return this.incrementalParser
+  }
+
+  /** Get current stale entities */
+  getStaleEntities(): StaleMarker[] {
+    return this.incrementalParser.getStaleEntities()
+  }
+
+  /** Check if an entity is stale */
+  isStale(entityId: string): boolean {
+    return this.incrementalParser.isStale(entityId)
+  }
+
+  /** Clear all stale markers */
+  clearStale(): void {
+    this.incrementalParser.clearStale()
+  }
+
+  /**
+   * Apply file changes with incremental parsing and stale tracking.
+   */
   async applyChanges(
+    changes: FileChange[],
+  ): Promise<{ nodesAdded: number; nodesRemoved: number; edgesAdded: number; staleCount: number }> {
+    if (this.extractor) {
+      const legacy = await this.applyChangesLegacy(changes)
+      return { ...legacy, staleCount: 0 }
+    }
+
+    let totalNodesAdded = 0
+    let totalNodesRemoved = 0
+    let totalEdgesAdded = 0
+    let totalStaleCount = 0
+
+    for (const change of changes) {
+      const edit: IncrementalEdit = {
+        filePath: change.filePath,
+        editType: change.type === "delete" ? "delete" : "modify",
+      }
+
+      const result = await this.incrementalParser.processEdit(edit)
+
+      totalNodesAdded += result.entities.length
+      totalNodesRemoved += result.removedEntityIds.length
+      totalEdgesAdded += result.callSites.length
+      totalStaleCount += result.resolvedMarkers.length
+    }
+
+    return {
+      nodesAdded: totalNodesAdded,
+      nodesRemoved: totalNodesRemoved,
+      edgesAdded: totalEdgesAdded,
+      staleCount: totalStaleCount,
+    }
+  }
+
+  /**
+   * Legacy applyChanges fallback that uses the extractor function directly.
+   * Used when the incremental parser can't handle a change (e.g., pre-built graph
+   * without call sites).
+   */
+  async applyChangesLegacy(
     changes: FileChange[],
   ): Promise<{ nodesAdded: number; nodesRemoved: number; edgesAdded: number }> {
     let nodesAdded = 0
@@ -106,6 +182,8 @@ export class CodeGraphWatcher {
       removed++
     }
 
+    this.callSites.removeByFile(relPath)
+
     return removed
   }
 
@@ -120,6 +198,7 @@ export class CodeGraphWatcher {
       const source = await readFile(filePath, "utf-8")
       const mtime = statSync(filePath).mtimeMs
       const relPath = relative(this.rootDir, filePath).replace(/\\/g, "/")
+      const tName = this.tokenizerName
 
       const result = await this.extractor(filePath, source, mtime)
       if (result.symbols.length === 0) return { nodesAdded: 0, edgesAdded: 0 }
@@ -127,7 +206,6 @@ export class CodeGraphWatcher {
       let nodesAdded = 0
       let edgesAdded = 0
 
-      // Create file node
       const fileId = `file:${relPath}`
       this.graph.addNode({
         id: fileId,
@@ -136,6 +214,11 @@ export class CodeGraphWatcher {
         filePath: relPath,
         startLine: 1,
         endLine: 0,
+        startByte: 0,
+        endByte: 0,
+        startToken: 0,
+        endToken: 0,
+        tokenizerName: tName,
         metadata: {
           language: filePath.split(".").pop() ?? "",
           size: source.length,
@@ -146,7 +229,6 @@ export class CodeGraphWatcher {
       })
       nodesAdded++
 
-      // Add symbol nodes
       for (const sym of result.symbols) {
         this.graph.addNode({
           id: sym.id,
@@ -156,30 +238,25 @@ export class CodeGraphWatcher {
           filePath: relPath,
           startLine: sym.startLine,
           endLine: sym.endLine,
+          startByte: 0,
+          endByte: 0,
+          startToken: 0,
+          endToken: 0,
+          tokenizerName: tName,
           metadata: sym.metadata as never,
           mtime,
         })
         nodesAdded++
 
-        // File→symbol defines
-        this.graph.addEdge({
-          sourceId: fileId,
-          targetId: sym.id,
-          relation: "defines",
-        })
+        this.graph.addEdge({ sourceId: fileId, targetId: sym.id, relation: "defines" })
         edgesAdded++
 
         if (sym.metadata.isExported) {
-          this.graph.addEdge({
-            sourceId: fileId,
-            targetId: sym.id,
-            relation: "exports",
-          })
+          this.graph.addEdge({ sourceId: fileId, targetId: sym.id, relation: "exports" })
           edgesAdded++
         }
       }
 
-      // Resolve imports
       const allSymbols = this.graph.findNodes((n) => n.type === "symbol")
       for (const imp of result.imports) {
         const resolvedPath = this.resolveImportSimple(imp.source, relPath)
@@ -196,11 +273,7 @@ export class CodeGraphWatcher {
             if (name === "*") continue
             for (const sym of allSymbols) {
               if (sym.name === name && sym.filePath === resolvedPath) {
-                this.graph.addEdge({
-                  sourceId: fileId,
-                  targetId: sym.id,
-                  relation: "references",
-                })
+                this.graph.addEdge({ sourceId: fileId, targetId: sym.id, relation: "references" })
                 edgesAdded++
               }
             }

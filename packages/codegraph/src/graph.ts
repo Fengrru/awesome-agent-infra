@@ -4,6 +4,10 @@
  * Stores symbols, files, and modules as nodes with typed edges.
  * Fast adjacency lookups, subgraph extraction, serialization for persistence.
  *
+ * Extended with bidirectional edge management (auto-generating reverse
+ * edges for calls→called_by, overrides→overridden_by) and impact-aware
+ * query methods (getCallersOf, getOverriddenBy, getTypeUsersOf, etc.).
+ *
  * @module codegraph/graph
  */
 
@@ -16,6 +20,7 @@ import type {
   BuildEvent,
   BuildObserver,
 } from "./types"
+import { REVERSE_RELATIONS } from "./types"
 
 const NODE_ID_SEPARATOR = ":"
 const EDGE_KEY_SEPARATOR = "->"
@@ -31,6 +36,19 @@ export class CodeGraph {
   private _incoming = new Map<string, Map<EdgeRelation, Set<string>>>()
   private _edges = new Map<string, CodeGraphEdge>()
   private _observers: BuildObserver[] = []
+  /** When true, adding an edge also creates the reverse edge automatically */
+  private _bidirectional = false
+
+  // ── Configuration ─────────────────────────────────────────────────────
+
+  /** Enable/disable automatic bidirectional edge creation */
+  setBidirectional(enabled: boolean): void {
+    this._bidirectional = enabled
+  }
+
+  get bidirectional(): boolean {
+    return this._bidirectional
+  }
 
   // ── Observers ─────────────────────────────────────────────────────────
 
@@ -102,6 +120,28 @@ export class CodeGraph {
     this._nodes.delete(nodeId)
   }
 
+  /**
+   * Remove all nodes belonging to a file path.
+   * Used by incremental updates before re-adding fresh entities.
+   * Returns array of removed entity IDs for stale marker tracking.
+   */
+  removeFileNodes(filePath: string): string[] {
+    const removedIds: string[] = []
+    const nodeIds = this._fileIndex.get(filePath)
+    if (nodeIds) {
+      for (const id of Array.from(nodeIds)) {
+        this.removeNode(id)
+        removedIds.push(id)
+      }
+    }
+    const fileId = `file:${filePath}`
+    if (this._nodes.has(fileId)) {
+      this.removeNode(fileId)
+      removedIds.push(fileId)
+    }
+    return removedIds
+  }
+
   private removeFromIncoming(targetId: string, sourceId: string): void {
     const incoming = this._incoming.get(targetId)
     if (!incoming) return
@@ -116,6 +156,10 @@ export class CodeGraph {
 
   // ── Edge Operations ───────────────────────────────────────────────────
 
+  /**
+   * Add an edge. When bidirectional mode is enabled, also adds
+   * the reverse edge (e.g., calls → called_by, overrides → overridden_by).
+   */
   addEdge(edge: CodeGraphEdge): void {
     const key = edgeKey(edge.sourceId, edge.relation, edge.targetId)
     if (this._edges.has(key)) return
@@ -134,6 +178,36 @@ export class CodeGraph {
     const inRelMap = this._incoming.get(edge.targetId)!
     if (!inRelMap.has(edge.relation)) inRelMap.set(edge.relation, new Set())
     inRelMap.get(edge.relation)!.add(edge.sourceId)
+
+    if (this._bidirectional) {
+      const reverseStr = REVERSE_RELATIONS[edge.relation]
+      if (reverseStr) {
+        const reverse = reverseStr as EdgeRelation
+        const reverseKey = edgeKey(edge.targetId, reverse, edge.sourceId)
+        if (!this._edges.has(reverseKey)) {
+          const reverseEdge: CodeGraphEdge = {
+            sourceId: edge.targetId,
+            targetId: edge.sourceId,
+            relation: reverse,
+            weight: edge.weight,
+            sourceLoc: edge.sourceLoc,
+          }
+          this._edges.set(reverseKey, reverseEdge)
+          if (!this._outgoing.has(reverseEdge.sourceId)) {
+            this._outgoing.set(reverseEdge.sourceId, new Map())
+          }
+          const revOut = this._outgoing.get(reverseEdge.sourceId)!
+          if (!revOut.has(reverse)) revOut.set(reverse, new Set())
+          revOut.get(reverse)!.add(reverseEdge.targetId)
+          if (!this._incoming.has(reverseEdge.targetId)) {
+            this._incoming.set(reverseEdge.targetId, new Map())
+          }
+          const revIn = this._incoming.get(reverseEdge.targetId)!
+          if (!revIn.has(reverse)) revIn.set(reverse, new Set())
+          revIn.get(reverse)!.add(reverseEdge.sourceId)
+        }
+      }
+    }
   }
 
   getEdges(nodeId?: string, relation?: EdgeRelation): CodeGraphEdge[] {
@@ -211,6 +285,126 @@ export class CodeGraph {
       }
     }
     return result
+  }
+
+  // ── Impact-Aware Query Methods ────────────────────────────────────────
+
+  /**
+   * Get all direct callers of a given entity.
+   * Uses the "called_by" relation (auto-generated from "calls" edges).
+   */
+  getCallersOf(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "called_by")
+  }
+
+  /**
+   * Get all direct callees of a given entity.
+   * Uses the "calls" relation.
+   */
+  getCalleesOf(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "calls")
+  }
+
+  /**
+   * Get entities that override this method.
+   * Uses "overridden_by" relation (auto-generated from "overrides").
+   */
+  getOverriddenBy(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "overridden_by")
+  }
+
+  /**
+   * Get parent entities that this entity overrides.
+   */
+  getOverrides(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "overrides")
+  }
+
+  /**
+   * Get callers at a given depth (transitive).
+   * depth=1 returns direct callers, depth=2 returns callers of callers, etc.
+   */
+  getTransitiveCallers(entityId: string, maxDepth: number = 3): Map<number, CodeGraphNode[]> {
+    const result = new Map<number, CodeGraphNode[]>()
+    const visited = new Set<string>([entityId])
+    const frontier = [entityId]
+
+    for (let depth = 1; depth <= maxDepth && frontier.length > 0; depth++) {
+      const nextFrontier: string[] = []
+      const callersAtDepth: CodeGraphNode[] = []
+
+      for (const currentId of frontier) {
+        for (const caller of this.getCallersOf(currentId)) {
+          if (!visited.has(caller.id)) {
+            visited.add(caller.id)
+            callersAtDepth.push(caller)
+            nextFrontier.push(caller.id)
+          }
+        }
+      }
+
+      if (callersAtDepth.length > 0) {
+        result.set(depth, callersAtDepth)
+      }
+      frontier.length = 0
+      frontier.push(...nextFrontier)
+    }
+
+    return result
+  }
+
+  /**
+   * Get all affected files for an entity, considering direct and
+   * transitive callers.
+   */
+  getAffectedFiles(entityId: string, maxDepth: number = 3): string[] {
+    const files = new Set<string>()
+    const entity = this._nodes.get(entityId)
+    if (entity) files.add(entity.filePath)
+
+    for (const [, callers] of this.getTransitiveCallers(entityId, maxDepth)) {
+      for (const caller of callers) {
+        files.add(caller.filePath)
+      }
+    }
+
+    return Array.from(files)
+  }
+
+  /**
+   * Find symbol entities by name and kind within a file.
+   * Used for entity resolution during impact analysis.
+   */
+  findEntity(name: string, kind: string, filePath?: string): CodeGraphNode | undefined {
+    const candidates = this.findNodes((n) => {
+      if (n.type !== "symbol") return false
+      if (n.name !== name) return false
+      if (kind && n.symbolType !== kind) return false
+      if (filePath && n.filePath !== filePath) return false
+      return true
+    })
+    return candidates[0]
+  }
+
+  /**
+   * Get entities that use a given type (class/interface/enum).
+   */
+  getTypeUsersOf(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "type_uses")
+  }
+
+  /**
+   * Get data flow consumers for a variable entity.
+   */
+  getDataFlowConsumers(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "data_flow")
+  }
+
+  /**
+   * Get test entities that cover a given entity.
+   */
+  getTestsFor(entityId: string): CodeGraphNode[] {
+    return this.getOutgoing(entityId, "test_covers")
   }
 
   /** K-hop ego subgraph extraction via BFS */
@@ -308,8 +502,11 @@ export class CodeGraph {
 
   fromJSON(data: { nodes: CodeGraphNode[]; edges: CodeGraphEdge[] }): void {
     this.clear()
+    const prevBidirectional = this._bidirectional
+    this._bidirectional = false
     for (const node of data.nodes) this.addNode(node)
     for (const edge of data.edges) this.addEdge(edge)
+    this._bidirectional = prevBidirectional
   }
 
   clear(): void {
