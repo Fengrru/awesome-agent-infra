@@ -1,16 +1,6 @@
-import { describe, it, expect, beforeEach } from "bun:test"
-import {
-  CycleController,
-  CycleActionType,
-  DEFAULT_CYCLE_CONFIG,
-  clamp,
-} from "../src/index"
-import type {
-  ICheckpointWriter,
-  ConversationMessage,
-  CycleCallbacks,
-  CycleAction,
-} from "../src/types"
+import { beforeEach, describe, expect, it } from "bun:test"
+import { CycleActionType, CycleController, DEFAULT_CYCLE_CONFIG, clamp } from "../src/index"
+import type { ConversationMessage, CycleAction, CycleCallbacks, ICheckpointWriter } from "../src/types"
 
 function makeHistory(n: number): ConversationMessage[] {
   return Array.from({ length: n }, (_, i) => ({
@@ -37,8 +27,8 @@ describe("CycleController", () => {
   it("creates with default config", () => {
     const snap = controller.getSnapshot()
     expect(snap.config.tokenBudget).toBe(128_000)
-    expect(snap.config.checkpointThresholds).toEqual([0.20, 0.45, 0.70])
-    expect(snap.config.rebuildThreshold).toBe(0.90)
+    expect(snap.config.checkpointThresholds).toEqual([0.2, 0.45, 0.7])
+    expect(snap.config.rebuildThreshold).toBe(0.9)
     expect(snap.cycleIndex).toBe(0)
     expect(snap.rebuildCount).toBe(0)
   })
@@ -53,7 +43,7 @@ describe("CycleController", () => {
     const usage = Math.ceil(128_000 * 0.22)
     const action = controller.evaluate(usage, 128_000, "s1", makeHistory(10))
     expect(action.type).toBe(CycleActionType.CHECKPOINT)
-    expect(action.threshold).toBe(0.20)
+    expect(action.threshold).toBe(0.2)
   })
 
   it("does NOT trigger same checkpoint threshold twice", async () => {
@@ -62,11 +52,11 @@ describe("CycleController", () => {
     const action1 = controller.evaluate(usage1, 128_000, "s1", makeHistory(10))
     await controller.executeCheckpoint("s1", makeHistory(10), action1)
     const state = controller.getSnapshot()
-    expect(state.triggeredThresholds).toContain(0.20)
+    expect(state.triggeredThresholds).toContain(0.2)
 
     controller.advanceStep(5)
     // Increase usage past the next threshold (0.45)
-    const usage2 = Math.ceil(128_000 * 0.50)
+    const usage2 = Math.ceil(128_000 * 0.5)
     const action2 = controller.evaluate(usage2, 128_000, "s1", makeHistory(10))
     expect(action2.type).toBe(CycleActionType.CHECKPOINT)
     expect(action2.threshold).toBe(0.45)
@@ -98,7 +88,7 @@ describe("CycleController", () => {
     c.advanceStep(10)
     const usage1 = Math.ceil(100_000 * 0.25)
     c.evaluate(usage1, 100_000, "s1", makeHistory(10))
-    const usage2 = Math.ceil(100_000 * 0.50)
+    const usage2 = Math.ceil(100_000 * 0.5)
     c.evaluate(usage2, 100_000, "s1", makeHistory(10))
 
     const snap = c.getSnapshot()
@@ -135,7 +125,7 @@ describe("CycleController", () => {
     const c = new CycleController()
     const action: CycleAction = {
       type: CycleActionType.REBUILD,
-      threshold: 0.90,
+      threshold: 0.9,
       reason: "test rebuild",
     }
     await c.executeRebuild("s1", action)
@@ -149,14 +139,20 @@ describe("CycleController", () => {
   it("executeRebuild invokes callbacks", async () => {
     const calls: string[] = []
     const callbacks: CycleCallbacks = {
-      onCompactingStart: async () => { calls.push("start") },
-      onRebuild: async () => { calls.push("rebuild") },
-      onCompactingEnd: async () => { calls.push("end") },
+      onCompactingStart: async () => {
+        calls.push("start")
+      },
+      onRebuild: async () => {
+        calls.push("rebuild")
+      },
+      onCompactingEnd: async () => {
+        calls.push("end")
+      },
     }
     const c = new CycleController({ callbacks })
     const action: CycleAction = {
       type: CycleActionType.REBUILD,
-      threshold: 0.90,
+      threshold: 0.9,
     }
     await c.executeRebuild("s1", action)
     expect(calls).toEqual(["start", "rebuild", "end"])
@@ -195,7 +191,7 @@ describe("CycleController", () => {
     const usage = Math.ceil(200_000 * 0.22)
     const action = c.evaluate(usage, 200_000, "s1", makeHistory(10))
     expect(action.type).toBe(CycleActionType.CHECKPOINT)
-    expect(action.threshold).toBe(0.20)
+    expect(action.threshold).toBe(0.2)
   })
 
   it("reset clears all state", () => {

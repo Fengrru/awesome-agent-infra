@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test"
 import {
-  HallucinationDetector,
-  SpectralHallucinationDetector,
   DEFAULT_DETECTOR_CONFIG,
   type FactClaim,
+  HallucinationDetector,
   type HallucinationReport,
+  SpectralHallucinationDetector,
 } from "../src/index"
 
 describe("HallucinationDetector", () => {
@@ -30,9 +30,7 @@ describe("HallucinationDetector", () => {
   describe("extractClaims", () => {
     test("extracts claims with numbers", () => {
       const detector = new HallucinationDetector()
-      const claims = detector.extractClaims(
-        "The population is 8 billion in 2024.",
-      )
+      const claims = detector.extractClaims("The population is 8 billion in 2024.")
       expect(claims.length).toBeGreaterThan(0)
       expect(claims[0].text).toContain("8 billion")
     })
@@ -46,18 +44,14 @@ describe("HallucinationDetector", () => {
 
     test("extracts claims with dates", () => {
       const detector = new HallucinationDetector()
-      const claims = detector.extractClaims(
-        "The event occurred on 01/15/2023.",
-      )
+      const claims = detector.extractClaims("The event occurred on 01/15/2023.")
       expect(claims.length).toBeGreaterThan(0)
       expect(claims[0].confidence).toBeGreaterThan(0.3)
     })
 
     test("extracts claims with named entities", () => {
       const detector = new HallucinationDetector()
-      const claims = detector.extractClaims(
-        "Microsoft released Windows 11.",
-      )
+      const claims = detector.extractClaims("Microsoft released Windows 11.")
       expect(claims.length).toBeGreaterThan(0)
     })
 
@@ -70,12 +64,8 @@ describe("HallucinationDetector", () => {
     test("assigns higher confidence to claims with multiple signals", () => {
       const detector = new HallucinationDetector()
       const claims1 = detector.extractClaims("The sun is a star.")
-      const claims2 = detector.extractClaims(
-        "Microsoft earned 10 billion dollars in 2023.",
-      )
-      expect(claims2[0].confidence).toBeGreaterThan(
-        claims1[0].confidence,
-      )
+      const claims2 = detector.extractClaims("Microsoft earned 10 billion dollars in 2023.")
+      expect(claims2[0].confidence).toBeGreaterThan(claims1[0].confidence)
     })
 
     test("handles empty text", () => {
@@ -92,10 +82,7 @@ describe("HallucinationDetector", () => {
 
     test("assigns source to claims", () => {
       const detector = new HallucinationDetector()
-      const claims = detector.extractClaims(
-        "Earth is round.",
-        "wikipedia",
-      )
+      const claims = detector.extractClaims("Earth is round.", "wikipedia")
       expect(claims[0].source).toBe("wikipedia")
     })
 
@@ -107,9 +94,7 @@ describe("HallucinationDetector", () => {
 
     test("includes startIndex and endIndex", () => {
       const detector = new HallucinationDetector()
-      const claims = detector.extractClaims(
-        "Earth is round. Mars is red.",
-      )
+      const claims = detector.extractClaims("Earth is round. Mars is red.")
       expect(claims.length).toBe(2)
       expect(claims[0].startIndex).toBe(0)
       expect(claims[0].endIndex).toBe(15)
@@ -118,9 +103,7 @@ describe("HallucinationDetector", () => {
 
     test("multiple sentences produce multiple claims", () => {
       const detector = new HallucinationDetector()
-      const claims = detector.extractClaims(
-        "Cats are mammals. Dogs are mammals. Birds are dinosaurs.",
-      )
+      const claims = detector.extractClaims("Cats are mammals. Dogs are mammals. Birds are dinosaurs.")
       expect(claims.length).toBe(3)
     })
   })
@@ -128,37 +111,25 @@ describe("HallucinationDetector", () => {
   describe("computeSimilarity", () => {
     test("identical texts have max similarity", () => {
       const detector = new HallucinationDetector()
-      const sim = detector.computeSimilarity(
-        "The cat sat on the mat.",
-        "The cat sat on the mat.",
-      )
+      const sim = detector.computeSimilarity("The cat sat on the mat.", "The cat sat on the mat.")
       expect(sim).toBeGreaterThan(0.9)
     })
 
     test("similar texts have high similarity", () => {
       const detector = new HallucinationDetector()
-      const sim = detector.computeSimilarity(
-        "The cat sat on the mat.",
-        "A cat was sitting on the mat.",
-      )
+      const sim = detector.computeSimilarity("The cat sat on the mat.", "A cat was sitting on the mat.")
       expect(sim).toBeGreaterThan(0.25)
     })
 
     test("different texts have low similarity", () => {
       const detector = new HallucinationDetector()
-      const sim = detector.computeSimilarity(
-        "The cat sat on the mat.",
-        "Quantum physics explores subatomic particles.",
-      )
+      const sim = detector.computeSimilarity("The cat sat on the mat.", "Quantum physics explores subatomic particles.")
       expect(sim).toBeLessThan(0.5)
     })
 
     test("completely disjoint texts have near-zero similarity", () => {
       const detector = new HallucinationDetector()
-      const sim = detector.computeSimilarity(
-        "apple banana orange",
-        "quantum physics relativity",
-      )
+      const sim = detector.computeSimilarity("apple banana orange", "quantum physics relativity")
       expect(sim).toBeLessThan(0.3)
     })
 
@@ -174,9 +145,7 @@ describe("HallucinationDetector", () => {
       const detector = new HallucinationDetector({
         similarityThreshold: 0.25,
       })
-      const claims = detector.extractClaims(
-        "Cats are pets. Cats are animals kept as companions.",
-      )
+      const claims = detector.extractClaims("Cats are pets. Cats are animals kept as companions.")
       const result = detector.checkSelfConsistency(claims)
       expect(result.rate).toBeGreaterThan(0)
       expect(result.consistent.length).toBeGreaterThan(0)
@@ -196,9 +165,7 @@ describe("HallucinationDetector", () => {
         similarityThreshold: 0.2,
       })
       const claims = detector.extractClaims("Cats are mammals.")
-      const result = detector.checkSelfConsistency(claims, [
-        "Cats are warm-blooded animals.",
-      ])
+      const result = detector.checkSelfConsistency(claims, ["Cats are warm-blooded animals."])
       expect(result.rate).toBeGreaterThan(0)
     })
 
@@ -214,9 +181,7 @@ describe("HallucinationDetector", () => {
       const detector = new HallucinationDetector({
         similarityThreshold: 0.7,
       })
-      const claims = detector.extractClaims(
-        "The moon is made of green cheese.",
-      )
+      const claims = detector.extractClaims("The moon is made of green cheese.")
       const result = detector.checkSelfConsistency(claims)
       expect(result.inconsistent.length).toBe(1)
     })
@@ -225,9 +190,7 @@ describe("HallucinationDetector", () => {
   describe("detect", () => {
     test("returns report with claims and clusters", () => {
       const detector = new HallucinationDetector()
-      const report = detector.detect(
-        "Cats are mammals. Dogs are mammals. The sun is hot.",
-      )
+      const report = detector.detect("Cats are mammals. Dogs are mammals. The sun is hot.")
       expect(report.claims.length).toBeGreaterThan(0)
       expect(report.clusters.length).toBeGreaterThan(0)
       expect(report.overallScore).toBeGreaterThan(0)
@@ -246,14 +209,9 @@ describe("HallucinationDetector", () => {
       const detector = new HallucinationDetector({
         hallucinationThreshold: 0.6,
       })
-      const report = detector.detect(
-        "The moon is made of green cheese and was created by aliens.",
-        {
-          referenceFacts: [
-            "The moon is a natural satellite of Earth formed from debris after a giant impact.",
-          ],
-        },
-      )
+      const report = detector.detect("The moon is made of green cheese and was created by aliens.", {
+        referenceFacts: ["The moon is a natural satellite of Earth formed from debris after a giant impact."],
+      })
       expect(report.claims.length).toBeGreaterThan(0)
     })
 
@@ -261,34 +219,18 @@ describe("HallucinationDetector", () => {
       const detector = new HallucinationDetector({
         hallucinationThreshold: 0.9,
       })
-      const report = detector.detect(
-        "Cats are mammals that can fly.",
-        {
-          knowledgeBase: [
-            "Cats are mammals.",
-            "Cats cannot fly.",
-            "Cats have four legs.",
-          ],
-        },
-      )
+      const report = detector.detect("Cats are mammals that can fly.", {
+        knowledgeBase: ["Cats are mammals.", "Cats cannot fly.", "Cats have four legs."],
+      })
       expect(report.hallucinations.length).toBeGreaterThan(0)
     })
 
     test("well-supported claims have high score", () => {
       const detector = new HallucinationDetector()
-      const report = detector.detect(
-        "The Earth orbits the Sun. Water is H2O.",
-        {
-          referenceFacts: [
-            "The Earth orbits the Sun.",
-            "Water is H2O.",
-          ],
-          knowledgeBase: [
-            "Earth orbits Sun",
-            "Water chemical formula H2O",
-          ],
-        },
-      )
+      const report = detector.detect("The Earth orbits the Sun. Water is H2O.", {
+        referenceFacts: ["The Earth orbits the Sun.", "Water is H2O."],
+        knowledgeBase: ["Earth orbits Sun", "Water chemical formula H2O"],
+      })
       expect(report.overallScore).toBeGreaterThan(0.35)
     })
 
@@ -318,23 +260,14 @@ describe("HallucinationDetector", () => {
   describe("similarity correctness", () => {
     test("jaccard: identical sets have similarity 1", () => {
       const detector = new HallucinationDetector()
-      const sim = detector.computeSimilarity(
-        "hello world",
-        "hello world",
-      )
+      const sim = detector.computeSimilarity("hello world", "hello world")
       expect(sim).toBeGreaterThan(0.9)
     })
 
     test("cosine: orthogonal-like vectors have lower similarity", () => {
       const detector = new HallucinationDetector()
-      const sim1 = detector.computeSimilarity(
-        "cat dog mouse",
-        "cat dog mouse",
-      )
-      const sim2 = detector.computeSimilarity(
-        "cat dog mouse",
-        "run jump swim",
-      )
+      const sim1 = detector.computeSimilarity("cat dog mouse", "cat dog mouse")
+      const sim2 = detector.computeSimilarity("cat dog mouse", "run jump swim")
       expect(sim1).toBeGreaterThan(sim2)
     })
   })
@@ -355,9 +288,7 @@ describe("SpectralHallucinationDetector", () => {
 
   test("detect method works", () => {
     const sdetect = new SpectralHallucinationDetector()
-    const report = sdetect.detect(
-      "Cats are animals. Dogs are animals.",
-    )
+    const report = sdetect.detect("Cats are animals. Dogs are animals.")
     expect(report.claims.length).toBeGreaterThan(0)
   })
 

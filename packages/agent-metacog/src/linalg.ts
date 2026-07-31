@@ -1,6 +1,6 @@
 /**
  * Linear algebra primitives used by the calibrator transformer.
- * @module metacog-calibrator/linalg
+ * @module agent-metacog/linalg
  */
 
 export function matMul(a: number[][], b: number[][]): number[][] {

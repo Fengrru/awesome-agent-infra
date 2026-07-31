@@ -1,11 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  getTracer,
-  resetTracer,
-  withSpan,
-  type Span,
-  type Tracer,
-} from "../src/index"
+import { type Span, type Tracer, getTracer, resetTracer, withSpan } from "../src/index"
 
 describe("tracing", () => {
   // Reset singleton between tests
@@ -51,8 +45,12 @@ describe("tracing", () => {
     let capturedSpan: MockSpan | null = null
 
     class MockSpan implements Span {
-      setAttribute(_key: string, _value: string | number | boolean): Span { return this }
-      addEvent(_name: string, _attributes?: Record<string, string | number | boolean>): Span { return this }
+      setAttribute(_key: string, _value: string | number | boolean): Span {
+        return this
+      }
+      addEvent(_name: string, _attributes?: Record<string, string | number | boolean>): Span {
+        return this
+      }
       recordException(exception: Error): Span {
         spanEvents.push(`exception: ${exception.message}`)
         return this
@@ -100,14 +98,24 @@ describe("tracing", () => {
     let ended = false
 
     class TestSpan implements Span {
-      setAttribute(): Span { return this }
-      addEvent(): Span { return this }
-      recordException(): Span { return this }
-      end(): void { ended = true }
+      setAttribute(): Span {
+        return this
+      }
+      addEvent(): Span {
+        return this
+      }
+      recordException(): Span {
+        return this
+      }
+      end(): void {
+        ended = true
+      }
     }
 
     class TestTracer implements Tracer {
-      startSpan(): Span { return new TestSpan() }
+      startSpan(): Span {
+        return new TestSpan()
+      }
     }
 
     // Test span.end() is called by withSpan

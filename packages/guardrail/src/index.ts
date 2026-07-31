@@ -46,11 +46,11 @@ export class EntropyController {
     this.config = { ...DEFAULT_ENTROPY_CONFIG, ...config }
   }
 
-  enableResearchMode(): void { this.researchMode = true }
+  enableResearchMode(): void {
+    this.researchMode = true
+  }
 
   evaluate(metrics: EntropyMetrics): ControlAction {
-    const reasons: string[] = []
-
     if (metrics.cumulativeTokens > this.config.tokenBudget) {
       return this.act("TERMINATE", "Token budget exceeded")
     }
@@ -68,11 +68,15 @@ export class EntropyController {
     }
 
     if (metrics.consecutiveFailures > this.config.maxConsecutiveFailures) {
-      if (this.researchMode) return this.act("PAUSE", `Consecutive failures: ${metrics.consecutiveFailures} (research mode)`)
+      if (this.researchMode)
+        return this.act("PAUSE", `Consecutive failures: ${metrics.consecutiveFailures} (research mode)`)
       return this.act("DEGRADE", `Consecutive failures: ${metrics.consecutiveFailures}`)
     }
 
-    if (metrics.resultDivergence > this.config.maxResultDivergence && metrics.cumulativeTokens > this.config.tokenBudget * 0.5) {
+    if (
+      metrics.resultDivergence > this.config.maxResultDivergence &&
+      metrics.cumulativeTokens > this.config.tokenBudget * 0.5
+    ) {
       return this.act("PAUSE", `Result divergence: ${metrics.resultDivergence}`)
     }
 
@@ -90,9 +94,15 @@ export class EntropyController {
     return action
   }
 
-  getActionHistory() { return [...this.actionHistory] }
-  reset() { this.actionHistory = [] }
-  updateConfig(config: Partial<EntropyConfig>) { this.config = { ...this.config, ...config } }
+  getActionHistory() {
+    return [...this.actionHistory]
+  }
+  reset() {
+    this.actionHistory = []
+  }
+  updateConfig(config: Partial<EntropyConfig>) {
+    this.config = { ...this.config, ...config }
+  }
 }
 
 /** Risk classification helpers */
@@ -113,4 +123,14 @@ export function isDestructive(level: RiskLevel): boolean {
 
 export function requiresConfirmation(level: RiskLevel): boolean {
   return level >= 2
+}
+
+/**
+ * Create a {@link EntropyController} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link EntropyController}.
+ * @returns A new {@link EntropyController}.
+ */
+export function createEntropyController(...args: ConstructorParameters<typeof EntropyController>): EntropyController {
+  return new EntropyController(...args)
 }

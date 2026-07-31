@@ -28,10 +28,7 @@ export function computeIDF(documents: string[][]): Map<string, number> {
   return idf
 }
 
-export function computeTFIDFVector(
-  tokens: string[],
-  idf: Map<string, number>,
-): Map<string, number> {
+export function computeTFIDFVector(tokens: string[], idf: Map<string, number>): Map<string, number> {
   const tf = new Map<string, number>()
   for (const token of tokens) {
     tf.set(token, (tf.get(token) ?? 0) + 1)
@@ -43,10 +40,7 @@ export function computeTFIDFVector(
   return vec
 }
 
-export function cosineSimilarity(
-  a: Map<string, number>,
-  b: Map<string, number>,
-): number {
+export function cosineSimilarity(a: Map<string, number>, b: Map<string, number>): number {
   let dotProduct = 0
   let normA = 0
   let normB = 0
@@ -61,9 +55,7 @@ export function cosineSimilarity(
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB))
 }
 
-export function buildTFIDFVectors(
-  docs: string[],
-): { vectors: number[][]; terms: string[] } {
+export function buildTFIDFVectors(docs: string[]): { vectors: number[][]; terms: string[] } {
   const tokenizedDocs = docs.map(tokenize)
   const termSet = new Set<string>()
   for (const tokens of tokenizedDocs) {
@@ -83,15 +75,11 @@ export function buildTFIDFVectors(
     for (const token of tokens) {
       tf[token] = (tf[token] || 0) + 1
     }
-    return terms.map((term) =>
-      tokens.length > 0 ? (tf[term] || 0) / tokens.length : 0,
-    )
+    return terms.map((term) => (tokens.length > 0 ? (tf[term] || 0) / tokens.length : 0))
   })
 
   const idf: number[] = terms.map((term) => {
-    const docFreq = tokenizedDocs.filter((tokens) =>
-      tokens.includes(term),
-    ).length
+    const docFreq = tokenizedDocs.filter((tokens) => tokens.includes(term)).length
     return Math.log((1 + N) / (1 + docFreq)) + 1
   })
 

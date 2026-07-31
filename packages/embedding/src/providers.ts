@@ -9,7 +9,7 @@
  * @module embedding/providers
  */
 
-import type { EmbeddingModel, VectorStore, VectorEntry } from "./types"
+import type { EmbeddingModel, VectorEntry, VectorStore } from "./types"
 
 // ─── Provider Interface ─────────────────────────────────────────────────────
 
@@ -111,13 +111,11 @@ export class EmbeddingProviderRegistry {
    * If no priority list is set, returns the first registered provider.
    */
   async getDefault(): Promise<EmbeddingProvider | null> {
-    const ordered = this.priority.length > 0
-      ? this.priority
-      : [...this.providers.keys()]
+    const ordered = this.priority.length > 0 ? this.priority : [...this.providers.keys()]
 
     for (const id of ordered) {
       const provider = this.providers.get(id)
-      if (provider && await provider.healthCheck()) {
+      if (provider && (await provider.healthCheck())) {
         return provider
       }
     }
@@ -202,7 +200,6 @@ export class SimpleEmbeddingProvider implements EmbeddingProvider {
   }
 
   createEmbeddingModel(): EmbeddingModel {
-    const provider = this
     return {
       dimension: 0, // dynamic
       async embed(text: string): Promise<number[]> {
@@ -257,7 +254,9 @@ export class SimpleEmbeddingProvider implements EmbeddingProvider {
 
 function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0
-  let dot = 0, normA = 0, normB = 0
+  let dot = 0
+  let normA = 0
+  let normB = 0
   for (let i = 0; i < a.length; i++) {
     dot += a[i]! * b[i]!
     normA += a[i]! * a[i]!

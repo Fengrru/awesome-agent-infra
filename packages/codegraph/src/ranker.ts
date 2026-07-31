@@ -4,7 +4,7 @@
  * @module codegraph/ranker
  */
 
-import { CodeGraph } from "./graph"
+import type { CodeGraph } from "./graph"
 import type { CodeGraphNode, RankedNode, RankingConfig } from "./types"
 import { DEFAULT_RANKING_CONFIG } from "./types"
 
@@ -82,27 +82,26 @@ export class CodeGraphRanker {
       node,
       pageRank: rank[i]!,
       centrality: this.computeDegreeCentrality(node),
-      compositeScore:
-        (rank[i]! / maxRank) * 0.7 + this.computeDegreeCentrality(node) * 0.3,
+      compositeScore: (rank[i]! / maxRank) * 0.7 + this.computeDegreeCentrality(node) * 0.3,
     }))
 
     results.sort((a, b) => b.compositeScore - a.compositeScore)
     return results
   }
 
-  getTopFiles(n: number = 10): RankedNode[] {
+  getTopFiles(n = 10): RankedNode[] {
     return this.rankAll()
       .filter((r) => r.node.type === "file")
       .slice(0, n)
   }
 
-  getTopSymbols(n: number = 20): RankedNode[] {
+  getTopSymbols(n = 20): RankedNode[] {
     return this.rankAll()
       .filter((r) => r.node.type === "symbol")
       .slice(0, n)
   }
 
-  buildRankingReport(topN: number = 15): string {
+  buildRankingReport(topN = 15): string {
     const ranked = this.rankAll()
     const lines: string[] = [
       "## CodeGraph Ranking Report",

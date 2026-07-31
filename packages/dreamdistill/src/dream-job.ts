@@ -10,20 +10,15 @@
 
 import { access } from "node:fs/promises"
 import type {
-  ProviderAdapter,
-  IProjectMemory,
-  IEventArchiver,
-  MemoryEntry,
   DreamConfig,
-  DreamResult,
   DreamMetrics,
+  DreamResult,
+  IEventArchiver,
+  IProjectMemory,
+  MemoryEntry,
+  ProviderAdapter,
 } from "./types"
-import {
-  DEFAULT_DREAM_CONFIG,
-  clampConfidence,
-  textSimilarity,
-  extractFilePaths,
-} from "./types"
+import { DEFAULT_DREAM_CONFIG, clampConfidence, extractFilePaths, textSimilarity } from "./types"
 
 export class DreamJob {
   readonly config: DreamConfig
@@ -179,16 +174,10 @@ export class DreamJob {
         if (similarity >= threshold) {
           merged = {
             ...merged,
-            content:
-              merged.content.length >= entries[j]!.content.length
-                ? merged.content
-                : entries[j]!.content,
-            verification_count:
-              merged.verification_count + entries[j]!.verification_count,
+            content: merged.content.length >= entries[j]!.content.length ? merged.content : entries[j]!.content,
+            verification_count: merged.verification_count + entries[j]!.verification_count,
             confidence: Math.max(merged.confidence, entries[j]!.confidence),
-            source_sessions: [
-              ...new Set([...merged.source_sessions, ...entries[j]!.source_sessions]),
-            ],
+            source_sessions: [...new Set([...merged.source_sessions, ...entries[j]!.source_sessions])],
           }
           used.add(j)
           mergedCount++
@@ -245,9 +234,7 @@ export class DreamJob {
 
   // ── Phase 3: Compress ─────────────────────────────────────────────────
 
-  private async compressEntries(
-    entries: MemoryEntry[],
-  ): Promise<{ entries: MemoryEntry[]; compressedCount: number }> {
+  private async compressEntries(entries: MemoryEntry[]): Promise<{ entries: MemoryEntry[]; compressedCount: number }> {
     if (!this.provider || !this.config.useLLM) {
       return this.simpleCompress(entries)
     }
@@ -278,9 +265,7 @@ export class DreamJob {
     return { entries: result, compressedCount }
   }
 
-  private async llmCompress(
-    entries: MemoryEntry[],
-  ): Promise<{ entries: MemoryEntry[]; compressedCount: number }> {
+  private async llmCompress(entries: MemoryEntry[]): Promise<{ entries: MemoryEntry[]; compressedCount: number }> {
     const bySection = new Map<string, MemoryEntry[]>()
     for (const entry of entries) {
       const list = bySection.get(entry.section) ?? []
@@ -298,9 +283,7 @@ export class DreamJob {
       }
 
       try {
-        const entriesText = sectionEntries
-          .map((e) => `- [${e.confidence.toFixed(1)}] ${e.content}`)
-          .join("\n")
+        const entriesText = sectionEntries.map((e) => `- [${e.confidence.toFixed(1)}] ${e.content}`).join("\n")
 
         const response = await this.provider!.chat({
           messages: [
@@ -347,15 +330,18 @@ export class DreamJob {
 
   startTimer(): void {
     if (this.timer) return
-    this.timer = setInterval(async () => {
-      try {
-        if (await this.shouldDream()) {
-          await this.dream()
+    this.timer = setInterval(
+      async () => {
+        try {
+          if (await this.shouldDream()) {
+            await this.dream()
+          }
+        } catch (err) {
+          console.error("[DreamJob] Dream cycle failed:", err)
         }
-      } catch (err) {
-        console.error("[DreamJob] Dream cycle failed:", err)
-      }
-    }, 60 * 60 * 1000) // Check every hour
+      },
+      60 * 60 * 1000,
+    ) // Check every hour
   }
 
   stopTimer(): void {
@@ -368,4 +354,14 @@ export class DreamJob {
   getMetrics(): DreamMetrics {
     return { ...this.metrics }
   }
+}
+
+/**
+ * Create a {@link DreamJob} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link DreamJob}.
+ * @returns A new {@link DreamJob}.
+ */
+export function createDreamJob(...args: ConstructorParameters<typeof DreamJob>): DreamJob {
+  return new DreamJob(...args)
 }

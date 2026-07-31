@@ -1,11 +1,5 @@
 import { EnhancedTFIDF } from "./tfidf"
-import type {
-  TFIDFConfig,
-  CodeEmbeddingItem,
-  SearchResult,
-  EmbeddingModel,
-  VectorStore,
-} from "./types"
+import type { CodeEmbeddingItem, EmbeddingModel, SearchResult, TFIDFConfig, VectorStore } from "./types"
 
 export class CodeEmbeddingIndexer {
   private tfidf: EnhancedTFIDF
@@ -13,11 +7,13 @@ export class CodeEmbeddingIndexer {
   private embeddingModel: EmbeddingModel | null
   private vectorStore: VectorStore | null
 
-  constructor(options: {
-    tfidfConfig?: Partial<TFIDFConfig>
-    embeddingModel?: EmbeddingModel
-    vectorStore?: VectorStore
-  } = {}) {
+  constructor(
+    options: {
+      tfidfConfig?: Partial<TFIDFConfig>
+      embeddingModel?: EmbeddingModel
+      vectorStore?: VectorStore
+    } = {},
+  ) {
     this.tfidf = new EnhancedTFIDF(options.tfidfConfig)
     this.embeddingModel = options.embeddingModel ?? null
     this.vectorStore = options.vectorStore ?? null
@@ -56,7 +52,7 @@ export class CodeEmbeddingIndexer {
     }
   }
 
-  searchText(query: string, topK: number = 10): SearchResult[] {
+  searchText(query: string, topK = 10): SearchResult[] {
     return this.tfidf.search(query, topK).map((r) => ({
       id: r.docId,
       score: r.score,
@@ -64,7 +60,7 @@ export class CodeEmbeddingIndexer {
     }))
   }
 
-  async searchVector(query: string, topK: number = 10): Promise<SearchResult[]> {
+  async searchVector(query: string, topK = 10): Promise<SearchResult[]> {
     if (!this.embeddingModel || !this.vectorStore) return []
     const queryVec = await this.embeddingModel.embed(query)
     const entries = await this.vectorStore.query(queryVec, topK)
@@ -82,4 +78,16 @@ export class CodeEmbeddingIndexer {
   getTextVector(id: string): Map<string, number> | null {
     return this.tfidf.getVector(id)
   }
+}
+
+/**
+ * Create a {@link CodeEmbeddingIndexer} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link CodeEmbeddingIndexer}.
+ * @returns A new {@link CodeEmbeddingIndexer}.
+ */
+export function createCodeEmbeddingIndexer(
+  ...args: ConstructorParameters<typeof CodeEmbeddingIndexer>
+): CodeEmbeddingIndexer {
+  return new CodeEmbeddingIndexer(...args)
 }

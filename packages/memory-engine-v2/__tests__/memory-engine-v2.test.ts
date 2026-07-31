@@ -1,27 +1,27 @@
-import { describe, test, expect } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import {
-  MemoryType,
-  MemoryPriority,
-  SleepStage,
-  ConfidenceLevel,
-  createMemoryItem,
-  WorkingMemory,
-  ShortTermMemory,
-  LongTermMemory,
-  EpisodicMemory,
-  SemanticMemory,
-  SleepConsolidation,
-  MetaMemory,
-  AttentionRetrieval,
-  MemoryEngine,
-  DEFAULT_MEMORY_CONFIG,
-  DEFAULT_SLEEP_CONFIG,
-  DEFAULT_META_MEMORY_CONFIG,
-  DEFAULT_ATTENTION_CONFIG,
-  type MemoryItem,
-  type SleepConfig,
-  type MetaMemoryConfig,
   type AttentionConfig,
+  AttentionRetrieval,
+  ConfidenceLevel,
+  DEFAULT_ATTENTION_CONFIG,
+  DEFAULT_MEMORY_CONFIG,
+  DEFAULT_META_MEMORY_CONFIG,
+  DEFAULT_SLEEP_CONFIG,
+  EpisodicMemory,
+  LongTermMemory,
+  MemoryEngine,
+  type MemoryItem,
+  MemoryPriority,
+  MemoryType,
+  MetaMemory,
+  type MetaMemoryConfig,
+  SemanticMemory,
+  ShortTermMemory,
+  type SleepConfig,
+  SleepConsolidation,
+  SleepStage,
+  WorkingMemory,
+  createMemoryItem,
 } from "../src/index"
 
 function makeItem(overrides: Partial<MemoryItem> = {}): MemoryItem {
@@ -510,22 +510,43 @@ describe("SleepConsolidation", () => {
   })
 
   test("slow-wave consolidation transfers high-importance items", () => {
-    const sc = new SleepConsolidation({ consolidationThreshold: 0.5, forgettingThreshold: 0.1, enableForgetting: false })
+    const sc = new SleepConsolidation({
+      consolidationThreshold: 0.5,
+      forgettingThreshold: 0.1,
+      enableForgetting: false,
+    })
     const stored: MemoryItem[] = []
     const items = [
       makeItem({ id: "hi", importance: 0.9, accessCount: 10, confidence: 0.9 }),
       makeItem({ id: "lo", importance: 0.1, accessCount: 0, confidence: 0.1 }),
     ]
-    sc.consolidate(items, [], (item) => stored.push(item), () => {}, () => {})
-    const storedIds = stored.map((i) => i.memoryType === MemoryType.LONG_TERM ? i.id : null).filter(Boolean)
+    sc.consolidate(
+      items,
+      [],
+      (item) => stored.push(item),
+      () => {},
+      () => {},
+    )
+    const storedIds = stored.map((i) => (i.memoryType === MemoryType.LONG_TERM ? i.id : null)).filter(Boolean)
     expect(storedIds.length).toBeGreaterThan(0)
   })
 
   test("REM replay boosts importance probabilistically", () => {
-    const sc = new SleepConsolidation({ enableReplay: true, enableForgetting: false, enableAssociation: false, consolidationThreshold: 1.0 })
+    const sc = new SleepConsolidation({
+      enableReplay: true,
+      enableForgetting: false,
+      enableAssociation: false,
+      consolidationThreshold: 1.0,
+    })
     const updated: Array<{ id: string; updates: Partial<MemoryItem> }> = []
     const items = [makeItem({ id: "boost", importance: 0.5, confidence: 0.5 })]
-    sc.consolidate(items, [], () => {}, () => {}, (id, updates) => updated.push({ id, updates }))
+    sc.consolidate(
+      items,
+      [],
+      () => {},
+      () => {},
+      (id, updates) => updated.push({ id, updates }),
+    )
     expect(sc.getStatistics().enableReplay).toBe(true)
   })
 
@@ -542,7 +563,13 @@ describe("SleepConsolidation", () => {
       makeItem({ id: "weak", importance: 0.1, accessCount: 0, emotionScore: 0 }),
       makeItem({ id: "strong", importance: 0.9, accessCount: 10, emotionScore: 0.5 }),
     ]
-    sc.consolidate(items, [], () => {}, (id) => forgotten.push(id), () => {})
+    sc.consolidate(
+      items,
+      [],
+      () => {},
+      (id) => forgotten.push(id),
+      () => {},
+    )
     expect(forgotten).toContain("weak")
     expect(forgotten).not.toContain("strong")
   })
@@ -551,13 +578,25 @@ describe("SleepConsolidation", () => {
     const sc = new SleepConsolidation({ enableForgetting: false })
     const forgotten: string[] = []
     const items = [makeItem({ id: "weak", importance: 0.05, accessCount: 0, emotionScore: 0 })]
-    sc.consolidate(items, [], () => {}, (id) => forgotten.push(id), () => {})
+    sc.consolidate(
+      items,
+      [],
+      () => {},
+      (id) => forgotten.push(id),
+      () => {},
+    )
     expect(forgotten.length).toBe(0)
   })
 
   test("calcConsolidationScore weights properly", () => {
     const sc = new SleepConsolidation()
-    const item = makeItem({ importance: 0.8, accessCount: 5, emotionScore: 0.7, confidence: 0.9, timestamp: Date.now() - 60000 })
+    const item = makeItem({
+      importance: 0.8,
+      accessCount: 5,
+      emotionScore: 0.7,
+      confidence: 0.9,
+      timestamp: Date.now() - 60000,
+    })
     const score = (sc as any).calcConsolidationScore(item)
     expect(score).toBeGreaterThan(0.3)
     expect(score).toBeLessThanOrEqual(1)
@@ -599,9 +638,17 @@ describe("SleepConsolidation", () => {
       makeItem({ id: "s1", content: "artificial intelligence machine learning" }),
       makeItem({ id: "s2", content: "artificial intelligence machine learning algorithms" }),
     ]
-    sc.consolidate(items, [], (item) => stored.push(item), () => {}, () => {})
+    sc.consolidate(
+      items,
+      [],
+      (item) => stored.push(item),
+      () => {},
+      () => {},
+    )
     expect(stored.length).toBeGreaterThan(0)
-    const assoc = stored.find((i) => i.content && typeof i.content === "object" && (i.content as any).association === true)
+    const assoc = stored.find(
+      (i) => i.content && typeof i.content === "object" && (i.content as any).association === true,
+    )
     expect(assoc).toBeDefined()
   })
 
@@ -615,7 +662,13 @@ describe("SleepConsolidation", () => {
     })
     const stored: MemoryItem[] = []
     const items = [makeItem({ id: "i1", importance: 0.5 })]
-    sc.consolidate(items, [], (item) => stored.push(item), () => {}, () => {})
+    sc.consolidate(
+      items,
+      [],
+      (item) => stored.push(item),
+      () => {},
+      () => {},
+    )
     expect(stored.length).toBe(0)
   })
 
@@ -625,9 +678,20 @@ describe("SleepConsolidation", () => {
   })
 
   test("stage transitions during consolidation", () => {
-    const sc = new SleepConsolidation({ consolidationThreshold: 1.0, enableReplay: false, enableAssociation: false, enableForgetting: false })
+    const sc = new SleepConsolidation({
+      consolidationThreshold: 1.0,
+      enableReplay: false,
+      enableAssociation: false,
+      enableForgetting: false,
+    })
     expect(sc.currentStage).toBe(SleepStage.AWAKE)
-    sc.consolidate([], [], () => {}, () => {}, () => {})
+    sc.consolidate(
+      [],
+      [],
+      () => {},
+      () => {},
+      () => {},
+    )
     expect(sc.currentStage).toBe(SleepStage.AWAKE)
   })
 })
@@ -652,7 +716,11 @@ describe("MetaMemory", () => {
   })
 
   test("makeDecision returns direct_recall for HIGH confidence", () => {
-    const mm = new MetaMemory({ highConfidenceThreshold: 0.8, mediumConfidenceThreshold: 0.5, lowConfidenceThreshold: 0.3 })
+    const mm = new MetaMemory({
+      highConfidenceThreshold: 0.8,
+      mediumConfidenceThreshold: 0.5,
+      lowConfidenceThreshold: 0.3,
+    })
     const decision = mm.makeDecision("test", 0.9, ["direct_recall"])
     expect(decision.action).toBe("direct_recall")
     expect(decision.confidence).toBe(0.9)
@@ -789,7 +857,8 @@ describe("AttentionRetrieval", () => {
     const results = ar.retrieve("test memory weighting", [item], 1)
     expect(results.length).toBe(1)
     const weight = results[0][1]
-    const expectedTotal = weight.importance * 0.25 + weight.recency * 0.25 + weight.relevance * 0.25 + weight.emotion * 0.25
+    const expectedTotal =
+      weight.importance * 0.25 + weight.recency * 0.25 + weight.relevance * 0.25 + weight.emotion * 0.25
     expect(weight.total).toBeCloseTo(expectedTotal)
   })
 
@@ -819,10 +888,10 @@ describe("AttentionRetrieval", () => {
 
   test("default config values", () => {
     const ar = new AttentionRetrieval()
-    expect(ar.config.importanceWeight).toBe(0.30)
-    expect(ar.config.recencyWeight).toBe(0.20)
-    expect(ar.config.relevanceWeight).toBe(0.40)
-    expect(ar.config.emotionWeight).toBe(0.10)
+    expect(ar.config.importanceWeight).toBe(0.3)
+    expect(ar.config.recencyWeight).toBe(0.2)
+    expect(ar.config.relevanceWeight).toBe(0.4)
+    expect(ar.config.emotionWeight).toBe(0.1)
   })
 })
 
@@ -989,9 +1058,9 @@ describe("MemoryEngine", () => {
     const engine = new MemoryEngine()
     const item = engine.addMemory("important knowledge", MemoryType.SHORT_TERM, 0.8)
     expect(engine.consolidate(item.id)).toBe(true)
-    const ltmItem = engine.longTermMemory.getAll().find(
-      (i) => i.metadata && typeof i.metadata === "object" && (i.metadata as any).consolidatedFrom === item.id
-    )
+    const ltmItem = engine.longTermMemory
+      .getAll()
+      .find((i) => i.metadata && typeof i.metadata === "object" && (i.metadata as any).consolidatedFrom === item.id)
     expect(ltmItem).toBeDefined()
   })
 
@@ -1048,7 +1117,12 @@ describe("MemoryEngine", () => {
 
   test("autoConsolidate runs when threshold met", () => {
     const engine = new MemoryEngine({
-      sleep: { ...DEFAULT_SLEEP_CONFIG, autoConsolidateInterval: 3, consolidationThreshold: 0.3, maxConsolidationCycles: 5 },
+      sleep: {
+        ...DEFAULT_SLEEP_CONFIG,
+        autoConsolidateInterval: 3,
+        consolidationThreshold: 0.3,
+        maxConsolidationCycles: 5,
+      },
     })
     for (let i = 0; i < 5; i++) {
       engine.addMemory(`memory for consolidation ${i}`, MemoryType.SHORT_TERM, 0.6)
@@ -1157,10 +1231,10 @@ describe("Default configs", () => {
   })
 
   test("DEFAULT_ATTENTION_CONFIG has expected values", () => {
-    expect(DEFAULT_ATTENTION_CONFIG.importanceWeight).toBe(0.30)
-    expect(DEFAULT_ATTENTION_CONFIG.recencyWeight).toBe(0.20)
-    expect(DEFAULT_ATTENTION_CONFIG.relevanceWeight).toBe(0.40)
-    expect(DEFAULT_ATTENTION_CONFIG.emotionWeight).toBe(0.10)
+    expect(DEFAULT_ATTENTION_CONFIG.importanceWeight).toBe(0.3)
+    expect(DEFAULT_ATTENTION_CONFIG.recencyWeight).toBe(0.2)
+    expect(DEFAULT_ATTENTION_CONFIG.relevanceWeight).toBe(0.4)
+    expect(DEFAULT_ATTENTION_CONFIG.emotionWeight).toBe(0.1)
   })
 })
 

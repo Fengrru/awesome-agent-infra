@@ -1,17 +1,17 @@
 import {
-  clamp,
-  AgentStateMachine,
-  CycleAction,
+  type AgentStateMachine,
+  type ConversationMessage,
+  type CycleAction,
   CycleActionType,
-  CycleCallbacks,
-  CycleConfig,
-  CycleControllerOptions,
-  CycleSnapshot,
-  CycleState,
+  type CycleCallbacks,
+  type CycleConfig,
+  type CycleControllerOptions,
+  type CycleSnapshot,
+  type CycleState,
   DEFAULT_CYCLE_CONFIG,
-  EventBus,
-  ICheckpointWriter,
-  ConversationMessage,
+  type EventBus,
+  type ICheckpointWriter,
+  clamp,
 } from "./types"
 
 const COMPACTING_STATE = "COMPACTING"
@@ -72,8 +72,8 @@ export class CycleController {
   evaluate(
     tokenUsage: number,
     tokenBudget: number,
-    sessionId: string,
-    conversationHistory: ConversationMessage[],
+    _sessionId: string,
+    _conversationHistory: ConversationMessage[],
   ): CycleAction {
     const effectiveBudget = tokenBudget > 0 ? tokenBudget : this.config.tokenBudget
     const ratio = clamp(tokenUsage / effectiveBudget, 0, 1)
@@ -82,15 +82,26 @@ export class CycleController {
       if (this.state.totalCyclesCompleted >= this.config.maxCycles) {
         return { type: CycleActionType.NOOP, reason: "maxCycles reached" }
       }
-      return { type: CycleActionType.REBUILD, threshold: this.config.rebuildThreshold, reason: `token ratio ${ratio.toFixed(3)} >= rebuild threshold ${this.config.rebuildThreshold}` }
+      return {
+        type: CycleActionType.REBUILD,
+        threshold: this.config.rebuildThreshold,
+        reason: `token ratio ${ratio.toFixed(3)} >= rebuild threshold ${this.config.rebuildThreshold}`,
+      }
     }
 
     for (const threshold of this.config.checkpointThresholds) {
       if (ratio >= threshold && !this.state.triggeredThresholds.has(threshold)) {
         if (this.state.stepsSinceLastCheckpoint < this.config.minStepsBetweenCheckpoints) {
-          return { type: CycleActionType.NOOP, reason: `minStepsBetweenCheckpoints not met (${this.state.stepsSinceLastCheckpoint} < ${this.config.minStepsBetweenCheckpoints})` }
+          return {
+            type: CycleActionType.NOOP,
+            reason: `minStepsBetweenCheckpoints not met (${this.state.stepsSinceLastCheckpoint} < ${this.config.minStepsBetweenCheckpoints})`,
+          }
         }
-        return { type: CycleActionType.CHECKPOINT, threshold, reason: `token ratio ${ratio.toFixed(3)} >= threshold ${threshold}` }
+        return {
+          type: CycleActionType.CHECKPOINT,
+          threshold,
+          reason: `token ratio ${ratio.toFixed(3)} >= threshold ${threshold}`,
+        }
       }
     }
 
@@ -123,10 +134,7 @@ export class CycleController {
     return null
   }
 
-  async executeRebuild(
-    sessionId: string,
-    action: CycleAction,
-  ): Promise<void> {
+  async executeRebuild(sessionId: string, action: CycleAction): Promise<void> {
     await this.callbacks.onCompactingStart?.(sessionId, this.state.cycleIndex)
 
     this.state.isCompacting = true
@@ -205,4 +213,14 @@ export class CycleController {
       this.config = { ...DEFAULT_CYCLE_CONFIG, ...snapshot.config }
     }
   }
+}
+
+/**
+ * Create a {@link CycleController} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link CycleController}.
+ * @returns A new {@link CycleController}.
+ */
+export function createCycleController(...args: ConstructorParameters<typeof CycleController>): CycleController {
+  return new CycleController(...args)
 }

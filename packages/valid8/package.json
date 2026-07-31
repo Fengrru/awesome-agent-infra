@@ -13,7 +13,8 @@
   },
   "files": ["dist"],
   "scripts": {
-    "test": "bun test", "build": "tsc",
+    "test": "bun test",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },

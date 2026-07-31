@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process"
-import { writeFile, unlink } from "node:fs/promises"
+import { randomUUID } from "node:crypto"
+import { unlink, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { randomUUID } from "node:crypto"
 
 export interface SandboxConfig {
   timeoutMs: number
@@ -74,14 +74,14 @@ export class MathVerifier {
     if (gsm8kMatch) {
       const cleaned = gsm8kMatch[1].replace(/,/g, "")
       const num = Number(cleaned)
-      if (!isNaN(num)) return num
+      if (!Number.isNaN(num)) return num
     }
 
     const fractionMatch = text.match(/(\d+)\s*\/\s*(\d+)/)
     if (fractionMatch) {
       const num = Number(fractionMatch[1])
       const den = Number(fractionMatch[2])
-      if (den !== 0 && !isNaN(num) && !isNaN(den)) return num / den
+      if (den !== 0 && !Number.isNaN(num) && !Number.isNaN(den)) return num / den
     }
 
     const cleanedText = text.replace(/,/g, "")
@@ -90,7 +90,7 @@ export class MathVerifier {
     if (matches && matches.length > 0) {
       for (let i = matches.length - 1; i >= 0; i--) {
         const num = Number(matches[i])
-        if (!isNaN(num)) return num
+        if (!Number.isNaN(num)) return num
       }
     }
 
@@ -108,9 +108,7 @@ export class MathVerifier {
       method: "numeric",
       answerValue: gen,
       referenceValue: ref,
-      errorMessage: withinTolerance
-        ? ""
-        : `Values differ by ${absDiff} (relative: ${relDiff.toExponential(4)})`,
+      errorMessage: withinTolerance ? "" : `Values differ by ${absDiff} (relative: ${relDiff.toExponential(4)})`,
       metadata: { absDiff, relDiff, tolerance: this.tolerance },
     }
   }
@@ -127,9 +125,7 @@ export class MathVerifier {
     return {
       verified: exactMatch,
       method: "symbolic",
-      errorMessage: exactMatch
-        ? ""
-        : `Symbolic mismatch: "${genExpr}" vs "${refExpr}"`,
+      errorMessage: exactMatch ? "" : `Symbolic mismatch: "${genExpr}" vs "${refExpr}"`,
       metadata: { generatedExpr: genExpr, referenceExpr: refExpr },
     }
   }
@@ -142,12 +138,7 @@ export class MathVerifier {
   }
 
   private static extractExpression(text: string): string {
-    const latexPatterns = [
-      /\$.*?\$/g,
-      /\$\$.*?\$\$/gs,
-      /\\boxed\{(.*?)\}/g,
-      /\\[a-zA-Z]+\{(.*?)\}/g,
-    ]
+    const latexPatterns = [/\$.*?\$/g, /\$\$.*?\$\$/gs, /\\boxed\{(.*?)\}/g, /\\[a-zA-Z]+\{(.*?)\}/g]
 
     for (const pattern of latexPatterns) {
       const match = text.match(pattern)
@@ -184,10 +175,7 @@ export class SecureExecutor {
           if (val !== undefined) env[key] = val
         }
 
-        const child = spawn("node", [
-          `--max-old-space-size=${this.config.memoryLimitMb}`,
-          tempFile,
-        ], {
+        const child = spawn("node", [`--max-old-space-size=${this.config.memoryLimitMb}`, tempFile], {
           env,
           stdio: ["pipe", "pipe", "pipe"],
         })
@@ -274,7 +262,7 @@ export class CodeVerifier {
   timeout: number
   private memoryLimitMb: number
 
-  constructor(timeout: number = 10000, memoryLimitMb: number = 512) {
+  constructor(timeout = 10000, memoryLimitMb = 512) {
     this.timeout = timeout
     this.memoryLimitMb = memoryLimitMb
   }
@@ -312,9 +300,7 @@ export class CodeVerifier {
       return {
         verified: passed,
         method: "code_pass",
-        errorMessage: passed
-          ? ""
-          : `Exit code ${execResult.exitCode}: ${execResult.stderr}`,
+        errorMessage: passed ? "" : `Exit code ${execResult.exitCode}: ${execResult.stderr}`,
         metadata: { exitCode: execResult.exitCode, stderr: execResult.stderr },
       }
     }
@@ -326,9 +312,7 @@ export class CodeVerifier {
       return {
         verified: match,
         method: "code_stdout",
-        errorMessage: match
-          ? ""
-          : `Expected "${expected}", got "${output}"`,
+        errorMessage: match ? "" : `Expected "${expected}", got "${output}"`,
         metadata: { stdout: output, expected },
       }
     }
@@ -338,9 +322,7 @@ export class CodeVerifier {
       return {
         verified: passed,
         method: "code_assert",
-        errorMessage: passed
-          ? ""
-          : execResult.stderr || `Exit code ${execResult.exitCode}`,
+        errorMessage: passed ? "" : execResult.stderr || `Exit code ${execResult.exitCode}`,
         metadata: {
           exitCode: execResult.exitCode,
           stderr: execResult.stderr,
@@ -360,29 +342,23 @@ export class CodeVerifier {
 
 export class LogicVerifier {
   verify(generated: string, reference: string): VerificationResult {
-    const genWords = new Set(
-      generated.toLowerCase().split(/\W+/).filter(Boolean),
-    )
-    const refWords = new Set(
-      reference.toLowerCase().split(/\W+/).filter(Boolean),
-    )
+    const genWords = new Set(generated.toLowerCase().split(/\W+/).filter(Boolean))
+    const refWords = new Set(reference.toLowerCase().split(/\W+/).filter(Boolean))
 
     const intersection = new Set([...genWords].filter((w) => refWords.has(w)))
     const union = new Set([...genWords, ...refWords])
 
     const jaccard = union.size > 0 ? intersection.size / union.size : 0
 
-    const contradictionKeywords =
-      /true/i.test(generated) && /false/i.test(generated)
-    const negationPattern =
-      /(?:not|never|isn't|doesn't|nor|neither)\b.*\b(?:is|has|will|can|must|should)/i.test(generated)
+    const contradictionKeywords = /true/i.test(generated) && /false/i.test(generated)
+    const negationPattern = /(?:not|never|isn't|doesn't|nor|neither)\b.*\b(?:is|has|will|can|must|should)/i.test(
+      generated,
+    )
 
     const hasContradiction = contradictionKeywords || negationPattern
 
-    const hasPremise =
-      /\b(?:if|given|suppose|assume|since|because)\b/i.test(generated)
-    const hasConclusion =
-      /\b(?:therefore|thus|hence|so|consequently|then)\b/i.test(generated)
+    const hasPremise = /\b(?:if|given|suppose|assume|since|because)\b/i.test(generated)
+    const hasConclusion = /\b(?:therefore|thus|hence|so|consequently|then)\b/i.test(generated)
     const hasStructure = hasPremise && hasConclusion
 
     const verified = jaccard >= 0.3 && !hasContradiction
@@ -412,10 +388,7 @@ export class LogicVerifier {
 }
 
 export class VerifierPool {
-  private verifiers: Map<
-    string,
-    (text: string, ref: string) => VerificationResult | Promise<VerificationResult>
-  >
+  private verifiers: Map<string, (text: string, ref: string) => VerificationResult | Promise<VerificationResult>>
 
   constructor() {
     this.verifiers = new Map()
@@ -431,19 +404,12 @@ export class VerifierPool {
 
   registerVerifier(
     taskType: string,
-    verifier: (
-      text: string,
-      ref: string,
-    ) => VerificationResult | Promise<VerificationResult>,
+    verifier: (text: string, ref: string) => VerificationResult | Promise<VerificationResult>,
   ): void {
     this.verifiers.set(taskType, verifier)
   }
 
-  async verify(
-    taskType: string,
-    generated: string,
-    reference: string,
-  ): Promise<VerificationResult> {
+  async verify(taskType: string, generated: string, reference: string): Promise<VerificationResult> {
     const verifier = this.verifiers.get(taskType)
     if (!verifier) {
       return this.fallbackVerify(generated, reference)
@@ -455,18 +421,33 @@ export class VerifierPool {
     return Array.from(this.verifiers.keys())
   }
 
-  private fallbackVerify(
-    generated: string,
-    reference: string,
-  ): VerificationResult {
+  private fallbackVerify(generated: string, reference: string): VerificationResult {
     const match = generated.trim() === reference.trim()
     return {
       verified: match,
       method: "fallback_exact",
-      errorMessage: match
-        ? ""
-        : "Generated text does not match reference",
+      errorMessage: match ? "" : "Generated text does not match reference",
       metadata: {},
     }
   }
+}
+
+/**
+ * Create a {@link SecureExecutor} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link SecureExecutor}.
+ * @returns A new {@link SecureExecutor}.
+ */
+export function createSecureExecutor(...args: ConstructorParameters<typeof SecureExecutor>): SecureExecutor {
+  return new SecureExecutor(...args)
+}
+
+/**
+ * Create a {@link VerifierPool} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link VerifierPool}.
+ * @returns A new {@link VerifierPool}.
+ */
+export function createVerifierPool(...args: ConstructorParameters<typeof VerifierPool>): VerifierPool {
+  return new VerifierPool(...args)
 }

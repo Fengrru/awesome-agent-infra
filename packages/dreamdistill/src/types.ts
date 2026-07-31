@@ -13,13 +13,7 @@ export interface ProviderAdapter {
 }
 
 /** Memory section categories */
-export type MemorySection =
-  | "architecture"
-  | "convention"
-  | "dependency"
-  | "configuration"
-  | "gotcha"
-  | "decision"
+export type MemorySection = "architecture" | "convention" | "dependency" | "configuration" | "gotcha" | "decision"
 
 /** A single memory entry */
 export interface MemoryEntry {
@@ -201,8 +195,7 @@ export function extractFilePaths(text: string): string[] {
   ]
   const paths: string[] = []
   for (const pattern of patterns) {
-    let match: RegExpExecArray | null
-    while ((match = pattern.exec(text)) !== null) {
+    for (const match of text.matchAll(pattern)) {
       paths.push(match[1]!)
     }
   }

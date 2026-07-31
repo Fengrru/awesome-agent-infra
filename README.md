@@ -87,7 +87,6 @@ Zero runtime dependencies. Plug into any framework.
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [metacog-calibrator](./packages/metacog-calibrator) | 3-stream Transformer confidence calibration (ECE + Brier) | `@fengru/metacog-calibrator` |
 | [pomdp-planner](./packages/pomdp-planner) | POMDP LLM planner (particle filter + QMDP + iterative rollout) | `@fengru/pomdp-planner` |
 | [hallucination-detector](./packages/hallucination-detector) | Spectral clustering hallucination detection + self-consistency | `@fengru/hallucination-detector` |
 | [code-sandbox](./packages/code-sandbox) | Secure code execution sandbox with VerifierPool | `@fengru/code-sandbox` |

@@ -21,8 +21,8 @@
  * @module agent-memory/bridge
  */
 
-import { MemoryEngine, MemoryType, generateId, clamp } from "@fengru/memory-engine-v2"
-import type { MemoryItem, MemoryConfig, SleepConfig, MetaMemoryConfig, AttentionConfig } from "@fengru/memory-engine-v2"
+import { MemoryEngine, type MemoryType } from "@fengru/memory-engine-v2"
+import type { AttentionConfig, MemoryConfig, MemoryItem, MetaMemoryConfig, SleepConfig } from "@fengru/memory-engine-v2"
 
 // ── 兼容类型 (re-export from agent-memory) ──────────────────────────────
 
@@ -70,7 +70,7 @@ export interface AssembledContext {
   l3: LongTermMemory[]
   l2: WorkingMemory[]
   l1: TransientMemory[]
-  l3Engine: MemoryItem[]       // raw engine items for debug
+  l3Engine: MemoryItem[] // raw engine items for debug
   totalTokens: number
 }
 
@@ -92,9 +92,13 @@ const DEFAULT_BRIDGE_CONFIG: BridgeConfig = {
 
 function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0
-  let dot = 0, normA = 0, normB = 0
+  let dot = 0
+  let normA = 0
+  let normB = 0
   for (let i = 0; i < a.length; i++) {
-    dot += a[i]! * b[i]!; normA += a[i]! * a[i]!; normB += b[i]! * b[i]!
+    dot += a[i]! * b[i]!
+    normA += a[i]! * a[i]!
+    normB += b[i]! * b[i]!
   }
   if (normA === 0 || normB === 0) return 0
   return dot / (Math.sqrt(normA) * Math.sqrt(normB))
@@ -135,12 +139,16 @@ export class UnifiedMemoryBridge {
   private cacheVectorHash = ""
   private cacheTimestamp = 0
 
-  constructor(config?: Partial<BridgeConfig & {
-    memory: MemoryConfig
-    sleep: SleepConfig
-    meta: MetaMemoryConfig
-    attention: AttentionConfig
-  }>) {
+  constructor(
+    config?: Partial<
+      BridgeConfig & {
+        memory: MemoryConfig
+        sleep: SleepConfig
+        meta: MetaMemoryConfig
+        attention: AttentionConfig
+      }
+    >,
+  ) {
     this.config = { ...DEFAULT_BRIDGE_CONFIG, ...config }
     this.engine = new MemoryEngine({
       memory: config?.memory,
@@ -164,12 +172,7 @@ export class UnifiedMemoryBridge {
   }
 
   /** 强制写入指定层 */
-  addToLayer(
-    content: unknown,
-    layer: MemoryType,
-    importance = 0.5,
-    metadata?: Record<string, unknown>,
-  ): MemoryItem {
+  addToLayer(content: unknown, layer: MemoryType, importance = 0.5, metadata?: Record<string, unknown>): MemoryItem {
     return this.engine.addMemory(content, layer, importance, metadata)
   }
 
@@ -278,7 +281,8 @@ export class UnifiedMemoryBridge {
    */
   calculateRetention(memory: LongTermMemory, now: number = Date.now()): number {
     const tHours = (now - memory.created_at) / 3600000
-    const S = 24; const alpha = 0.3
+    const S = 24
+    const alpha = 0.3
     const beta = 0.5 + memory.importance * 0.5
     const S_eff = S * (1 + alpha * memory.access_count)
     return Math.max(0.05, Math.min(1.0, Math.exp(-tHours / S_eff) * beta))
@@ -287,7 +291,8 @@ export class UnifiedMemoryBridge {
   /** 对引擎的 MemoryItem 计算 Ebbinghaus 衰减 */
   calculateEngineRetention(item: MemoryItem, now: number = Date.now()): number {
     const tHours = (now - item.timestamp) / 3600000
-    const S = 24; const alpha = 0.3
+    const S = 24
+    const alpha = 0.3
     const beta = 0.5 + item.importance * 0.5
     const S_eff = S * (1 + alpha * item.accessCount)
     return Math.max(0.05, Math.min(1.0, Math.exp(-tHours / S_eff) * beta))
@@ -399,8 +404,8 @@ export class UnifiedMemoryBridge {
       last_accessed: item.lastAccessed,
       retention_score: this.calculateEngineRetention(item),
       vector: item.embedding,
-      category: (item.metadata?.category as string),
-      tags: (item.metadata?.tags as string[]),
+      category: item.metadata?.category as string,
+      tags: item.metadata?.tags as string[],
     }))
 
     const context: AssembledContext = {

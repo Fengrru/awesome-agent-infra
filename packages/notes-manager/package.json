@@ -1,7 +1,7 @@
 {
   "name": "@fengru/notes-manager",
   "version": "0.1.0",
-  "description": "Session scratchpad manager for AI agents —?append, read, filter, compact JSONL notes with fs or in-memory fallback",
+  "description": "Session scratchpad manager for AI agents — append, read, filter, compact JSONL notes with fs or in-memory fallback",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

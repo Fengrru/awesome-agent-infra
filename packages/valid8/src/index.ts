@@ -37,10 +37,7 @@ export interface PermissionRuleset {
 }
 
 /** LLM reviewer callback — compares output against original goal */
-export type LLMReviewFn = (
-  output: string,
-  originalGoal: string,
-) => Promise<{ score: number; report: string }>
+export type LLMReviewFn = (output: string, originalGoal: string) => Promise<{ score: number; report: string }>
 
 /** External security scanner callback (e.g. semgrep, bandit wrapper) */
 export type ExternalSecurityScanner = (code: string) => Promise<string[]>
@@ -56,32 +53,47 @@ export interface StructuredError {
 
 const SECURITY_PATTERNS = {
   destructive: [
-    "rm -rf /", "rm -rf ~", "rm -rf .", "dd if=", "mkfs.",
-    ":(){ :|:& };:", "> /dev/sda", "> /dev/hda",
-    "chmod 777 /", "chmod -R 777 /",
+    "rm -rf /",
+    "rm -rf ~",
+    "rm -rf .",
+    "dd if=",
+    "mkfs.",
+    ":(){ :|:& };:",
+    "> /dev/sda",
+    "> /dev/hda",
+    "chmod 777 /",
+    "chmod -R 777 /",
   ],
-  sqlInjection: [
-    "DROP TABLE", "DROP DATABASE", "TRUNCATE TABLE",
-    "'; DROP", "'; DELETE", "1=1", "OR '1'='1'",
-  ],
-  pathTraversal: [
-    "/etc/passwd", "/etc/shadow", "../../../", "....//....//",
-    "%2e%2e%2f", "..\\..\\..\\",
-  ],
+  sqlInjection: ["DROP TABLE", "DROP DATABASE", "TRUNCATE TABLE", "'; DROP", "'; DELETE", "1=1", "OR '1'='1'"],
+  pathTraversal: ["/etc/passwd", "/etc/shadow", "../../../", "....//....//", "%2e%2e%2f", "..\\..\\..\\"],
   codeInjection: [
-    "eval(", "exec(", "system(", "shell_exec(", "passthru(", "popen(",
-    "proc_open(", "assert(", "Function(", "new Function",
-    "process.mainModule", "require('child_process')", "spawn(",
-    "fork(", "subprocess.call(", "os.system(",
+    "eval(",
+    "exec(",
+    "system(",
+    "shell_exec(",
+    "passthru(",
+    "popen(",
+    "proc_open(",
+    "assert(",
+    "Function(",
+    "new Function",
+    "process.mainModule",
+    "require('child_process')",
+    "spawn(",
+    "fork(",
+    "subprocess.call(",
+    "os.system(",
   ],
-  cryptoMining: [
-    "stratum+tcp://", "xmrig", "minerd", "cgminer",
-    "cpuminer", "cryptonight", "nicehash",
-  ],
+  cryptoMining: ["stratum+tcp://", "xmrig", "minerd", "cgminer", "cpuminer", "cryptonight", "nicehash"],
   reverseShell: [
-    "nc -e /bin/sh", "nc -e /bin/bash", "bash -i >&",
-    "python -c 'import socket", "perl -e 'use Socket",
-    "ruby -rsocket", "php -r '$sock=fsockopen", "/dev/tcp/",
+    "nc -e /bin/sh",
+    "nc -e /bin/bash",
+    "bash -i >&",
+    "python -c 'import socket",
+    "perl -e 'use Socket",
+    "ruby -rsocket",
+    "php -r '$sock=fsockopen",
+    "/dev/tcp/",
   ],
 } as const
 
@@ -175,9 +187,7 @@ export class ValidationNetwork {
     const matchedKeywords = goalKeywords.filter((kw) => outputLower.includes(kw))
 
     const outputLengthPenalty = output.length < 20 ? 0.1 : 0
-    const score = goalKeywords.length > 0
-      ? matchedKeywords.length / goalKeywords.length - outputLengthPenalty
-      : 0.5
+    const score = goalKeywords.length > 0 ? matchedKeywords.length / goalKeywords.length - outputLengthPenalty : 0.5
 
     return {
       layer: "semantic",
@@ -192,11 +202,7 @@ export class ValidationNetwork {
    * Runtime validation — extracts structured errors from test/build output.
    * Categorizes: crash, compilation, test_failure, build_error, runtime_error, warning.
    */
-  async runRuntimeValidation(
-    output: string,
-    testOutput?: string,
-    buildOutput?: string,
-  ): Promise<ValidationResult> {
+  async runRuntimeValidation(output: string, testOutput?: string, buildOutput?: string): Promise<ValidationResult> {
     const allOutput = [output, testOutput, buildOutput].filter(Boolean).join("\n")
     const errors = extractStructuredErrors(allOutput)
 
@@ -212,10 +218,7 @@ export class ValidationNetwork {
       runtime_error: 0.6,
       warning: 0.3,
     }
-    const penalty = errors.reduce(
-      (sum, e) => sum + (severityWeights[e.category] ?? 0.5) * 0.1,
-      0,
-    )
+    const penalty = errors.reduce((sum, e) => sum + (severityWeights[e.category] ?? 0.5) * 0.1, 0)
     const score = Math.max(0, 1.0 - penalty)
 
     const byCategory = new Map<string, number>()
@@ -296,9 +299,7 @@ export class ValidationNetwork {
     return {
       layer: "security",
       score,
-      report: found.length > 0
-        ? `Security concerns found: ${found.join(", ")}`
-        : "Security check passed",
+      report: found.length > 0 ? `Security concerns found: ${found.join(", ")}` : "Security check passed",
     }
   }
 
@@ -320,8 +321,12 @@ export class ValidationNetwork {
     return confidence < this.config.threshold && retryCount < this.config.maxRetries
   }
 
-  getThreshold(): number { return this.config.threshold }
-  getMaxRetries(): number { return this.config.maxRetries }
+  getThreshold(): number {
+    return this.config.threshold
+  }
+  getMaxRetries(): number {
+    return this.config.maxRetries
+  }
 }
 
 // ── TypeScript AST Syntax Check ───────────────────────────────────────────
@@ -346,14 +351,14 @@ function tryParseWithTypeScript(code: string, filePath: string): string[] {
 
   // Parse diagnostics
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const diags = (source as unknown as { parseDiagnostics?: Array<{ messageText: unknown; start?: number; length?: number }> }).parseDiagnostics
+  const diags = (
+    source as unknown as { parseDiagnostics?: Array<{ messageText: unknown; start?: number; length?: number }> }
+  ).parseDiagnostics
   if (diags && diags.length > 0) {
     for (const diag of diags) {
       if (diag.start !== undefined && diag.length !== undefined) {
         const snippet = code.slice(diag.start, diag.start + diag.length)
-        issues.push(
-          `Parse error: ${ts.flattenDiagnosticMessageText(diag.messageText as string, "\n")} at "${snippet}"`,
-        )
+        issues.push(`Parse error: ${ts.flattenDiagnosticMessageText(diag.messageText as string, "\n")} at "${snippet}"`)
       } else {
         issues.push(`Parse error: ${ts.flattenDiagnosticMessageText(diag.messageText as string, "\n")}`)
       }
@@ -367,11 +372,7 @@ function tryParseWithTypeScript(code: string, filePath: string): string[] {
   return issues
 }
 
-function walkAST(
-  ts: typeof import("typescript"),
-  node: import("typescript").Node,
-  ctx: WalkContext,
-): void {
+function walkAST(ts: typeof import("typescript"), node: import("typescript").Node, ctx: WalkContext): void {
   // Empty catch blocks
   if (ts.isCatchClause(node)) {
     if (node.block && node.block.statements.length === 0) {
@@ -426,12 +427,13 @@ function walkAST(
 
 function extractStructuredErrors(output: string): StructuredError[] {
   const errors: StructuredError[] = []
-  const outputLower = output.toLowerCase()
 
   // Compilation errors
   const compilationPatterns = [
-    /error\s+TS\d{4}:/gi, /error:\s*(expected|undeclared|cannot find)/gi,
-    /compilation failed/gi, /syntax error/gi,
+    /error\s+TS\d{4}:/gi,
+    /error:\s*(expected|undeclared|cannot find)/gi,
+    /compilation failed/gi,
+    /syntax error/gi,
   ]
   for (const pattern of compilationPatterns) {
     for (const match of output.matchAll(pattern)) {
@@ -442,9 +444,12 @@ function extractStructuredErrors(output: string): StructuredError[] {
 
   // Test failures
   const testPatterns = [
-    /tests?\s+failed/gi, /\bfail\b.*\d+\s+test/gi,
-    /assertion.*failed/gi, /expected.*but got/gi,
-    /assertionerror/gi, /expect\(.*\)\.toBe/gi,
+    /tests?\s+failed/gi,
+    /\bfail\b.*\d+\s+test/gi,
+    /assertion.*failed/gi,
+    /expected.*but got/gi,
+    /assertionerror/gi,
+    /expect\(.*\)\.toBe/gi,
   ]
   for (const pattern of testPatterns) {
     for (const match of output.matchAll(pattern)) {
@@ -455,9 +460,15 @@ function extractStructuredErrors(output: string): StructuredError[] {
 
   // Runtime errors
   const runtimePatterns = [
-    /\btypeerror\b/gi, /\breferenceerror\b/gi, /\brangeerror\b/gi,
-    /\burierror\b/gi, /\bcannot find module\b/gi, /\bmodule not found\b/gi,
-    /\benoent\b/gi, /\beacces\b/gi, /\beaddrinuse\b/gi,
+    /\btypeerror\b/gi,
+    /\breferenceerror\b/gi,
+    /\brangeerror\b/gi,
+    /\burierror\b/gi,
+    /\bcannot find module\b/gi,
+    /\bmodule not found\b/gi,
+    /\benoent\b/gi,
+    /\beacces\b/gi,
+    /\beaddrinuse\b/gi,
   ]
   for (const pattern of runtimePatterns) {
     for (const match of output.matchAll(pattern)) {
@@ -473,8 +484,12 @@ function extractStructuredErrors(output: string): StructuredError[] {
 
   // Crashes
   const crashPatterns = [
-    /\bpanic\b/gi, /\bsegfault\b/gi, /\bsigsegv\b/gi,
-    /\bsigabrt\b/gi, /\bstack overflow\b/gi, /\bout of memory\b/gi,
+    /\bpanic\b/gi,
+    /\bsegfault\b/gi,
+    /\bsigsegv\b/gi,
+    /\bsigabrt\b/gi,
+    /\bstack overflow\b/gi,
+    /\bout of memory\b/gi,
   ]
   for (const pattern of crashPatterns) {
     for (const match of output.matchAll(pattern)) {
@@ -485,8 +500,10 @@ function extractStructuredErrors(output: string): StructuredError[] {
 
   // Build errors
   const buildPatterns = [
-    /\bbuild (failed|error)/gi, /\bbun build.*error/gi,
-    /\bnpm run build.*error/gi, /\bcargo build.*error/gi,
+    /\bbuild (failed|error)/gi,
+    /\bbun build.*error/gi,
+    /\bnpm run build.*error/gi,
+    /\bcargo build.*error/gi,
   ]
   for (const pattern of buildPatterns) {
     for (const match of output.matchAll(pattern)) {
@@ -509,7 +526,7 @@ function extractStructuredErrors(output: string): StructuredError[] {
 
 function extractLineNumber(ctx: string): number | undefined {
   const match = ctx.match(/[:\s](\d+)[:,\s]/)
-  return match ? parseInt(match[1]!, 10) : undefined
+  return match ? Number.parseInt(match[1]!, 10) : undefined
 }
 
 function extractFilePath(ctx: string): string | undefined {
@@ -531,9 +548,12 @@ function spawnAsync(
       timeout,
     })
     let stdout = ""
-    let stderr = ""
-    proc.stdout?.on("data", (d: Buffer) => { stdout += d.toString() })
-    proc.stderr?.on("data", (d: Buffer) => { stderr += d.toString() })
+    proc.stdout?.on("data", (d: Buffer) => {
+      stdout += d.toString()
+    })
+    proc.stderr?.on("data", () => {
+      /* drain stderr so the child process is not blocked */
+    })
     proc.on("close", (code) => {
       resolve({ status: code, stdout })
     })
@@ -592,4 +612,14 @@ export function createDefaultExternalScanner(): ExternalSecurityScanner {
 
     return issues
   }
+}
+
+/**
+ * Create a {@link ValidationNetwork} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link ValidationNetwork}.
+ * @returns A new {@link ValidationNetwork}.
+ */
+export function createValidationNetwork(...args: ConstructorParameters<typeof ValidationNetwork>): ValidationNetwork {
+  return new ValidationNetwork(...args)
 }

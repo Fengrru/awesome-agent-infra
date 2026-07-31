@@ -6,7 +6,7 @@
  * the full generate → validate → execute → fail → replan workflow.
  */
 
-import { describe, test, expect, beforeEach } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 
 // llm-dag-generator
 import { DAGGenerator, LLMDAGGenerator, createLLMDAGGenerator } from "../../llm-dag-generator/src/index"
@@ -14,16 +14,16 @@ import type { Capability } from "../../llm-dag-generator/src/index"
 
 // taskdag
 import {
-  validateDAG,
-  getReadyNodes,
-  markNodeFailed,
-  getTransitiveDependents,
-  replaceSubtree,
-  isComplete,
   allSucceeded,
   estimateDAGCost,
+  getReadyNodes,
+  getTransitiveDependents,
+  isComplete,
+  markNodeFailed,
+  replaceSubtree,
+  validateDAG,
 } from "../src/index"
-import type { DAGNode, DAG } from "../src/index"
+import type { DAG, DAGNode } from "../src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ const SAMPLE_CAPABILITIES: Capability[] = [
     name: "Analyze Code",
     risk_level: 0,
     tags: ["analysis", "code"],
-    success_rate: 0.90,
+    success_rate: 0.9,
     description: "Analyze code structure and patterns",
   },
   {
@@ -65,7 +65,7 @@ const SAMPLE_CAPABILITIES: Capability[] = [
     name: "Deploy Application",
     risk_level: 2,
     tags: ["deployment", "production"],
-    success_rate: 0.80,
+    success_rate: 0.8,
     description: "Deploy application to production environment",
   },
   {
@@ -114,7 +114,10 @@ function createValidLinearDAG(): DAG {
         status: "pending",
       },
     ],
-    edges: [["n1", "n2"], ["n2", "n3"]],
+    edges: [
+      ["n1", "n2"],
+      ["n2", "n3"],
+    ],
     metadata: {
       goal: "read and patch a file",
       strategy: "STAGED",
@@ -170,7 +173,12 @@ function createValidDiamondDAG(): DAG {
         status: "pending",
       },
     ],
-    edges: [["n1", "n2"], ["n1", "n3"], ["n2", "n4"], ["n3", "n4"]],
+    edges: [
+      ["n1", "n2"],
+      ["n1", "n3"],
+      ["n2", "n4"],
+      ["n3", "n4"],
+    ],
     metadata: {
       goal: "deploy after analysis and tests",
       strategy: "STAGED",
@@ -201,7 +209,6 @@ function createReplacementNodes(parentId: string, prefix: string, count: number)
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("Integration: DAGGenerator (llm-dag-generator) × taskdag engine", () => {
-
   let generator: DAGGenerator
 
   beforeEach(() => {
@@ -487,7 +494,6 @@ describe("Integration: DAGGenerator (llm-dag-generator) × taskdag engine", () =
 })
 
 describe("Integration: LLMDAGGenerator with taskdag operations", () => {
-
   test("LLMDAGGenerator without provider produces valid fallback DAG nodes", () => {
     const llmGen = createLLMDAGGenerator()
     const dag = llmGen.generateFallbackDAG("validate user input", SAMPLE_CAPABILITIES)

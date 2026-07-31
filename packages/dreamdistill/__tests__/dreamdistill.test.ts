@@ -3,10 +3,10 @@ import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
-  DreamJob,
-  DistillJob,
-  DEFAULT_DREAM_CONFIG,
   DEFAULT_DISTILL_CONFIG,
+  DEFAULT_DREAM_CONFIG,
+  DistillJob,
+  DreamJob,
   type EventRow,
   type IEventArchiver,
   type IProjectMemory,
@@ -40,9 +40,15 @@ class FakeMemory implements IProjectMemory {
     return entry
   }
 
-  async load(): Promise<void> { this.loadCalls++ }
-  async getAllEntries(): Promise<MemoryEntry[]> { return [...this.entries.values()] }
-  async deleteEntry(id: string): Promise<void> { this.entries.delete(id) }
+  async load(): Promise<void> {
+    this.loadCalls++
+  }
+  async getAllEntries(): Promise<MemoryEntry[]> {
+    return [...this.entries.values()]
+  }
+  async deleteEntry(id: string): Promise<void> {
+    this.entries.delete(id)
+  }
   async upsertEntry(e: {
     section: MemorySection
     content: string
@@ -63,8 +69,12 @@ class FakeMemory implements IProjectMemory {
 }
 
 class FakeArchiver implements IEventArchiver {
-  async queryEvents(): Promise<EventRow[]> { return [] }
-  async getSessionIds(): Promise<string[]> { return [] }
+  async queryEvents(): Promise<EventRow[]> {
+    return []
+  }
+  async getSessionIds(): Promise<string[]> {
+    return []
+  }
 }
 
 class FakeRegistrar implements ISkillRegistrar {
@@ -73,11 +83,17 @@ class FakeRegistrar implements ISkillRegistrar {
   async registerSkill(name: string, _content: string, type: string): Promise<void> {
     this.registered.push({ name, type })
   }
-  hasSkill(name: string): boolean { return this.existing.has(name) }
+  hasSkill(name: string): boolean {
+    return this.existing.has(name)
+  }
 }
 
 function makeProvider(content: string): ProviderAdapter {
-  return { async chat() { return { content } } }
+  return {
+    async chat() {
+      return { content }
+    },
+  }
 }
 
 // ── DreamJob ───────────────────────────────────────────────────────────────
@@ -116,7 +132,11 @@ describe("DreamJob — consolidation phases", () => {
   test("merges similar entries in the same section, keeping the richer one", async () => {
     const memory = new FakeMemory()
     memory.seed("convention", "use bun test for all packages", { verification_count: 2, confidence: 0.6 })
-    memory.seed("convention", "use bun test for all packages here", { verification_count: 3, confidence: 0.9, source_sessions: ["s2"] })
+    memory.seed("convention", "use bun test for all packages here", {
+      verification_count: 3,
+      confidence: 0.9,
+      source_sessions: ["s2"],
+    })
     memory.seed("configuration", "database runs on port 5432", { verification_count: 4 })
 
     const job = new DreamJob()
@@ -206,9 +226,9 @@ describe("DreamJob — consolidation phases", () => {
 
     const job = new DreamJob({ useLLM: true, targetMaxEntries: 5 })
     job.setProjectMemory(memory)
-    job.setProvider(makeProvider(
-      `Consolidated: [{"content": "all topics summarized", "confidence": 0.95, "verification_count": 9}]`,
-    ))
+    job.setProvider(
+      makeProvider(`Consolidated: [{"content": "all topics summarized", "confidence": 0.95, "verification_count": 9}]`),
+    )
 
     const result = await job.dream()
     expect(result.entriesCompressed).toBe(10)
@@ -308,103 +328,128 @@ describe("DistillJob — configuration and triggers", () => {
 
 describe("DistillJob — heuristic path", () => {
   test("placeholder heuristic finds no patterns and respects maxSessionsToAnalyze", async () => {
-    await withTempDistill(async (job) => {
-      const result = await job.distill(["s1", "s2", "s3", "s4", "s5"])
-      expect(result.sessionsAnalyzed).toBe(2)
-      expect(result.patternsFound).toEqual([])
-      expect(result.artifactsGenerated).toEqual([])
-    }, { maxSessionsToAnalyze: 2 })
+    await withTempDistill(
+      async (job) => {
+        const result = await job.distill(["s1", "s2", "s3", "s4", "s5"])
+        expect(result.sessionsAnalyzed).toBe(2)
+        expect(result.patternsFound).toEqual([])
+        expect(result.artifactsGenerated).toEqual([])
+      },
+      { maxSessionsToAnalyze: 2 },
+    )
   })
 })
 
 describe("DistillJob — LLM crystallization", () => {
   test("generates skill/command/agent/sop artifacts based on pattern shape", async () => {
-    await withTempDistill(async (job) => {
-      job.setProvider(makeProvider(LLM_PATTERNS))
-      const result = await job.distill(["s1", "s2", "s3"])
+    await withTempDistill(
+      async (job) => {
+        job.setProvider(makeProvider(LLM_PATTERNS))
+        const result = await job.distill(["s1", "s2", "s3"])
 
-      expect(result.patternsFound.length).toBe(2)
-      const byType = new Map(result.artifactsGenerated.map((a) => [`${a.type}:${a.name}`, a]))
-      // Deploy Flow: 5 steps, freq 8 → all four artifact types
-      expect(byType.has("skill:deploy_flow")).toBe(true)
-      expect(byType.has("command:deploy_flow")).toBe(true)
-      expect(byType.has("agent:deploy_flow")).toBe(true)
-      expect(byType.has("sop:deploy_flow")).toBe(true)
-      // Quick Triage: empty sequence, freq 5 → only a command
-      expect(byType.has("skill:quick_triage")).toBe(false)
-      expect(byType.has("command:quick_triage")).toBe(true)
-      expect(result.artifactsGenerated.length).toBe(5)
-    }, { useLLM: true })
+        expect(result.patternsFound.length).toBe(2)
+        const byType = new Map(result.artifactsGenerated.map((a) => [`${a.type}:${a.name}`, a]))
+        // Deploy Flow: 5 steps, freq 8 → all four artifact types
+        expect(byType.has("skill:deploy_flow")).toBe(true)
+        expect(byType.has("command:deploy_flow")).toBe(true)
+        expect(byType.has("agent:deploy_flow")).toBe(true)
+        expect(byType.has("sop:deploy_flow")).toBe(true)
+        // Quick Triage: empty sequence, freq 5 → only a command
+        expect(byType.has("skill:quick_triage")).toBe(false)
+        expect(byType.has("command:quick_triage")).toBe(true)
+        expect(result.artifactsGenerated.length).toBe(5)
+      },
+      { useLLM: true },
+    )
   })
 
   test("writes artifacts to categorized directories on disk", async () => {
-    await withTempDistill(async (job, outputDir) => {
-      job.setProvider(makeProvider(LLM_PATTERNS))
-      await job.distill(["s1"])
+    await withTempDistill(
+      async (job, outputDir) => {
+        job.setProvider(makeProvider(LLM_PATTERNS))
+        await job.distill(["s1"])
 
-      const skill = await readFile(join(outputDir, "skills", "deploy_flow.md"), "utf-8")
-      expect(skill).toContain("# Deploy Flow")
-      expect(skill).toContain("Observed in 8 sessions.")
+        const skill = await readFile(join(outputDir, "skills", "deploy_flow.md"), "utf-8")
+        expect(skill).toContain("# Deploy Flow")
+        expect(skill).toContain("Observed in 8 sessions.")
 
-      const cmd = await readFile(join(outputDir, "commands", "deploy_flow.ts"), "utf-8")
-      expect(cmd).toContain("#!/usr/bin/env bun")
+        const cmd = await readFile(join(outputDir, "commands", "deploy_flow.ts"), "utf-8")
+        expect(cmd).toContain("#!/usr/bin/env bun")
 
-      const sop = await readFile(join(outputDir, "sop", "deploy_flow.md"), "utf-8")
-      expect(sop).toContain("### Step 1: prep")
-      expect(sop).toContain("**Next**: build")
-    }, { useLLM: true })
+        const sop = await readFile(join(outputDir, "sop", "deploy_flow.md"), "utf-8")
+        expect(sop).toContain("### Step 1: prep")
+        expect(sop).toContain("**Next**: build")
+      },
+      { useLLM: true },
+    )
   })
 
   test("registers new skills through the registrar, skipping existing ones", async () => {
-    await withTempDistill(async (job) => {
-      job.setProvider(makeProvider(LLM_PATTERNS))
-      const registrar = new FakeRegistrar()
-      job.setSkillRegistrar(registrar)
-      await job.distill(["s1"])
-      expect(registrar.registered).toEqual([{ name: "deploy_flow", type: "distilled" }])
+    await withTempDistill(
+      async (job) => {
+        job.setProvider(makeProvider(LLM_PATTERNS))
+        const registrar = new FakeRegistrar()
+        job.setSkillRegistrar(registrar)
+        await job.distill(["s1"])
+        expect(registrar.registered).toEqual([{ name: "deploy_flow", type: "distilled" }])
 
-      const skipping = new FakeRegistrar()
-      skipping.existing.add("deploy_flow")
-      job.setSkillRegistrar(skipping)
-      await job.distill(["s1"])
-      expect(skipping.registered).toEqual([])
-    }, { useLLM: true })
+        const skipping = new FakeRegistrar()
+        skipping.existing.add("deploy_flow")
+        job.setSkillRegistrar(skipping)
+        await job.distill(["s1"])
+        expect(skipping.registered).toEqual([])
+      },
+      { useLLM: true },
+    )
   })
 
   test("malformed pattern fields get safe defaults", async () => {
-    await withTempDistill(async (job) => {
-      job.setProvider(makeProvider(JSON.stringify({
-        patterns: [{ taskSequence: ["only step"], frequency: "not a number" }],
-      })))
-      const result = await job.distill(["s1", "s2"])
+    await withTempDistill(
+      async (job) => {
+        job.setProvider(
+          makeProvider(
+            JSON.stringify({
+              patterns: [{ taskSequence: ["only step"], frequency: "not a number" }],
+            }),
+          ),
+        )
+        const result = await job.distill(["s1", "s2"])
 
-      const pattern = result.patternsFound[0]!
-      expect(pattern.name).toBe("pattern_0")
-      expect(pattern.frequency).toBe(2) // falls back to session count
-      expect(pattern.commonCapabilities).toEqual([])
-      expect(pattern.matchedSessions).toEqual(["s1", "s2"])
-    }, { useLLM: true })
+        const pattern = result.patternsFound[0]!
+        expect(pattern.name).toBe("pattern_0")
+        expect(pattern.frequency).toBe(2) // falls back to session count
+        expect(pattern.commonCapabilities).toEqual([])
+        expect(pattern.matchedSessions).toEqual(["s1", "s2"])
+      },
+      { useLLM: true },
+    )
   })
 
   test("garbage LLM output falls back to heuristic (no patterns)", async () => {
-    await withTempDistill(async (job) => {
-      job.setProvider(makeProvider("not json at all"))
-      const result = await job.distill(["s1"])
-      expect(result.patternsFound).toEqual([])
-    }, { useLLM: true })
+    await withTempDistill(
+      async (job) => {
+        job.setProvider(makeProvider("not json at all"))
+        const result = await job.distill(["s1"])
+        expect(result.patternsFound).toEqual([])
+      },
+      { useLLM: true },
+    )
   })
 
   test("metrics accumulate across distill cycles", async () => {
-    await withTempDistill(async (job) => {
-      job.setProvider(makeProvider(LLM_PATTERNS))
-      expect(job.getMetrics().lastDistillAt).toBeNull()
+    await withTempDistill(
+      async (job) => {
+        job.setProvider(makeProvider(LLM_PATTERNS))
+        expect(job.getMetrics().lastDistillAt).toBeNull()
 
-      await job.distill(["s1"])
-      await job.distill(["s1"])
-      const metrics = job.getMetrics()
-      expect(metrics.totalDistills).toBe(2)
-      expect(metrics.totalPatternsFound).toBe(4)
-      expect(metrics.totalArtifactsGenerated).toBe(10)
-    }, { useLLM: true })
+        await job.distill(["s1"])
+        await job.distill(["s1"])
+        const metrics = job.getMetrics()
+        expect(metrics.totalDistills).toBe(2)
+        expect(metrics.totalPatternsFound).toBe(4)
+        expect(metrics.totalArtifactsGenerated).toBe(10)
+      },
+      { useLLM: true },
+    )
   })
 })

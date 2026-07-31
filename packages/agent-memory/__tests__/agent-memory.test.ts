@@ -1,11 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { MemorySystem } from "../src/index"
-import type {
-  LongTermMemory,
-  CoreRule,
-  WorkingMemory,
-  MemoryDatabase,
-} from "../src/index"
+import type { CoreRule, LongTermMemory, MemoryDatabase, WorkingMemory } from "../src/index"
 
 function createMem(overrides?: Partial<LongTermMemory>): LongTermMemory {
   return {
@@ -226,11 +221,13 @@ describe("MemorySystem", () => {
       token_count: 3,
       importance: 1.0,
     })
-    ms.addLongTermMemory(createMem({
-      memory_id: "large_mem",
-      content: "a".repeat(10000),
-      token_count: 10000,
-    }))
+    ms.addLongTermMemory(
+      createMem({
+        memory_id: "large_mem",
+        content: "a".repeat(10000),
+        token_count: 10000,
+      }),
+    )
     const ctx = ms.assembleContext("test")
     expect(ctx.totalTokens).toBeLessThan(600)
   })
@@ -297,11 +294,13 @@ describe("MemorySystem", () => {
   test("evicts low-retention memories when over capacity", () => {
     const ms = new MemorySystem()
     for (let i = 0; i < 1100; i++) {
-      ms.addLongTermMemory(createMem({
-        memory_id: `mem_evict_${i}`,
-        retention_score: Math.random(),
-        token_count: 1,
-      }))
+      ms.addLongTermMemory(
+        createMem({
+          memory_id: `mem_evict_${i}`,
+          retention_score: Math.random(),
+          token_count: 1,
+        }),
+      )
     }
     expect(ms.getLongTermMemories().length).toBeLessThanOrEqual(700)
   })
@@ -309,12 +308,14 @@ describe("MemorySystem", () => {
   test("preserves user_marked memories during eviction", () => {
     const ms = new MemorySystem()
     for (let i = 0; i < 1050; i++) {
-      ms.addLongTermMemory(createMem({
-        memory_id: `mem_evict2_${i}`,
-        retention_score: Math.random(),
-        token_count: 1,
-        user_marked: false,
-      }))
+      ms.addLongTermMemory(
+        createMem({
+          memory_id: `mem_evict2_${i}`,
+          retention_score: Math.random(),
+          token_count: 1,
+          user_marked: false,
+        }),
+      )
     }
     const important: LongTermMemory = createMem({
       memory_id: "important_mem",
@@ -334,9 +335,7 @@ describe("MemorySystem", () => {
     const ms = new MemorySystem()
     const db: MemoryDatabase = {
       insertMemory: () => {},
-      getMemories: () => [
-        createMem({ memory_id: "db_mem1", content: "from db" }),
-      ],
+      getMemories: () => [createMem({ memory_id: "db_mem1", content: "from db" })],
       searchByTags: () => [],
       markSuccessful: () => {},
       getAgentSelfRules: () => [

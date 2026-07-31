@@ -4,8 +4,8 @@
  * @module codegraph/searcher
  */
 
-import { CodeGraph, flattenSubGraph } from "./graph"
-import type { CodeGraphNode, SubGraph, SearchOptions, SearchResult } from "./types"
+import { type CodeGraph, flattenSubGraph } from "./graph"
+import type { CodeGraphNode, SearchOptions, SearchResult, SubGraph } from "./types"
 
 export class CodeGraphSearcher {
   private graph: CodeGraph
@@ -41,16 +41,12 @@ export class CodeGraphSearcher {
 
   searchByType(symbolType: string, options?: SearchOptions): SearchResult[] {
     const maxResults = options?.maxResults ?? 50
-    const nodes = this.graph.findNodes(
-      (n) => n.type === "symbol" && n.symbolType === symbolType,
-    )
+    const nodes = this.graph.findNodes((n) => n.type === "symbol" && n.symbolType === symbolType)
     return nodes.slice(0, maxResults).map((node) => ({
       node,
       score: 1,
       matchedOn: "type" as const,
-      context: options?.kHop
-        ? this.graph.getEgoGraph(node.id, options.kHop)
-        : undefined,
+      context: options?.kHop ? this.graph.getEgoGraph(node.id, options.kHop) : undefined,
     }))
   }
 
@@ -60,20 +56,16 @@ export class CodeGraphSearcher {
       node,
       score: 1,
       matchedOn: "file" as const,
-      context: options?.kHop
-        ? this.graph.getEgoGraph(node.id, options.kHop)
-        : undefined,
+      context: options?.kHop ? this.graph.getEgoGraph(node.id, options.kHop) : undefined,
     }))
   }
 
-  getEgoGraph(nodeId: string, k: number = 1): SubGraph {
+  getEgoGraph(nodeId: string, k = 1): SubGraph {
     return this.graph.getEgoGraph(nodeId, k)
   }
 
   getFileContext(filePath: string): SubGraph {
-    const fileNodes = this.graph.findNodes(
-      (n) => n.type === "file" && n.filePath === filePath,
-    )
+    const fileNodes = this.graph.findNodes((n) => n.type === "file" && n.filePath === filePath)
     if (fileNodes.length === 0) {
       return { nodes: [], edges: [], estimatedTokens: 0 }
     }
@@ -110,7 +102,7 @@ export class CodeGraphSearcher {
     return sections.join("\n\n")
   }
 
-  buildCompactSummary(results: SearchResult[], maxTokens: number = 2000): string {
+  buildCompactSummary(results: SearchResult[], maxTokens = 2000): string {
     const lines: string[] = ["```codegraph"]
     let estimatedTokens = 0
 
@@ -139,11 +131,7 @@ export class CodeGraphSearcher {
     if (meta.isExported) score += 1
     if (meta.visibility === "public") score += 0.5
 
-    if (
-      node.symbolType === "class" ||
-      node.symbolType === "interface" ||
-      node.symbolType === "type"
-    ) {
+    if (node.symbolType === "class" || node.symbolType === "interface" || node.symbolType === "type") {
       score += 1
     }
 

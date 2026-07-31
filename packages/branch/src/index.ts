@@ -133,3 +133,13 @@ export class BranchManager {
     return this.branches.size
   }
 }
+
+/**
+ * Create a {@link BranchManager} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link BranchManager}.
+ * @returns A new {@link BranchManager}.
+ */
+export function createBranchManager(...args: ConstructorParameters<typeof BranchManager>): BranchManager {
+  return new BranchManager(...args)
+}

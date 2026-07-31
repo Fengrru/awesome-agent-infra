@@ -1,20 +1,20 @@
 import { describe, expect, test } from "bun:test"
 import {
-  StateHasher,
+  type Action,
   ActionRegistry,
+  type BeliefState,
+  DEFAULT_POMDP_CONFIG,
+  type Observation,
+  type POMDPConfig,
+  POMDPPlanner,
+  type POMDPState,
+  type Particle,
   ParticleFilter,
   QMDPSolver,
-  POMDPPlanner,
-  DEFAULT_POMDP_CONFIG,
+  StateHasher,
   createState,
-  defaultRewardFn,
   defaultGoalFn,
-  type POMDPState,
-  type Action,
-  type Observation,
-  type BeliefState,
-  type Particle,
-  type POMDPConfig,
+  defaultRewardFn,
 } from "../src/index"
 
 const makeAction = (overrides?: Partial<Action>): Action => ({
@@ -137,14 +137,18 @@ describe("ActionRegistry", () => {
   test("getApplicable filters by precondition", () => {
     const reg = new ActionRegistry()
     reg.register(makeAction({ id: "always", precondition: undefined }))
-    reg.register(makeAction({
-      id: "only_positive",
-      precondition: (s) => (s.variables.x as number) > 0,
-    }))
-    reg.register(makeAction({
-      id: "only_zero",
-      precondition: (s) => (s.variables.x as number) === 0,
-    }))
+    reg.register(
+      makeAction({
+        id: "only_positive",
+        precondition: (s) => (s.variables.x as number) > 0,
+      }),
+    )
+    reg.register(
+      makeAction({
+        id: "only_zero",
+        precondition: (s) => (s.variables.x as number) === 0,
+      }),
+    )
 
     const state = makeState({ variables: { x: 0 } })
     const applicable = reg.getApplicable(state)
@@ -427,10 +431,18 @@ const makeGridActions = (): Action[] => [
 const gridTransition = (s: POMDPState, a: Action): POMDPState => {
   let { x, y } = s.variables as { x: number; y: number }
   switch (a.id) {
-    case "up": y = Math.max(0, y - 1); break
-    case "down": y = Math.min(9, y + 1); break
-    case "left": x = Math.max(0, x - 1); break
-    case "right": x = Math.min(9, x + 1); break
+    case "up":
+      y = Math.max(0, y - 1)
+      break
+    case "down":
+      y = Math.min(9, y + 1)
+      break
+    case "left":
+      x = Math.max(0, x - 1)
+      break
+    case "right":
+      x = Math.min(9, x + 1)
+      break
   }
   return createState({ x, y }, s.step + 1, s.id, s.score)
 }
@@ -480,7 +492,12 @@ describe("QMDPSolver", () => {
     const solver = new QMDPSolver(config)
     const pf = new ParticleFilter(config)
     const belief = pf.initialize(makeState())
-    const qValues = solver.computeQValues(belief, [], (s) => s, () => 0)
+    const qValues = solver.computeQValues(
+      belief,
+      [],
+      (s) => s,
+      () => 0,
+    )
     expect(qValues.length).toBe(0)
   })
 
@@ -547,9 +564,7 @@ describe("POMDPPlanner - basic planning", () => {
   const config = makeSmallConfig()
 
   test("plan reaches simple goal", () => {
-    const actions: Action[] = [
-      { id: "increment", name: "Increment", description: "Add 1 to value", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "increment", name: "Increment", description: "Add 1 to value", cost: 1 }]
     const transition = (s: POMDPState, _a: Action): POMDPState =>
       createState({ value: (s.variables.value as number) + 1 }, s.step + 1, s.id)
     const reward = (_s: POMDPState, _a: Action, ns: POMDPState): number => {
@@ -559,56 +574,34 @@ describe("POMDPPlanner - basic planning", () => {
     const goal = (s: POMDPState) => (s.variables.value as number) >= 5
 
     const planner = new POMDPPlanner(actions, config)
-    const result = planner.plan(
-      createState({ value: 0 }, 0),
-      goal,
-      transition,
-      reward,
-      { maxSteps: 10 },
-    )
+    const result = planner.plan(createState({ value: 0 }, 0), goal, transition, reward, { maxSteps: 10 })
 
     expect(result.converged).toBe(true)
-    expect((result.finalState.variables.value as number)).toBeGreaterThanOrEqual(5)
+    expect(result.finalState.variables.value as number).toBeGreaterThanOrEqual(5)
     expect(result.steps.length).toBeGreaterThan(0)
   })
 
   test("plan respects maxSteps", () => {
-    const actions: Action[] = [
-      { id: "stay", name: "Stay", description: "Do nothing", cost: 0 },
-    ]
+    const actions: Action[] = [{ id: "stay", name: "Stay", description: "Do nothing", cost: 0 }]
     const transition = (s: POMDPState, _a: Action): POMDPState => s
     const reward = () => -1
     const goal = () => false
 
     const planner = new POMDPPlanner(actions, config)
-    const result = planner.plan(
-      createState({ x: 0 }, 0),
-      goal,
-      transition,
-      reward,
-      { maxSteps: 3 },
-    )
+    const result = planner.plan(createState({ x: 0 }, 0), goal, transition, reward, { maxSteps: 3 })
 
     expect(result.steps.length).toBeLessThanOrEqual(3)
     expect(result.converged).toBe(false)
   })
 
   test("plan returns unconverged for unreachable goal", () => {
-    const actions: Action[] = [
-      { id: "stay", name: "Stay", description: "Do nothing", cost: 0 },
-    ]
+    const actions: Action[] = [{ id: "stay", name: "Stay", description: "Do nothing", cost: 0 }]
     const transition = (s: POMDPState, _a: Action): POMDPState => s
     const reward = () => 0
     const goal = () => false
 
     const planner = new POMDPPlanner(actions, config)
-    const result = planner.plan(
-      createState({}, 0),
-      goal,
-      transition,
-      reward,
-      { maxSteps: 2 },
-    )
+    const result = planner.plan(createState({}, 0), goal, transition, reward, { maxSteps: 2 })
 
     expect(result.converged).toBe(false)
   })
@@ -629,12 +622,7 @@ describe("POMDPPlanner - grid world", () => {
       numParticles: 30,
       maxPlanSteps: 15,
     })
-    const result = planner.plan(
-      createState({ x: 0, y: 0 }, 0),
-      goal,
-      gridTransition,
-      gridReward,
-    )
+    const result = planner.plan(createState({ x: 0, y: 0 }, 0), goal, gridTransition, gridReward)
 
     expect(result.steps.length).toBeGreaterThan(0)
   })
@@ -647,13 +635,7 @@ describe("POMDPPlanner - grid world", () => {
     }
 
     const planner = new POMDPPlanner(actions, config)
-    const result = planner.plan(
-      createState({ x: 0, y: 0 }, 0),
-      goal,
-      gridTransition,
-      gridReward,
-      { maxSteps: 5 },
-    )
+    const result = planner.plan(createState({ x: 0, y: 0 }, 0), goal, gridTransition, gridReward, { maxSteps: 5 })
 
     const expectedCost = result.steps.reduce((sum, step) => sum + step.action.cost, 0)
     expect(result.totalCost).toBe(expectedCost)
@@ -667,13 +649,7 @@ describe("POMDPPlanner - grid world", () => {
     }
 
     const planner = new POMDPPlanner(actions, config)
-    const result = planner.plan(
-      createState({ x: 0, y: 0 }, 0),
-      goal,
-      gridTransition,
-      gridReward,
-      { maxSteps: 5 },
-    )
+    const result = planner.plan(createState({ x: 0, y: 0 }, 0), goal, gridTransition, gridReward, { maxSteps: 5 })
 
     const meta = planner.getMetadata()
     expect(meta.particlesGenerated).toBeGreaterThan(0)
@@ -713,9 +689,7 @@ describe("POMDPPlanner - replan", () => {
 
 describe("POMDPPlanner - observations", () => {
   test("plan with observations processes observation steps", () => {
-    const actions: Action[] = [
-      { id: "toggle", name: "Toggle", description: "Toggle a flag", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "toggle", name: "Toggle", description: "Toggle a flag", cost: 1 }]
     const transition = (s: POMDPState, _a: Action): POMDPState => {
       const currentFlag = s.variables.flag as boolean | undefined
       return createState({ flag: !currentFlag }, s.step + 1, s.id, s.score + 1)
@@ -724,17 +698,12 @@ describe("POMDPPlanner - observations", () => {
     const goal = (s: POMDPState) => (s.variables.flag as boolean) === true
 
     const planner = new POMDPPlanner(actions, makeSmallConfig())
-    const observations: Observation[] = [
-      makeObs({ flag: true }),
-    ]
+    const observations: Observation[] = [makeObs({ flag: true })]
 
-    const result = planner.plan(
-      createState({ flag: false }, 0),
-      goal,
-      transition,
-      reward,
-      { maxSteps: 3, observations },
-    )
+    const result = planner.plan(createState({ flag: false }, 0), goal, transition, reward, {
+      maxSteps: 3,
+      observations,
+    })
 
     expect(result.steps.length).toBeGreaterThanOrEqual(0)
   })
@@ -742,9 +711,7 @@ describe("POMDPPlanner - observations", () => {
 
 describe("POMDPPlanner - onStep callback", () => {
   test("onStep is called for each step", () => {
-    const actions: Action[] = [
-      { id: "inc", name: "Increment", description: "Add 1", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "inc", name: "Increment", description: "Add 1", cost: 1 }]
     const transition = (s: POMDPState, _a: Action): POMDPState =>
       createState({ val: (s.variables.val as number) + 1 }, s.step + 1, s.id)
     const reward = () => 0
@@ -752,16 +719,12 @@ describe("POMDPPlanner - onStep callback", () => {
 
     const planner = new POMDPPlanner(actions, makeSmallConfig())
     const steps: PlanStep[] = []
-    planner.plan(
-      createState({ val: 0 }, 0),
-      goal,
-      transition,
-      reward,
-      {
-        maxSteps: 5,
-        onStep: (step) => { steps.push(step) },
+    planner.plan(createState({ val: 0 }, 0), goal, transition, reward, {
+      maxSteps: 5,
+      onStep: (step) => {
+        steps.push(step)
       },
-    )
+    })
 
     expect(steps.length).toBeGreaterThan(0)
   })
@@ -780,31 +743,21 @@ describe("POMDPPlanner - edge cases", () => {
   })
 
   test("plan with single action", () => {
-    const actions: Action[] = [
-      { id: "only", name: "Only Action", description: "The only action", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "only", name: "Only Action", description: "The only action", cost: 1 }]
     const transition = (s: POMDPState, _a: Action): POMDPState =>
       createState({ count: (s.variables.count as number) + 1 }, s.step + 1, s.id)
     const reward = () => 1
     const goal = (s: POMDPState) => (s.variables.count as number) >= 3
 
     const planner = new POMDPPlanner(actions, makeSmallConfig())
-    const result = planner.plan(
-      createState({ count: 0 }, 0),
-      goal,
-      transition,
-      reward,
-      { maxSteps: 5 },
-    )
+    const result = planner.plan(createState({ count: 0 }, 0), goal, transition, reward, { maxSteps: 5 })
 
     expect(result.converged).toBe(true)
     expect(result.steps.length).toBeGreaterThanOrEqual(3)
   })
 
   test("plan with zero particles config handles gracefully", () => {
-    const actions: Action[] = [
-      { id: "act", name: "Act", description: "Do", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "act", name: "Act", description: "Do", cost: 1 }]
     const planner = new POMDPPlanner(actions, { numParticles: 0, maxPlanSteps: 2 })
     const result = planner.plan(
       createState({}, 0),
@@ -817,9 +770,7 @@ describe("POMDPPlanner - edge cases", () => {
   })
 
   test("reset clears metadata", () => {
-    const actions: Action[] = [
-      { id: "act", name: "Act", description: "Do", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "act", name: "Act", description: "Do", cost: 1 }]
     const planner = new POMDPPlanner(actions, makeSmallConfig())
     planner.plan(
       createState({ val: 0 }, 0),
@@ -840,20 +791,14 @@ describe("POMDPPlanner - edge cases", () => {
     const planner = new POMDPPlanner(actions, makeSmallConfig())
     planner.updateConfig({ numParticles: 10, maxDepth: 1 })
 
-    const result = planner.plan(
-      createState({ x: 0, y: 0 }, 0),
-      () => false,
-      gridTransition,
-      gridReward,
-      { maxSteps: 1 },
-    )
+    const result = planner.plan(createState({ x: 0, y: 0 }, 0), () => false, gridTransition, gridReward, {
+      maxSteps: 1,
+    })
     expect(result.steps.length).toBeLessThanOrEqual(1)
   })
 
   test("plan has non-zero duration", () => {
-    const actions: Action[] = [
-      { id: "act", name: "Act", description: "Do", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "act", name: "Act", description: "Do", cost: 1 }]
     const planner = new POMDPPlanner(actions, makeSmallConfig())
     const result = planner.plan(
       createState({ val: 0 }, 0),
@@ -962,9 +907,16 @@ describe("Integration", () => {
     const transition = (s: POMDPState, a: Action): POMDPState => {
       const vars = { ...s.variables }
       switch (a.id) {
-        case "add_x": vars.x = (vars.x as number) + 2; break
-        case "add_y": vars.y = (vars.y as number) + 1; break
-        case "boost": vars.x = (vars.x as number) + 1; vars.y = (vars.y as number) + 1; break
+        case "add_x":
+          vars.x = (vars.x as number) + 2
+          break
+        case "add_y":
+          vars.y = (vars.y as number) + 1
+          break
+        case "boost":
+          vars.x = (vars.x as number) + 1
+          vars.y = (vars.y as number) + 1
+          break
       }
       const score = (vars.x as number) + (vars.y as number)
       return createState(vars, s.step + 1, s.id, score)
@@ -977,12 +929,7 @@ describe("Integration", () => {
     }
 
     const planner = new POMDPPlanner(actions, { ...makeSmallConfig(), numParticles: 30, maxPlanSteps: 20 })
-    const result = planner.plan(
-      createState({ x: 0, y: 0 }, 0),
-      goal,
-      transition,
-      reward,
-    )
+    const result = planner.plan(createState({ x: 0, y: 0 }, 0), goal, transition, reward)
 
     expect(result.converged).toBe(true)
     const fx = result.finalState.variables.x as number
@@ -1005,19 +952,19 @@ describe("Integration", () => {
         targetSeen = true
         return createState({ target: "reached" }, s.step + 1, s.id, 100)
       }
-      return createState({ pos: parseInt(a.id.split("_")[1]!) }, s.step + 1, s.id, Math.abs(parseInt(a.id.split("_")[1]!) - 19))
+      return createState(
+        { pos: parseInt(a.id.split("_")[1]!) },
+        s.step + 1,
+        s.id,
+        Math.abs(parseInt(a.id.split("_")[1]!) - 19),
+      )
     }
 
     const reward = (_s: POMDPState, _a: Action, ns: POMDPState): number => ns.score
     const goal = (s: POMDPState) => s.variables.target === "reached"
 
     const planner = new POMDPPlanner(actions, { ...makeSmallConfig(), numParticles: 10, maxPlanSteps: 30 })
-    const result = planner.plan(
-      createState({ pos: 0 }, 0),
-      goal,
-      transition,
-      reward,
-    )
+    const result = planner.plan(createState({ pos: 0 }, 0), goal, transition, reward)
 
     if (result.converged) {
       expect(result.finalState.variables.target).toBe("reached")
@@ -1027,21 +974,14 @@ describe("Integration", () => {
 
 describe("POMDPPlanner - Step structure", () => {
   test("each plan step has correct shape", () => {
-    const actions: Action[] = [
-      { id: "move", name: "Move", description: "Move forward", cost: 1 },
-    ]
+    const actions: Action[] = [{ id: "move", name: "Move", description: "Move forward", cost: 1 }]
     const transition = (s: POMDPState, _a: Action): POMDPState =>
       createState({ pos: (s.variables.pos as number) + 1 }, s.step + 1, s.id)
     const reward = () => 0
     const goal = (s: POMDPState) => (s.variables.pos as number) >= 2
 
     const planner = new POMDPPlanner(actions, makeSmallConfig())
-    const result = planner.plan(
-      createState({ pos: 0 }, 0),
-      goal,
-      transition,
-      reward,
-    )
+    const result = planner.plan(createState({ pos: 0 }, 0), goal, transition, reward)
 
     for (const step of result.steps) {
       expect(step).toHaveProperty("state")

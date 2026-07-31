@@ -1,15 +1,16 @@
 /**
  * Calibration baselines and feature extraction.
- * @module metacog-calibrator/baselines
+ * @module agent-metacog/baselines
  */
 
-import type { StreamFeatures, BaselineResult } from "./types"
-import { sigmoid, mean } from "./linalg"
+import type { BaselineResult, StreamFeatures } from "./calibrator-types"
+import { mean, sigmoid } from "./linalg"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CalibrationBaselines
 // ═══════════════════════════════════════════════════════════════════════════
 
+// biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class CalibrationBaselines {
   static rawConfidence(features: StreamFeatures): number {
     const likes = features.tokenLogLikelihoods
@@ -21,14 +22,17 @@ export class CalibrationBaselines {
     return Math.min(Math.max(sigmoid(Math.log(avg + 1e-8)), 0), 1)
   }
 
-  static temperatureScaling(confidences: number[], labels: number[], temperature?: number): { calibrated: number[]; temperature: number } {
+  static temperatureScaling(
+    confidences: number[],
+    labels: number[],
+    temperature?: number,
+  ): { calibrated: number[]; temperature: number } {
     let bestTemp = temperature ?? 1.0
-    let bestECE = Infinity
+    let bestECE = Number.POSITIVE_INFINITY
 
     if (!temperature) {
       for (let t = 0.5; t <= 2.0; t += 0.1) {
         const scaled = confidences.map((c) => c / t)
-        const preds = scaled.map((s) => (s >= 0.5 ? 1 : 0))
         let ece = 0
         const bins = 10
         const binCounts: number[] = new Array(bins).fill(0)
@@ -36,7 +40,9 @@ export class CalibrationBaselines {
         const binConf: number[] = new Array(bins).fill(0)
         for (let i = 0; i < scaled.length; i++) {
           const bin = Math.min(Math.floor(scaled[i]! * bins), bins - 1)
-          binCounts[bin]++; binAcc[bin] += labels[i]!; binConf[bin] += scaled[i]!
+          binCounts[bin]++
+          binAcc[bin] += labels[i]!
+          binConf[bin] += scaled[i]!
         }
         for (let b = 0; b < bins; b++) {
           if (binCounts[b]! > 0) {
@@ -45,7 +51,10 @@ export class CalibrationBaselines {
             ece += (binCounts[b]! / scaled.length) * Math.abs(acc - avgConf)
           }
         }
-        if (ece < bestECE) { bestECE = ece; bestTemp = t }
+        if (ece < bestECE) {
+          bestECE = ece
+          bestTemp = t
+        }
       }
     }
 
@@ -95,11 +104,14 @@ export class CalibrationBaselines {
       const binConf: number[] = new Array(bins).fill(0)
       for (let i = 0; i < normConfs.length; i++) {
         const bin = Math.min(Math.floor(raw * bins), bins - 1)
-        binCounts[bin]++; binAcc[bin] += labelVals[i]!; binConf[bin] += raw
+        binCounts[bin]++
+        binAcc[bin] += labelVals[i]!
+        binConf[bin] += raw
       }
       let ece = 0
       for (let b = 0; b < bins; b++) {
-        if (binCounts[b]! > 0) ece += (binCounts[b]! / normConfs.length) * Math.abs(binAcc[b]! / binCounts[b]! - binConf[b]! / binCounts[b]!)
+        if (binCounts[b]! > 0)
+          ece += (binCounts[b]! / normConfs.length) * Math.abs(binAcc[b]! / binCounts[b]! - binConf[b]! / binCounts[b]!)
       }
       return ece / bins
     })()
@@ -112,8 +124,20 @@ export class CalibrationBaselines {
 
     return [
       { name: "Raw Confidence", method: "raw", confidence: raw, ece: eceRaw, brierScore: brierCompute(raw, labelVals) },
-      { name: "Token Likelihood", method: "likelihood", confidence: tokLike, ece: Math.abs(tokLike - mean(labelVals)), brierScore: brierCompute(tokLike, labelVals) },
-      { name: "Self Evaluation", method: "self_eval", confidence: selfEval, ece: Math.abs(selfEval - mean(labelVals)), brierScore: brierCompute(selfEval, labelVals) },
+      {
+        name: "Token Likelihood",
+        method: "likelihood",
+        confidence: tokLike,
+        ece: Math.abs(tokLike - mean(labelVals)),
+        brierScore: brierCompute(tokLike, labelVals),
+      },
+      {
+        name: "Self Evaluation",
+        method: "self_eval",
+        confidence: selfEval,
+        ece: Math.abs(selfEval - mean(labelVals)),
+        brierScore: brierCompute(selfEval, labelVals),
+      },
     ]
   }
 }
@@ -149,7 +173,10 @@ export class FeatureExtractor {
 
   private entropy(probs: number[]): number {
     let h = 0
-    for (let i = 0; i < probs.length; i++) { const p = probs[i]!; if (p > 0) h -= p * Math.log(p + 1e-12) }
+    for (let i = 0; i < probs.length; i++) {
+      const p = probs[i]!
+      if (p > 0) h -= p * Math.log(p + 1e-12)
+    }
     return h
   }
 }

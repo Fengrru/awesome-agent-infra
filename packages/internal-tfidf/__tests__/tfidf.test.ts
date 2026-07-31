@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test"
 import {
-  tokenize,
+  buildTFIDFVectors,
+  computeCosineSimilarity,
   computeIDF,
   computeTFIDFVector,
   cosineSimilarity,
-  buildTFIDFVectors,
-  computeCosineSimilarity,
+  tokenize,
 } from "../src/index"
 
 describe("tokenize", () => {

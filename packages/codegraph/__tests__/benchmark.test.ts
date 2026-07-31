@@ -13,13 +13,17 @@
 
 import { describe, test } from "bun:test"
 import { CodeGraph, CodeGraphRanker } from "../src/index"
-import type { CodeGraphNode, CodeGraphEdge } from "../src/index"
+import type { CodeGraphEdge, CodeGraphNode } from "../src/index"
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function measure(label: string, fn: () => void, iterations = 100): { opsPerSec: number; avgMs: number; totalMs: number } {
+function measure(
+  label: string,
+  fn: () => void,
+  iterations = 100,
+): { opsPerSec: number; avgMs: number; totalMs: number } {
   const start = performance.now()
   for (let i = 0; i < iterations; i++) fn()
   const totalMs = performance.now() - start
@@ -60,7 +64,11 @@ function makeNode(id: number, fileIdx: number, type: "file" | "symbol" = "symbol
   }
 }
 
-function makeEdge(sourceId: string, targetId: string, relation: "calls" | "imports" | "references" = "calls"): CodeGraphEdge {
+function makeEdge(
+  sourceId: string,
+  targetId: string,
+  relation: "calls" | "imports" | "references" = "calls",
+): CodeGraphEdge {
   return { sourceId, targetId, relation }
 }
 
@@ -91,7 +99,9 @@ describe("benchmark: graph construction", () => {
   for (const nodeCount of [100, 500, 1000]) {
     test(`build graph with ${nodeCount} nodes + edges`, () => {
       const result = measure("", () => buildGraph(nodeCount), nodeCount >= 500 ? 10 : 30)
-      console.log(`  ${nodeCount} nodes: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`)
+      console.log(
+        `  ${nodeCount} nodes: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`,
+      )
     })
   }
 })
@@ -99,26 +109,34 @@ describe("benchmark: graph construction", () => {
 describe("benchmark: node insertion", () => {
   test("insert 1000 nodes into empty graph", () => {
     const g = new CodeGraph()
-    const result = measure("", () => {
-      for (let i = 0; i < 1000; i++) {
-        g.addNode(makeNode(i, i % 10))
-      }
-    }, 10)
-    console.log(`  1000 inserts (avg per insert): ${(result.avgMs / 1000 * 1000).toFixed(3)}us`)
+    const result = measure(
+      "",
+      () => {
+        for (let i = 0; i < 1000; i++) {
+          g.addNode(makeNode(i, i % 10))
+        }
+      },
+      10,
+    )
+    console.log(`  1000 inserts (avg per insert): ${((result.avgMs / 1000) * 1000).toFixed(3)}us`)
   })
 })
 
 describe("benchmark: edge insertion", () => {
   test("insert 1000 edges into populated graph", () => {
     const g = buildGraph(500)
-    const result = measure("", () => {
-      for (let i = 0; i < 1000; i++) {
-        const src = `symbol:func_${i * 2 % 500}`
-        const tgt = `symbol:func_${(i * 3 + 7) % 500}`
-        g.addEdge(makeEdge(src, tgt, "imports"))
-      }
-    }, 10)
-    console.log(`  1000 edges (avg per insert): ${(result.avgMs / 1000 * 1000).toFixed(3)}us`)
+    const result = measure(
+      "",
+      () => {
+        for (let i = 0; i < 1000; i++) {
+          const src = `symbol:func_${(i * 2) % 500}`
+          const tgt = `symbol:func_${(i * 3 + 7) % 500}`
+          g.addEdge(makeEdge(src, tgt, "imports"))
+        }
+      },
+      10,
+    )
+    console.log(`  1000 edges (avg per insert): ${((result.avgMs / 1000) * 1000).toFixed(3)}us`)
   })
 })
 
@@ -154,11 +172,15 @@ describe("benchmark: k-hop ego-graph extraction", () => {
 describe("benchmark: node lookup", () => {
   test("getNode lookups on 1000-node graph", () => {
     const g = buildGraph(1000)
-    const result = measure("", () => {
-      for (let i = 0; i < 100; i++) {
-        g.getNode(`symbol:func_${i * 10}`)
-      }
-    }, 100)
+    const result = measure(
+      "",
+      () => {
+        for (let i = 0; i < 100; i++) {
+          g.getNode(`symbol:func_${i * 10}`)
+        }
+      },
+      100,
+    )
     console.log(`  100 lookups on 1000-node graph: ${result.avgMs.toFixed(4)}ms avg`)
   })
 })

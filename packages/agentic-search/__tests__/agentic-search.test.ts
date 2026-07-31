@@ -1,36 +1,57 @@
 import { describe, expect, test } from "bun:test"
 import {
   AgenticSearchOrchestrator,
-  SearchToolRegistry,
-  SearchContextBuilder,
-  createSearchTools,
   DEFAULT_AGENTIC_SEARCH_CONFIG,
-  type ISymbolSearcher,
   type ISemanticSearcher,
+  type ISymbolSearcher,
+  SearchContextBuilder,
   type SearchResult,
-  type SubGraphResult,
+  SearchToolRegistry,
   type SemanticResult,
+  type SubGraphResult,
+  createSearchTools,
 } from "../src/index"
 
 function createMockSymbolSearcher(): ISymbolSearcher {
   return {
     searchSymbols: (_query: string) => [
       {
-        node: { id: "symbol:test", name: "testFn", type: "symbol", symbolType: "function", filePath: "src/test.ts", startLine: 1 },
+        node: {
+          id: "symbol:test",
+          name: "testFn",
+          type: "symbol",
+          symbolType: "function",
+          filePath: "src/test.ts",
+          startLine: 1,
+        },
         score: 0.9,
         matchedOn: "name",
       },
     ],
     searchByType: (_type: string) => [
       {
-        node: { id: "symbol:classA", name: "ClassA", type: "symbol", symbolType: "class", filePath: "src/a.ts", startLine: 1 },
+        node: {
+          id: "symbol:classA",
+          name: "ClassA",
+          type: "symbol",
+          symbolType: "class",
+          filePath: "src/a.ts",
+          startLine: 1,
+        },
         score: 1,
         matchedOn: "type",
       },
     ],
     searchByFile: (_path: string) => [
       {
-        node: { id: "symbol:fn1", name: "fn1", type: "symbol", symbolType: "function", filePath: "src/test.ts", startLine: 1 },
+        node: {
+          id: "symbol:fn1",
+          name: "fn1",
+          type: "symbol",
+          symbolType: "function",
+          filePath: "src/test.ts",
+          startLine: 1,
+        },
         score: 1,
         matchedOn: "file",
       },
@@ -259,11 +280,7 @@ describe("AgenticSearchOrchestrator", () => {
   })
 
   test("search handles tool timeout gracefully", async () => {
-    const orch = new AgenticSearchOrchestrator(
-      symSearcher,
-      semSearcher,
-      { toolTimeoutMs: 100 },
-    )
+    const orch = new AgenticSearchOrchestrator(symSearcher, semSearcher, { toolTimeoutMs: 100 })
     orch.registerTools()
     const result = await orch.search("test query")
     expect(result).toBeDefined()

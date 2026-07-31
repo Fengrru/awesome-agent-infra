@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  SkillCurator,
-  type ISkillManager,
-  type SkillListItem,
-  type ProviderAdapter,
-} from "../src/index"
+import { type ISkillManager, type ProviderAdapter, SkillCurator, type SkillListItem } from "../src/index"
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -30,8 +25,12 @@ class FakeSkillManager implements ISkillManager {
   deleted: string[] = []
   pinnedNames: string[] = []
 
-  async listSkills(): Promise<SkillListItem[]> { return [...this.skills] }
-  async loadSkill(name: string): Promise<string> { return this.contents.get(name) ?? "" }
+  async listSkills(): Promise<SkillListItem[]> {
+    return [...this.skills]
+  }
+  async loadSkill(name: string): Promise<string> {
+    return this.contents.get(name) ?? ""
+  }
   async deleteSkill(name: string): Promise<boolean> {
     this.deleted.push(name)
     this.skills = this.skills.filter((s) => s.name !== name)
@@ -121,9 +120,7 @@ describe("pinFrequent", () => {
 
   test("already pinned skills are excluded from candidates", async () => {
     const mgr = new FakeSkillManager()
-    mgr.skills = Array.from({ length: 12 }, (_, i) =>
-      makeSkill(`s${i}`, { usageCount: i, pinned: i === 11 }),
-    )
+    mgr.skills = Array.from({ length: 12 }, (_, i) => makeSkill(`s${i}`, { usageCount: i, pinned: i === 11 }))
     const curator = new SkillCurator(mgr, { minSkillsForPin: 10 })
     await curator.pinFrequent(0.1)
     // s11 already pinned and excluded; ceil(11 * 0.1) = 2 top candidates get pinned
@@ -186,7 +183,9 @@ describe("reviewQuality", () => {
     const mgr = new FakeSkillManager()
     mgr.contents.set("skill", "# Skill\nsome content")
     const provider: ProviderAdapter = {
-      async chat() { return { content: "not json at all" } },
+      async chat() {
+        return { content: "not json at all" }
+      },
     }
     const curator = new SkillCurator(mgr)
     curator.setProvider(provider)
@@ -198,7 +197,9 @@ describe("reviewQuality", () => {
     const mgr = new FakeSkillManager()
     mgr.contents.set("skill", "# Skill\nsome content")
     const provider: ProviderAdapter = {
-      async chat() { throw new Error("provider down") },
+      async chat() {
+        throw new Error("provider down")
+      },
     }
     const curator = new SkillCurator(mgr)
     curator.setProvider(provider)

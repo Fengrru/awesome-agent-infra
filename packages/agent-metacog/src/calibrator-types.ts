@@ -1,6 +1,6 @@
 /**
  * Metacog Calibrator — config types and defaults.
- * @module metacog-calibrator/types
+ * @module agent-metacog/calibrator-types
  */
 
 export interface CalibratorConfig {

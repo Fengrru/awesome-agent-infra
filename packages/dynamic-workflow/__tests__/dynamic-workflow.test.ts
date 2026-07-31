@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test"
-import { mkdtemp, readdir, readFile, rm } from "node:fs/promises"
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
-  DynamicWorkflowEngine,
   DEFAULT_WORKFLOW_CONFIG,
+  DynamicWorkflowEngine,
   type IAgentDispatcher,
   type WorkflowContext,
 } from "../src/index"
@@ -77,11 +77,12 @@ describe("execute — sandbox basics", () => {
   })
 
   test("execution times out on a never-resolving script", async () => {
-    await withTempEngine(async (engine) => {
-      await expect(
-        engine.execute("s1", "await new Promise(() => {})"),
-      ).rejects.toThrow("timed out")
-    }, { executionTimeoutMs: 100 })
+    await withTempEngine(
+      async (engine) => {
+        await expect(engine.execute("s1", "await new Promise(() => {})")).rejects.toThrow("timed out")
+      },
+      { executionTimeoutMs: 100 },
+    )
   })
 })
 
@@ -99,29 +100,20 @@ describe("primitives", () => {
 
   test("agent without dispatcher throws a clear error", async () => {
     await withTempEngine(async (engine) => {
-      await expect(engine.execute("s1", "await agent('x')")).rejects.toThrow(
-        "No agent dispatcher",
-      )
+      await expect(engine.execute("s1", "await agent('x')")).rejects.toThrow("No agent dispatcher")
     })
   })
 
   test("parallel runs tasks and returns all results", async () => {
     await withTempEngine(async (engine) => {
-      const result = await engine.execute(
-        "s1",
-        "await parallel([async () => 1, async () => 2, async () => 3])",
-      )
+      const result = await engine.execute("s1", "await parallel([async () => 1, async () => 2, async () => 3])")
       expect(result).toEqual([1, 2, 3])
     })
   })
 
   test("pipeline chains stages feeding output to next stage", async () => {
     await withTempEngine(async (engine) => {
-      const result = await engine.execute(
-        "s1",
-        "await pipeline(async (x) => x * 2, async (x) => x + 1)",
-        10,
-      )
+      const result = await engine.execute("s1", "await pipeline(async (x) => x * 2, async (x) => x + 1)", 10)
       expect(result).toBe(21)
     })
   })
@@ -136,19 +128,18 @@ describe("primitives", () => {
 
   test("unknown sub-workflow throws not-found", async () => {
     await withTempEngine(async (engine) => {
-      await expect(engine.execute("s1", "await workflow('ghost')")).rejects.toThrow(
-        "not found",
-      )
+      await expect(engine.execute("s1", "await workflow('ghost')")).rejects.toThrow("not found")
     })
   })
 
   test("recursive workflow hits max nesting depth", async () => {
-    await withTempEngine(async (engine) => {
-      engine.registerWorkflow("recurse", "await workflow('recurse')")
-      await expect(engine.execute("s1", "await workflow('recurse')")).rejects.toThrow(
-        "nesting depth",
-      )
-    }, { maxNestingDepth: 3 })
+    await withTempEngine(
+      async (engine) => {
+        engine.registerWorkflow("recurse", "await workflow('recurse')")
+        await expect(engine.execute("s1", "await workflow('recurse')")).rejects.toThrow("nesting depth")
+      },
+      { maxNestingDepth: 3 },
+    )
   })
 })
 
@@ -164,9 +155,7 @@ describe("file primitives", () => {
 
   test("reading a missing file throws sandbox-safe error", async () => {
     await withTempEngine(async (engine) => {
-      await expect(engine.execute("s1", "await readFile('no/such/file.txt')")).rejects.toThrow(
-        "Cannot read file",
-      )
+      await expect(engine.execute("s1", "await readFile('no/such/file.txt')")).rejects.toThrow("Cannot read file")
     })
   })
 })

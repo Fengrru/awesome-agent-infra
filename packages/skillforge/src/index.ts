@@ -14,8 +14,8 @@
  * @module skillforge
  */
 
-import { readFile, writeFile, mkdir, unlink, readdir } from "node:fs/promises"
 import { existsSync } from "node:fs"
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -296,12 +296,8 @@ export class SkillSystem {
   buildL0Injection(): string {
     if (this.agentSkills.length === 0) return ""
 
-    const nonPinned = this.agentSkills
-      .filter((s) => !s.pinned)
-      .sort((a, b) => b.usage_count - a.usage_count)
-    const pinned = this.agentSkills
-      .filter((s) => s.pinned)
-      .sort((a, b) => b.usage_count - a.usage_count)
+    const nonPinned = this.agentSkills.filter((s) => !s.pinned).sort((a, b) => b.usage_count - a.usage_count)
+    const pinned = this.agentSkills.filter((s) => s.pinned).sort((a, b) => b.usage_count - a.usage_count)
 
     const lines: string[] = []
 
@@ -541,12 +537,7 @@ export class SkillManager {
   /**
    * Patch a skill file — find oldStr and replace with newStr using fuzzy matching.
    */
-  async patchSkill(
-    name: string,
-    oldStr: string,
-    newStr: string,
-    replaceAll = false,
-  ): Promise<PatchSkillResult> {
+  async patchSkill(name: string, oldStr: string, newStr: string, replaceAll = false): Promise<PatchSkillResult> {
     // Scan to discover skills created by other instances
     await this.scanAndRegister()
 
@@ -700,9 +691,7 @@ export class SkillManager {
           const filePath = path.join(dir, entry.name)
 
           // Skip if already registered
-          const existing = this.skillSystem
-            .getAllAgentSkills()
-            .find((s) => s.file_path === filePath)
+          const existing = this.skillSystem.getAllAgentSkills().find((s) => s.file_path === filePath)
           if (existing) continue
 
           try {
@@ -715,9 +704,7 @@ export class SkillManager {
             const description = (fm.description as string) ?? ""
             const version = (fm.version as string) ?? "1.0.0"
             const createdBy = (fm.created_by as "user" | "agent") ?? "agent"
-            const tags: string[] = Array.isArray(fm.tags)
-              ? fm.tags.map((t: unknown) => String(t))
-              : []
+            const tags: string[] = Array.isArray(fm.tags) ? fm.tags.map((t: unknown) => String(t)) : []
 
             this.skillSystem.registerAgentSkill({
               name,
@@ -778,3 +765,23 @@ Output JSON format:
   "edges": [["n1", "n2"]]
 }
 `
+
+/**
+ * Create a {@link SkillSystem} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link SkillSystem}.
+ * @returns A new {@link SkillSystem}.
+ */
+export function createSkillSystem(...args: ConstructorParameters<typeof SkillSystem>): SkillSystem {
+  return new SkillSystem(...args)
+}
+
+/**
+ * Create a {@link SkillManager} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link SkillManager}.
+ * @returns A new {@link SkillManager}.
+ */
+export function createSkillManager(...args: ConstructorParameters<typeof SkillManager>): SkillManager {
+  return new SkillManager(...args)
+}

@@ -1,11 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  createSimpleEventBus,
-  EventPriority,
-  EventType,
-  type BusEvent,
-  type PersistentEvent,
-} from "../src/index"
+import { type BusEvent, EventPriority, EventType, type PersistentEvent, createSimpleEventBus } from "../src/index"
 
 describe("createSimpleEventBus", () => {
   // ── Basic publish/subscribe ─────────────────────────────────────────────
@@ -71,9 +65,33 @@ describe("createSimpleEventBus", () => {
       receivedCount++
     })
 
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.NORMAL, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: false })
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.NORMAL, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: false })
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.NORMAL, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: false })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.NORMAL,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: false,
+    })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.NORMAL,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: false,
+    })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.NORMAL,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: false,
+    })
 
     // Should not have been delivered yet (batched)
     expect(receivedCount).toBe(0)
@@ -92,7 +110,9 @@ describe("createSimpleEventBus", () => {
   test("unsubscribe removes handler", async () => {
     const bus = createSimpleEventBus()
     let callCount = 0
-    const handler = () => { callCount++ }
+    const handler = () => {
+      callCount++
+    }
 
     bus.subscribe(EventType.PLANNING_FAILED, handler)
     bus.unsubscribe(EventType.PLANNING_FAILED, handler)
@@ -253,8 +273,24 @@ describe("createSimpleEventBus", () => {
 
     const bus = createSimpleEventBus(undefined, persistBatch)
 
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.NORMAL, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: true })
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.NORMAL, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: true })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.NORMAL,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: true,
+    })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.NORMAL,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: true,
+    })
 
     await new Promise((r) => setTimeout(r, 80))
     expect(batches.length).toBeGreaterThanOrEqual(1)
@@ -269,10 +305,28 @@ describe("createSimpleEventBus", () => {
     const bus = createSimpleEventBus()
     let received = 0
 
-    bus.subscribe(EventType.METRICS_SAMPLE, () => { received++ })
+    bus.subscribe(EventType.METRICS_SAMPLE, () => {
+      received++
+    })
 
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.LOW, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: false })
-    await bus.publish({ type: EventType.METRICS_SAMPLE, priority: EventPriority.LOW, session_id: "s1", data: {}, source: "test", timestamp: Date.now(), require_persistence: false })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.LOW,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: false,
+    })
+    await bus.publish({
+      type: EventType.METRICS_SAMPLE,
+      priority: EventPriority.LOW,
+      session_id: "s1",
+      data: {},
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: false,
+    })
 
     await bus.shutdown()
     expect(received).toBe(2)
@@ -305,9 +359,33 @@ describe("createSimpleEventBus", () => {
 
     const bus = createSimpleEventBus(undefined, persistBatch)
 
-    await bus.publish({ type: EventType.TASK_START, priority: EventPriority.CRITICAL, session_id: "s1", data: {}, source: "t", timestamp: Date.now(), require_persistence: true })
-    await bus.publish({ type: EventType.TASK_START, priority: EventPriority.CRITICAL, session_id: "s1", data: {}, source: "t", timestamp: Date.now(), require_persistence: true })
-    await bus.publish({ type: EventType.TASK_START, priority: EventPriority.CRITICAL, session_id: "s2", data: {}, source: "t", timestamp: Date.now(), require_persistence: true })
+    await bus.publish({
+      type: EventType.TASK_START,
+      priority: EventPriority.CRITICAL,
+      session_id: "s1",
+      data: {},
+      source: "t",
+      timestamp: Date.now(),
+      require_persistence: true,
+    })
+    await bus.publish({
+      type: EventType.TASK_START,
+      priority: EventPriority.CRITICAL,
+      session_id: "s1",
+      data: {},
+      source: "t",
+      timestamp: Date.now(),
+      require_persistence: true,
+    })
+    await bus.publish({
+      type: EventType.TASK_START,
+      priority: EventPriority.CRITICAL,
+      session_id: "s2",
+      data: {},
+      source: "t",
+      timestamp: Date.now(),
+      require_persistence: true,
+    })
 
     await new Promise((r) => setTimeout(r, 20))
 

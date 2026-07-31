@@ -1,9 +1,5 @@
-import { EnhancedTFIDF } from "./tfidf"
-import type {
-  CodeGraph,
-  HybridSearchOptions,
-  HybridSearchResult,
-} from "./types"
+import type { EnhancedTFIDF } from "./tfidf"
+import type { CodeGraph, HybridSearchOptions, HybridSearchResult } from "./types"
 
 export class HybridSearch {
   private tfidf: EnhancedTFIDF
@@ -19,12 +15,7 @@ export class HybridSearch {
   }
 
   async search(options: HybridSearchOptions): Promise<HybridSearchResult[]> {
-    const {
-      query,
-      topK,
-      weights = { vector: 0.4, graph: 0.3, text: 0.3 },
-      minScore = 0,
-    } = options
+    const { query, topK, weights = { vector: 0.4, graph: 0.3, text: 0.3 }, minScore = 0 } = options
 
     const textResults = this.tfidf.search(query, topK * 2)
     const textScoreMap = new Map<string, number>()
@@ -57,7 +48,7 @@ export class HybridSearch {
         }
       })
       const neighborResults = await Promise.all(searchPromises)
-      for (const { docId, neighbors } of neighborResults) {
+      for (const { neighbors } of neighborResults) {
         for (const neighbor of neighbors) {
           candidateIds.add(neighbor.id)
           graphScores.set(neighbor.id, Math.max(graphScores.get(neighbor.id) ?? 0, neighbor.score))
@@ -72,10 +63,7 @@ export class HybridSearch {
 
       const vectorScore = textScore
 
-      const compositeScore =
-        weights.vector * vectorScore +
-        weights.graph * graphScore +
-        weights.text * textScore
+      const compositeScore = weights.vector * vectorScore + weights.graph * graphScore + weights.text * textScore
 
       if (compositeScore >= minScore) {
         hybridResults.push({

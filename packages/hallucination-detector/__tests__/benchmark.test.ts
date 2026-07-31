@@ -12,18 +12,19 @@
  */
 
 import { describe, test } from "bun:test"
-import {
-  HallucinationDetector,
-  SpectralHallucinationDetector,
-} from "../src/index"
-import type { FactClaim } from "../src/index"
 import { buildTFIDFVectors, computeCosineSimilarity } from "@fengru/internal-tfidf"
+import { HallucinationDetector, SpectralHallucinationDetector } from "../src/index"
+import type { FactClaim } from "../src/index"
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function measure(label: string, fn: () => void, iterations = 100): { opsPerSec: number; avgMs: number; totalMs: number } {
+function measure(
+  label: string,
+  fn: () => void,
+  iterations = 100,
+): { opsPerSec: number; avgMs: number; totalMs: number } {
   const start = performance.now()
   for (let i = 0; i < iterations; i++) fn()
   const totalMs = performance.now() - start
@@ -66,7 +67,9 @@ function makeClaims(count: number): FactClaim[] {
   const claims: FactClaim[] = []
   let offset = 0
   for (let i = 0; i < count; i++) {
-    const text = SAMPLE_TEXTS[i % SAMPLE_TEXTS.length]! + (i >= SAMPLE_TEXTS.length ? ` [variant ${Math.floor(i / SAMPLE_TEXTS.length)}]` : "")
+    const text =
+      SAMPLE_TEXTS[i % SAMPLE_TEXTS.length]! +
+      (i >= SAMPLE_TEXTS.length ? ` [variant ${Math.floor(i / SAMPLE_TEXTS.length)}]` : "")
     claims.push({
       text,
       startIndex: offset,
@@ -152,11 +155,15 @@ describe("benchmark: text similarity (Jaccard + Cosine)", () => {
   test("computeSimilarity pairs", () => {
     const detector = new HallucinationDetector()
 
-    const result = measure("", () => {
-      for (let i = 0; i < SAMPLE_TEXTS.length - 1; i++) {
-        detector.computeSimilarity(SAMPLE_TEXTS[i]!, SAMPLE_TEXTS[i + 1]!)
-      }
-    }, 50)
+    const result = measure(
+      "",
+      () => {
+        for (let i = 0; i < SAMPLE_TEXTS.length - 1; i++) {
+          detector.computeSimilarity(SAMPLE_TEXTS[i]!, SAMPLE_TEXTS[i + 1]!)
+        }
+      },
+      50,
+    )
     console.log(`  ${SAMPLE_TEXTS.length - 1} pairs: ${result.avgMs.toFixed(4)}ms avg`)
   })
 })

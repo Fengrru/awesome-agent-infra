@@ -136,7 +136,9 @@ export class MaxModeSampler {
     this.config = { ...DEFAULT_MAX_MODE_CONFIG, ...config }
   }
 
-  setProvider(provider: ProviderAdapter): void { this.provider = provider }
+  setProvider(provider: ProviderAdapter): void {
+    this.provider = provider
+  }
 
   // ── Sample & Select ───────────────────────────────────────────────────
 
@@ -193,16 +195,14 @@ export class MaxModeSampler {
       return [this.heuristicCandidate(goal, capabilities)]
     }
 
-    const capList = capabilities
-      .map((c) => `- ${c.capability_id}: ${c.description}`)
-      .join("\n")
+    const capList = capabilities.map((c) => `- ${c.capability_id}: ${c.description}`).join("\n")
 
     const userPrompt = [
       `## Task Goal\n${goal}`,
       `\n## Available Capabilities\n${capList}`,
       context ? `\n## Additional Context\n${context}` : "",
-      `\n---`,
-      `Generate a detailed execution plan for this task. Be creative and thorough.`,
+      "\n---",
+      "Generate a detailed execution plan for this task. Be creative and thorough.",
     ].join("\n")
 
     // Generate all candidates in parallel
@@ -222,10 +222,7 @@ export class MaxModeSampler {
     return candidates
   }
 
-  private async generateOneCandidate(
-    index: number,
-    userPrompt: string,
-  ): Promise<CandidatePlan | null> {
+  private async generateOneCandidate(index: number, userPrompt: string): Promise<CandidatePlan | null> {
     if (!this.provider) return null
 
     try {
@@ -259,9 +256,7 @@ export class MaxModeSampler {
 
     const candidatesText = candidates
       .map((c) => {
-        const stepsText = c.steps
-          .map((s) => `  ${s.order}. ${s.action} → ${s.expectedOutcome}`)
-          .join("\n")
+        const stepsText = c.steps.map((s) => `  ${s.order}. ${s.action} → ${s.expectedOutcome}`).join("\n")
         return `### ${c.id}\n**Approach**: ${c.approach}\n**Complexity**: ${c.complexity}/10\n**Est. Turns**: ${c.estimatedTurns}\n**Risks**: ${c.risks.join(", ")}\n**Steps**:\n${stepsText}`
       })
       .join("\n\n")
@@ -273,9 +268,9 @@ export class MaxModeSampler {
       `\n## Available Capabilities\n${capList}`,
       context ? `\n## Context\n${context}` : "",
       `\n## Candidates to Evaluate\n\n${candidatesText}`,
-      `\n---`,
-      `Evaluate ALL candidates and select the best one. Score each on 0-100.`,
-      `Respond with JSON only.`,
+      "\n---",
+      "Evaluate ALL candidates and select the best one. Score each on 0-100.",
+      "Respond with JSON only.",
     ].join("\n")
 
     try {
@@ -295,10 +290,7 @@ export class MaxModeSampler {
 
   // ── Heuristic Fallbacks ───────────────────────────────────────────────
 
-  private heuristicCandidate(
-    goal: string,
-    capabilities: Capability[],
-  ): CandidatePlan {
+  private heuristicCandidate(_goal: string, capabilities: Capability[]): CandidatePlan {
     const steps: PlanStep[] = [
       {
         order: 1,
@@ -360,17 +352,13 @@ export class MaxModeSampler {
       selectedId: rankings[0]!,
       rankings,
       scores,
-      reasoning:
-        "Heuristic selection based on complexity, thoroughness, and risk awareness.",
+      reasoning: "Heuristic selection based on complexity, thoroughness, and risk awareness.",
     }
   }
 
   // ── Response Parsing ──────────────────────────────────────────────────
 
-  private parseCandidateResponse(
-    text: string,
-    index: number,
-  ): CandidatePlan | null {
+  private parseCandidateResponse(text: string, index: number): CandidatePlan | null {
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return null
 
@@ -381,22 +369,18 @@ export class MaxModeSampler {
         id: `candidate_${index}`,
         approach: String(raw.approach ?? `Approach ${index + 1}`),
         steps: Array.isArray(raw.steps)
-          ? (raw.steps as Array<Record<string, unknown>>).map(
-              (s: Record<string, unknown>, i: number) => ({
-                order: (s.order as number) ?? i + 1,
-                action: String(s.action ?? ""),
-                expectedOutcome: String(s.expectedOutcome ?? ""),
-                requiredCapabilities: Array.isArray(s.requiredCapabilities)
-                  ? (s.requiredCapabilities as unknown[]).map(String)
-                  : [],
-              }),
-            )
+          ? (raw.steps as Array<Record<string, unknown>>).map((s: Record<string, unknown>, i: number) => ({
+              order: (s.order as number) ?? i + 1,
+              action: String(s.action ?? ""),
+              expectedOutcome: String(s.expectedOutcome ?? ""),
+              requiredCapabilities: Array.isArray(s.requiredCapabilities)
+                ? (s.requiredCapabilities as unknown[]).map(String)
+                : [],
+            }))
           : [],
         complexity: clampNumber(raw.complexity, 1, 10, 5),
         estimatedTurns: clampNumber(raw.estimatedTurns, 1, 100, 10),
-        risks: Array.isArray(raw.risks)
-          ? (raw.risks as unknown[]).map(String)
-          : [],
+        risks: Array.isArray(raw.risks) ? (raw.risks as unknown[]).map(String) : [],
         raw: text,
       }
     } catch {
@@ -404,10 +388,7 @@ export class MaxModeSampler {
     }
   }
 
-  private parseJudgeResponse(
-    text: string,
-    candidates: CandidatePlan[],
-  ): JudgeResult {
+  private parseJudgeResponse(text: string, candidates: CandidatePlan[]): JudgeResult {
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) return this.heuristicJudge(candidates)
 
@@ -416,13 +397,8 @@ export class MaxModeSampler {
 
       return {
         selectedId: String(raw.selectedId ?? candidates[0]?.id ?? ""),
-        rankings: Array.isArray(raw.rankings)
-          ? (raw.rankings as unknown[]).map(String)
-          : candidates.map((c) => c.id),
-        scores:
-          raw.scores && typeof raw.scores === "object"
-            ? (raw.scores as Record<string, number>)
-            : {},
+        rankings: Array.isArray(raw.rankings) ? (raw.rankings as unknown[]).map(String) : candidates.map((c) => c.id),
+        scores: raw.scores && typeof raw.scores === "object" ? (raw.scores as Record<string, number>) : {},
         reasoning: String(raw.reasoning ?? "No reasoning provided."),
       }
     } catch {
@@ -433,13 +409,18 @@ export class MaxModeSampler {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function clampNumber(
-  value: unknown,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
+function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
   const n = Number(value)
   if (Number.isNaN(n)) return fallback
   return Math.max(min, Math.min(max, n))
+}
+
+/**
+ * Create a {@link MaxModeSampler} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link MaxModeSampler}.
+ * @returns A new {@link MaxModeSampler}.
+ */
+export function createMaxModeSampler(...args: ConstructorParameters<typeof MaxModeSampler>): MaxModeSampler {
+  return new MaxModeSampler(...args)
 }

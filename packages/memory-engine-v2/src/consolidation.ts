@@ -3,9 +3,9 @@
  * @module memory-engine-v2/consolidation
  */
 
-import type { MemoryItem, SleepConfig, ConsolidationResult } from "./types"
-import { SleepStage, MemoryType, generateId } from "./types"
-import { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "./tfidf"
+import { computeIDF, computeTFIDFVector, cosineSimilarity, tokenize } from "./tfidf"
+import type { ConsolidationResult, MemoryItem, SleepConfig } from "./types"
+import { MemoryType, SleepStage, generateId } from "./types"
 
 export class SleepConsolidation {
   config: SleepConfig

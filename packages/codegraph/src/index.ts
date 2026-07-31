@@ -33,7 +33,7 @@ export { CodeGraph, flattenSubGraph, buildRepoSummary, estimateTokens } from "./
 export { CodeGraphSearcher } from "./searcher"
 export { CodeGraphRanker } from "./ranker"
 export { CodeGraphWatcher, type FileChange, type FileChangeType, type ExtractorFn } from "./watcher"
-export { CodeGraphBuilder, type DiscoverFilesFn, type CodeGraphBuilderOptions } from "./builder"
+export { CodeGraphBuilder, createCodeGraphBuilder, type DiscoverFilesFn, type CodeGraphBuilderOptions } from "./builder"
 export { extractFromFile, type ExtractResult, type LanguageParser } from "./extractor"
 export { CallSiteStore, createCallSite } from "./callsite"
 export { GraphPersistence, type PersistedGraph } from "./persist"

@@ -1,9 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  ErrorClassifier,
-  RepairMemoryEngine,
-  type RecoveryRule,
-} from "../src/index"
+import { ErrorClassifier, type RecoveryRule, RepairMemoryEngine } from "../src/index"
 
 describe("ErrorClassifier", () => {
   const classifier = new ErrorClassifier()
@@ -192,7 +188,9 @@ describe("RepairMemoryEngine", () => {
     const engine = new RepairMemoryEngine()
     let upserted = false
     engine.setDatabase({
-      upsertRepairRule: () => { upserted = true },
+      upsertRepairRule: () => {
+        upserted = true
+      },
       getRepairRules: () => [],
     })
     engine.addRule("test_tool", "test error", "test fix")

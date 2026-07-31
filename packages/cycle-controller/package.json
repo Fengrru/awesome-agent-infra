@@ -1,7 +1,7 @@
 {
   "name": "@fengru/cycle-controller",
   "version": "0.1.0",
-  "description": "Context window cycle manager for AI agents —?token utilization monitoring, checkpoint thresholds, and context rebuild triggers",
+  "description": "Context window cycle manager for AI agents — token utilization monitoring, checkpoint thresholds, and context rebuild triggers",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,15 +24,20 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@fengru/event-bus": ">=0.1.0",
-    "@fengru/state-machine": ">=0.1.0"
+    "@fengru/event-bus": "workspace:*",
+    "@fengru/state-machine": "workspace:*"
   },
   "peerDependenciesMeta": {
-    "@fengru/event-bus": { "optional": true },
-    "@fengru/state-machine": { "optional": true }
+    "@fengru/event-bus": {
+      "optional": true
+    },
+    "@fengru/state-machine": {
+      "optional": true
+    }
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fengru/cycle-controller"
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/cycle-controller"
   }
 }

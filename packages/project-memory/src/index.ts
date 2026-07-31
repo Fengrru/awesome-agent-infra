@@ -21,13 +21,7 @@ import { readFile, writeFile } from "node:fs/promises"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type MemorySection =
-  | "background"
-  | "rules"
-  | "architecture"
-  | "decisions"
-  | "facts"
-  | "patterns"
+export type MemorySection = "background" | "rules" | "architecture" | "decisions" | "facts" | "patterns"
 
 export interface MemoryEntry {
   /** Unique identifier */
@@ -81,14 +75,7 @@ const SECTION_HEADERS: Record<MemorySection, string> = {
   patterns: "## Work Patterns",
 }
 
-const SECTION_ORDER: MemorySection[] = [
-  "background",
-  "rules",
-  "architecture",
-  "decisions",
-  "facts",
-  "patterns",
-]
+const SECTION_ORDER: MemorySection[] = ["background", "rules", "architecture", "decisions", "facts", "patterns"]
 
 // ── ProjectMemoryManager ──────────────────────────────────────────────────
 
@@ -133,9 +120,7 @@ export class ProjectMemoryManager {
     await this.ensureLoaded()
 
     const now = new Date().toISOString()
-    const existing = entry.id
-      ? this.entries.find((e) => e.id === entry.id)
-      : undefined
+    const existing = entry.id ? this.entries.find((e) => e.id === entry.id) : undefined
 
     if (existing) {
       existing.content = entry.content
@@ -144,9 +129,7 @@ export class ProjectMemoryManager {
       existing.verification_count++
       existing.updated_at = now
       if (entry.source_sessions.length > 0) {
-        existing.source_sessions = [
-          ...new Set([...existing.source_sessions, ...entry.source_sessions]),
-        ]
+        existing.source_sessions = [...new Set([...existing.source_sessions, ...entry.source_sessions])]
       }
       await this.save()
       return existing
@@ -205,18 +188,12 @@ export class ProjectMemoryManager {
    * Promote a stable discovery from session layer to project memory.
    * Called when a discovery has appeared in 3+ checkpoints.
    */
-  async promoteDiscovery(
-    sessionId: string,
-    discovery: Discovery,
-    stabilityCount: number,
-  ): Promise<MemoryEntry> {
+  async promoteDiscovery(sessionId: string, discovery: Discovery, stabilityCount: number): Promise<MemoryEntry> {
     await this.ensureLoaded()
 
     // Dedup by text overlap
     const existing = this.entries.find(
-      (e) =>
-        e.section === "facts" &&
-        this.textOverlap(e.content, discovery.description) > 0.6,
+      (e) => e.section === "facts" && this.textOverlap(e.content, discovery.description) > 0.6,
     )
 
     if (existing) {
@@ -246,7 +223,7 @@ export class ProjectMemoryManager {
    * Full-text search across all entries (simple keyword matching).
    * For production, integrate with HNSW or a proper FTS index.
    */
-  async search(query: string, maxResults: number = 10): Promise<MemoryEntry[]> {
+  async search(query: string, maxResults = 10): Promise<MemoryEntry[]> {
     await this.ensureLoaded()
 
     const queryTerms = query.toLowerCase().split(/\s+/)
@@ -306,9 +283,7 @@ export class ProjectMemoryManager {
     let currentEntry: { id: string; content: string; confidence: number } | null = null
 
     for (const line of lines) {
-      const sectionMatch = Object.entries(SECTION_HEADERS).find(([, header]) =>
-        line.startsWith(header),
-      )
+      const sectionMatch = Object.entries(SECTION_HEADERS).find(([, header]) => line.startsWith(header))
       if (sectionMatch) {
         // Flush the pending entry under its own section before switching
         if (currentEntry && currentSection) {
@@ -329,11 +304,11 @@ export class ProjectMemoryManager {
           currentEntry = { id: match[1]!, content: match[2]!, confidence: 1.0 }
         }
       } else if (line.startsWith("  - ") && currentEntry) {
-        currentEntry.content += "\n" + line.slice(4)
+        currentEntry.content += `\n${line.slice(4)}`
       } else if (line.trim().match(/^\[conf:(\d+\.?\d*)\]/) && currentEntry) {
         // Allow leading indentation — renderMarkdown emits "  [conf:X.XX]"
         const confMatch = line.trim().match(/^\[conf:(\d+\.?\d*)\]/)
-        if (confMatch) currentEntry.confidence = parseFloat(confMatch[1]!)
+        if (confMatch) currentEntry.confidence = Number.parseFloat(confMatch[1]!)
       }
     }
 
@@ -382,6 +357,18 @@ export class ProjectMemoryManager {
       lines.push("")
     }
 
-    return lines.join("\n") + "\n"
+    return `${lines.join("\n")}\n`
   }
+}
+
+/**
+ * Create a {@link ProjectMemoryManager} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link ProjectMemoryManager}.
+ * @returns A new {@link ProjectMemoryManager}.
+ */
+export function createProjectMemoryManager(
+  ...args: ConstructorParameters<typeof ProjectMemoryManager>
+): ProjectMemoryManager {
+  return new ProjectMemoryManager(...args)
 }

@@ -3,12 +3,16 @@
  * @module memory-engine-v2/retrieval
  */
 
+import { computeIDF, computeTFIDFVector, cosineSimilarity, tokenize } from "./tfidf"
 import type {
-  MemoryItem, AttentionWeight, MemoryAwareness, MemoryDecision,
-  MetaMemoryConfig, AttentionConfig,
+  AttentionConfig,
+  AttentionWeight,
+  MemoryAwareness,
+  MemoryDecision,
+  MemoryItem,
+  MetaMemoryConfig,
 } from "./types"
 import { ConfidenceLevel, clamp } from "./types"
-import { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "./tfidf"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MetaMemory
@@ -38,12 +42,7 @@ export class MetaMemory {
     const complexity = this.estimateQueryComplexity(query)
     const base = 0.5
     let confidence =
-      base +
-      0.2 * memoryAvailability +
-      0.25 * recentSuccess +
-      0.15 * freshness +
-      0.2 * coverage -
-      0.2 * complexity
+      base + 0.2 * memoryAvailability + 0.25 * recentSuccess + 0.15 * freshness + 0.2 * coverage - 0.2 * complexity
     if (this.isComputationQuery(query)) {
       confidence *= 0.2
     }
@@ -52,7 +51,10 @@ export class MetaMemory {
 
   makeDecision(query: string, confidence: number, availableActions: string[]): MemoryDecision {
     const level = this.getConfidenceLevel(confidence)
-    const actions: Record<ConfidenceLevel, "direct_recall" | "augmented_retrieval" | "external_tool" | "model_collaboration"> = {
+    const actions: Record<
+      ConfidenceLevel,
+      "direct_recall" | "augmented_retrieval" | "external_tool" | "model_collaboration"
+    > = {
       [ConfidenceLevel.HIGH]: "direct_recall",
       [ConfidenceLevel.MEDIUM]: "augmented_retrieval",
       [ConfidenceLevel.LOW]: "external_tool",
@@ -62,8 +64,8 @@ export class MetaMemory {
     const costMap: Record<string, number> = {
       direct_recall: 0.01,
       augmented_retrieval: 0.05,
-      external_tool: 0.10,
-      model_collaboration: 0.20,
+      external_tool: 0.1,
+      model_collaboration: 0.2,
     }
     return {
       action,
@@ -121,12 +123,11 @@ export class MetaMemory {
       if (statsStr.includes(token.toLowerCase())) matchCount++
     }
     const tokenCoverage = matchCount / uniqueTokens.size
-    return (0.6 * memoryAvailability + 0.4 * tokenCoverage)
+    return 0.6 * memoryAvailability + 0.4 * tokenCoverage
   }
 
   private isComputationQuery(query: string): boolean {
-    return /[\d]+\s*[+\-*/^]\s*[\d]+/.test(query) ||
-      /\b(solve|compute|calculate)\b/i.test(query)
+    return /[\d]+\s*[+\-*/^]\s*[\d]+/.test(query) || /\b(solve|compute|calculate)\b/i.test(query)
   }
 
   getAwareness(stats: Record<string, unknown>): MemoryAwareness {
@@ -134,18 +135,12 @@ export class MetaMemory {
     const distribution = (stats.memoryDistribution as Record<string, number>) ?? {}
     const avgImportance = (stats.averageImportance as number) ?? 0
     const successRate = this.getRecentSuccessRate()
-    const consolidationNeeded = totalMemories > 100 || (
-      (stats.lastConsolidation as number ?? 0) > 0 &&
-      Date.now() - (stats.lastConsolidation as number) > 3600000
-    )
-    const forgettingRate = this.resultHistory.length > 0
-      ? 1 - (this.resultHistory.filter(Boolean).length / this.resultHistory.length)
-      : 0
-    const confidence = clamp(
-      0.3 + 0.3 * Math.min(totalMemories / 100, 1) + 0.4 * successRate,
-      0,
-      1,
-    )
+    const consolidationNeeded =
+      totalMemories > 100 ||
+      (((stats.lastConsolidation as number) ?? 0) > 0 && Date.now() - (stats.lastConsolidation as number) > 3600000)
+    const forgettingRate =
+      this.resultHistory.length > 0 ? 1 - this.resultHistory.filter(Boolean).length / this.resultHistory.length : 0
+    const confidence = clamp(0.3 + 0.3 * Math.min(totalMemories / 100, 1) + 0.4 * successRate, 0, 1)
     return {
       totalMemories,
       memoryDistribution: distribution,
@@ -178,10 +173,10 @@ export class AttentionRetrieval {
 
   constructor(config?: Partial<AttentionConfig>) {
     this.config = {
-      importanceWeight: 0.30,
-      recencyWeight: 0.20,
-      relevanceWeight: 0.40,
-      emotionWeight: 0.10,
+      importanceWeight: 0.3,
+      recencyWeight: 0.2,
+      relevanceWeight: 0.4,
+      emotionWeight: 0.1,
       recencyDecayHours: 24,
       minAttentionThreshold: 0.1,
       ...config,

@@ -49,11 +49,7 @@ export interface ISkillManager {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type NudgeType =
-  | "periodic"
-  | "session_end"
-  | "pattern_detection"
-  | "user_declaration"
+export type NudgeType = "periodic" | "session_end" | "pattern_detection" | "user_declaration"
 
 export interface NudgeAction {
   type: NudgeType
@@ -165,9 +161,15 @@ export class LearningNudge {
     this.config = { ...DEFAULT_CONFIG, ...config }
   }
 
-  setProjectMemory(manager: IProjectMemory): void { this.projectMemory = manager }
-  setSkillManager(manager: ISkillManager): void { this.skillManager = manager }
-  setProvider(provider: ProviderAdapter): void { this.provider = provider }
+  setProjectMemory(manager: IProjectMemory): void {
+    this.projectMemory = manager
+  }
+  setSkillManager(manager: ISkillManager): void {
+    this.skillManager = manager
+  }
+  setProvider(provider: ProviderAdapter): void {
+    this.provider = provider
+  }
 
   // ── Evaluate ──────────────────────────────────────────────────────────
 
@@ -175,11 +177,7 @@ export class LearningNudge {
    * Evaluate whether a nudge should fire now.
    * Called after each tool execution.
    */
-  evaluate(
-    toolCallIncrement: number,
-    capabilityId?: string,
-    success = true,
-  ): NudgeAction | null {
+  evaluate(toolCallIncrement: number, capabilityId?: string, success = true): NudgeAction | null {
     this.toolCallCount += toolCallIncrement
 
     // Track capability success patterns
@@ -188,10 +186,7 @@ export class LearningNudge {
       this.capabilitySuccessCounts.set(capabilityId, count)
 
       // Pattern detection: same capability succeeded 3+ times
-      if (
-        count >= this.config.patternThreshold &&
-        count % this.config.patternThreshold === 0
-      ) {
+      if (count >= this.config.patternThreshold && count % this.config.patternThreshold === 0) {
         return {
           type: "pattern_detection",
           reason: `Capability "${capabilityId}" succeeded ${count} times — consider creating a skill`,
@@ -219,15 +214,14 @@ export class LearningNudge {
     return null
   }
 
-  hasPending(): boolean { return this.pendingNudge }
+  hasPending(): boolean {
+    return this.pendingNudge
+  }
 
   // ── Execute Nudge ─────────────────────────────────────────────────────
 
   /** Execute a periodic reflection nudge */
-  async executeNudge(
-    _sessionId: string,
-    recentHistory: string[],
-  ): Promise<NudgeResult> {
+  async executeNudge(_sessionId: string, recentHistory: string[]): Promise<NudgeResult> {
     const errors: string[] = []
     this.recentHistory = recentHistory
 
@@ -276,8 +270,7 @@ export class LearningNudge {
     }
 
     try {
-      const prompt = SESSION_END_REFLECTION_PROMPT
-        .replace("{{goal}}", goal)
+      const prompt = SESSION_END_REFLECTION_PROMPT.replace("{{goal}}", goal)
         .replace("{{tool_calls}}", String(toolCalls))
         .replace("{{success_count}}", String(successCount))
         .replace("{{failure_count}}", String(failureCount))
@@ -300,10 +293,7 @@ export class LearningNudge {
   }
 
   /** User explicitly said "remember this" */
-  async userDeclarationNudge(
-    sessionId: string,
-    content: string,
-  ): Promise<NudgeResult> {
+  async userDeclarationNudge(sessionId: string, content: string): Promise<NudgeResult> {
     const errors: string[] = []
 
     if (this.projectMemory) {
@@ -327,11 +317,7 @@ export class LearningNudge {
 
   // ── Internal Reflection Processing ────────────────────────────────────
 
-  private async processReflection(
-    rawContent: string,
-    sessionId: string,
-    errors: string[],
-  ): Promise<NudgeResult> {
+  private async processReflection(rawContent: string, sessionId: string, errors: string[]): Promise<NudgeResult> {
     let memoryEntries = 0
     let skillSuggestions = 0
 
@@ -407,11 +393,16 @@ export class LearningNudge {
 
   private mapTypeToSection(type: string): string {
     switch (type) {
-      case "facts": return "facts"
-      case "patterns": return "patterns"
-      case "rules": return "rules"
-      case "decisions": return "decisions"
-      default: return "facts"
+      case "facts":
+        return "facts"
+      case "patterns":
+        return "patterns"
+      case "rules":
+        return "rules"
+      case "decisions":
+        return "decisions"
+      default:
+        return "facts"
     }
   }
 
@@ -425,8 +416,20 @@ export class LearningNudge {
     this.pendingNudge = false
   }
 
-  getToolCallCount(): number { return this.toolCallCount }
+  getToolCallCount(): number {
+    return this.toolCallCount
+  }
   getPatternStats(): Map<string, number> {
     return new Map(this.capabilitySuccessCounts)
   }
+}
+
+/**
+ * Create a {@link LearningNudge} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link LearningNudge}.
+ * @returns A new {@link LearningNudge}.
+ */
+export function createLearningNudge(...args: ConstructorParameters<typeof LearningNudge>): LearningNudge {
+  return new LearningNudge(...args)
 }

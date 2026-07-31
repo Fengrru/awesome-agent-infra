@@ -24,9 +24,9 @@
  * @module dynamic-workflow
  */
 
-import { readFile, writeFile, mkdir } from "node:fs/promises"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { createContext, Script } from "node:vm"
+import { Script, createContext } from "node:vm"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -180,11 +180,7 @@ export class DynamicWorkflowEngine {
 
   // ── Sandbox Execution ─────────────────────────────────────────────────
 
-  private async runInSandbox(
-    ctx: WorkflowContext,
-    script: string,
-    input?: unknown,
-  ): Promise<unknown> {
+  private async runInSandbox(ctx: WorkflowContext, script: string, input?: unknown): Promise<unknown> {
     this.nestingDepth++
 
     if (this.nestingDepth > this.config.maxNestingDepth) {
@@ -253,10 +249,7 @@ export class DynamicWorkflowEngine {
       const result = await Promise.race([
         vmScript.runInContext(vmContext, { timeout: this.config.executionTimeoutMs }),
         new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error("Workflow execution timed out")),
-            this.config.executionTimeoutMs,
-          ),
+          setTimeout(() => reject(new Error("Workflow execution timed out")), this.config.executionTimeoutMs),
         ),
       ])
 
@@ -276,9 +269,27 @@ export class DynamicWorkflowEngine {
     const lines = script.split("\n")
 
     const skipStart = [
-      "if", "for", "while", "}", ")", "]", "return", "throw", "try",
-      "catch", "switch", "class", "function", "const", "let", "var",
-      "export", "import", "else", "case", "default",
+      "if",
+      "for",
+      "while",
+      "}",
+      ")",
+      "]",
+      "return",
+      "throw",
+      "try",
+      "catch",
+      "switch",
+      "class",
+      "function",
+      "const",
+      "let",
+      "var",
+      "export",
+      "import",
+      "else",
+      "case",
+      "default",
     ]
 
     // Strategy 1: find last standalone expression line
@@ -287,7 +298,7 @@ export class DynamicWorkflowEngine {
       if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("/*")) continue
       if (skipStart.some((p) => trimmed.startsWith(p))) continue
       if (trimmed.endsWith(",")) continue
-      lines[i] = lines[i]!.replace(trimmed, "return " + trimmed)
+      lines[i] = lines[i]!.replace(trimmed, `return ${trimmed}`)
       return lines.join("\n")
     }
 
@@ -297,7 +308,7 @@ export class DynamicWorkflowEngine {
       const trimmed = lines[i]!.trim()
       if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("/*")) continue
       if (declStart.some((p) => trimmed.startsWith(p))) continue
-      lines[i] = lines[i]!.replace(trimmed, "return " + trimmed)
+      lines[i] = lines[i]!.replace(trimmed, `return ${trimmed}`)
       return lines.join("\n")
     }
 
@@ -424,4 +435,16 @@ export class DynamicWorkflowEngine {
   listActiveExecutions(): WorkflowContext[] {
     return [...this.activeExecutions.values()]
   }
+}
+
+/**
+ * Create a {@link DynamicWorkflowEngine} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link DynamicWorkflowEngine}.
+ * @returns A new {@link DynamicWorkflowEngine}.
+ */
+export function createDynamicWorkflowEngine(
+  ...args: ConstructorParameters<typeof DynamicWorkflowEngine>
+): DynamicWorkflowEngine {
+  return new DynamicWorkflowEngine(...args)
 }

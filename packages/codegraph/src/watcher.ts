@@ -14,13 +14,13 @@
  * @module codegraph/watcher
  */
 
-import { readFile } from "node:fs/promises"
 import { existsSync, statSync } from "node:fs"
+import { readFile } from "node:fs/promises"
 import { relative } from "node:path"
-import { CodeGraph } from "./graph"
-import { CallSiteStore, createCallSite } from "./callsite"
-import { IncrementalParser, type IncrementalEdit } from "./incremental"
-import type { CodeGraphEdge, IncrementalParseResult, StaleMarker } from "./types"
+import { CallSiteStore } from "./callsite"
+import type { CodeGraph } from "./graph"
+import { type IncrementalEdit, IncrementalParser } from "./incremental"
+import type { CodeGraphEdge, StaleMarker } from "./types"
 
 export type FileChangeType = "add" | "modify" | "delete"
 
@@ -48,11 +48,7 @@ export interface ExtractResult {
   exports: string[]
 }
 
-export type ExtractorFn = (
-  filePath: string,
-  source: string,
-  mtime: number,
-) => Promise<ExtractResult>
+export type ExtractorFn = (filePath: string, source: string, mtime: number) => Promise<ExtractResult>
 
 export class CodeGraphWatcher {
   private graph: CodeGraph
@@ -187,9 +183,7 @@ export class CodeGraphWatcher {
     return removed
   }
 
-  private async handleAddOrModify(
-    filePath: string,
-  ): Promise<{ nodesAdded: number; edgesAdded: number }> {
+  private async handleAddOrModify(filePath: string): Promise<{ nodesAdded: number; edgesAdded: number }> {
     if (!this.extractor) return { nodesAdded: 0, edgesAdded: 0 }
 
     try {
@@ -290,18 +284,16 @@ export class CodeGraphWatcher {
   private resolveImportSimple(importSource: string, currentFile: string): string | null {
     if (!importSource.startsWith(".") && !importSource.startsWith("/")) return null
 
-    const dir = currentFile.includes("/")
-      ? currentFile.substring(0, currentFile.lastIndexOf("/"))
-      : ""
+    const dir = currentFile.includes("/") ? currentFile.substring(0, currentFile.lastIndexOf("/")) : ""
 
     const extensions = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs"]
     for (const ext of extensions) {
-      const candidate = `${dir ? dir + "/" : ""}${importSource}${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${importSource}${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
 
     for (const ext of [".ts", ".js", ".tsx", ".jsx"]) {
-      const candidate = `${dir ? dir + "/" : ""}${importSource}/index${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${importSource}/index${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
 

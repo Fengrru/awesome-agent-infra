@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  BranchManager,
-  type BranchDatabase,
-  type SessionBranch,
-  type BranchStatus,
-} from "../src/index"
+import { type BranchDatabase, BranchManager, type BranchStatus, type SessionBranch } from "../src/index"
 
 function makeDB(): BranchDatabase & { copyLogCalls: number; copyCheckpointCalls: number } {
   return {

@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test"
 import {
-  LifecycleManager,
   AgentState,
-  type IStateMachine,
-  type ModuleLifecycle,
   type EngineContext,
+  type IStateMachine,
+  LifecycleManager,
+  type ModuleLifecycle,
 } from "../src/index"
 
 /** Minimal fake state machine capturing onEnter registrations */
@@ -41,11 +41,25 @@ describe("registration", () => {
     const { manager } = makeManager()
     const calls: string[] = []
     manager.register(
-      { id: "mod", onEnter: { [AgentState.READY]: async () => { calls.push("v1") } } },
+      {
+        id: "mod",
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("v1")
+          },
+        },
+      },
       {},
     )
     manager.register(
-      { id: "mod", onEnter: { [AgentState.READY]: async () => { calls.push("v2") } } },
+      {
+        id: "mod",
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("v2")
+          },
+        },
+      },
       {},
     )
     await manager.triggerStateEnter(AgentState.READY)
@@ -65,8 +79,28 @@ describe("triggerStateEnter", () => {
   test("invokes only modules hooked to that state", async () => {
     const { manager } = makeManager()
     const calls: string[] = []
-    manager.register({ id: "a", onEnter: { [AgentState.READY]: async () => { calls.push("a") } } }, {})
-    manager.register({ id: "b", onEnter: { [AgentState.FAILED]: async () => { calls.push("b") } } }, {})
+    manager.register(
+      {
+        id: "a",
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("a")
+          },
+        },
+      },
+      {},
+    )
+    manager.register(
+      {
+        id: "b",
+        onEnter: {
+          [AgentState.FAILED]: async () => {
+            calls.push("b")
+          },
+        },
+      },
+      {},
+    )
 
     await manager.triggerStateEnter(AgentState.READY)
     expect(calls).toEqual(["a"])
@@ -76,15 +110,38 @@ describe("triggerStateEnter", () => {
     const { manager } = makeManager()
     const calls: string[] = []
     manager.register(
-      { id: "late", priority: 90, onEnter: { [AgentState.READY]: async () => { calls.push("late") } } },
+      {
+        id: "late",
+        priority: 90,
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("late")
+          },
+        },
+      },
       {},
     )
     manager.register(
-      { id: "default", onEnter: { [AgentState.READY]: async () => { calls.push("default") } } },
+      {
+        id: "default",
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("default")
+          },
+        },
+      },
       {},
     )
     manager.register(
-      { id: "early", priority: 1, onEnter: { [AgentState.READY]: async () => { calls.push("early") } } },
+      {
+        id: "early",
+        priority: 1,
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("early")
+          },
+        },
+      },
       {},
     )
     await manager.triggerStateEnter(AgentState.READY)
@@ -95,11 +152,27 @@ describe("triggerStateEnter", () => {
     const { manager } = makeManager()
     const calls: string[] = []
     manager.register(
-      { id: "boom", priority: 1, onEnter: { [AgentState.READY]: async () => { throw new Error("boom") } } },
+      {
+        id: "boom",
+        priority: 1,
+        onEnter: {
+          [AgentState.READY]: async () => {
+            throw new Error("boom")
+          },
+        },
+      },
       {},
     )
     manager.register(
-      { id: "ok", priority: 2, onEnter: { [AgentState.READY]: async () => { calls.push("ok") } } },
+      {
+        id: "ok",
+        priority: 2,
+        onEnter: {
+          [AgentState.READY]: async () => {
+            calls.push("ok")
+          },
+        },
+      },
       {},
     )
     await manager.triggerStateEnter(AgentState.READY)
@@ -111,7 +184,14 @@ describe("triggerStateEnter", () => {
     let received: EngineContext | null = null
     const myDep = { name: "dep" }
     manager.register(
-      { id: "mod", onEnter: { [AgentState.EXECUTING]: async (ctx) => { received = ctx } } },
+      {
+        id: "mod",
+        onEnter: {
+          [AgentState.EXECUTING]: async (ctx) => {
+            received = ctx
+          },
+        },
+      },
       { myDep },
     )
     await manager.triggerStateEnter(AgentState.EXECUTING, { sessionId: "s1", goal: "g", stepCount: 3 })
@@ -125,7 +205,14 @@ describe("triggerStateEnter", () => {
     const { manager } = makeManager()
     let received: EngineContext | null = null
     manager.register(
-      { id: "mod", onEnter: { [AgentState.IDLE]: async (ctx) => { received = ctx } } },
+      {
+        id: "mod",
+        onEnter: {
+          [AgentState.IDLE]: async (ctx) => {
+            received = ctx
+          },
+        },
+      },
       {},
     )
     await manager.triggerStateEnter(AgentState.IDLE)
@@ -140,11 +227,27 @@ describe("triggerStateExit", () => {
     const { manager } = makeManager()
     const calls: string[] = []
     manager.register(
-      { id: "b", priority: 2, onExit: { [AgentState.EXECUTING]: async () => { calls.push("b") } } },
+      {
+        id: "b",
+        priority: 2,
+        onExit: {
+          [AgentState.EXECUTING]: async () => {
+            calls.push("b")
+          },
+        },
+      },
       {},
     )
     manager.register(
-      { id: "boom", priority: 1, onExit: { [AgentState.EXECUTING]: async () => { throw new Error("x") } } },
+      {
+        id: "boom",
+        priority: 1,
+        onExit: {
+          [AgentState.EXECUTING]: async () => {
+            throw new Error("x")
+          },
+        },
+      },
       {},
     )
     await manager.triggerStateExit(AgentState.EXECUTING)
@@ -156,8 +259,28 @@ describe("triggerPhase", () => {
   test("invokes matching phase hooks only", async () => {
     const { manager } = makeManager()
     const calls: string[] = []
-    manager.register({ id: "a", onPhase: { before_step: async () => { calls.push("before") } } }, {})
-    manager.register({ id: "b", onPhase: { after_step: async () => { calls.push("after") } } }, {})
+    manager.register(
+      {
+        id: "a",
+        onPhase: {
+          before_step: async () => {
+            calls.push("before")
+          },
+        },
+      },
+      {},
+    )
+    manager.register(
+      {
+        id: "b",
+        onPhase: {
+          after_step: async () => {
+            calls.push("after")
+          },
+        },
+      },
+      {},
+    )
 
     await manager.triggerPhase("before_step")
     expect(calls).toEqual(["before"])
@@ -193,7 +316,14 @@ describe("hookStateMachine", () => {
     const { sm, manager } = makeManager()
     const calls: string[] = []
     manager.register(
-      { id: "mod", onEnter: { [AgentState.PLANNING]: async () => { calls.push("planned") } } },
+      {
+        id: "mod",
+        onEnter: {
+          [AgentState.PLANNING]: async () => {
+            calls.push("planned")
+          },
+        },
+      },
       {},
     )
     manager.hookStateMachine()

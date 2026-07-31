@@ -1,15 +1,15 @@
 import { describe, expect, test } from "bun:test"
 import {
-  validateDAG,
-  getReadyNodes,
-  markNodeFailed,
-  getTransitiveDependents,
-  estimateDAGCost,
-  replaceSubtree,
-  isComplete,
-  allSucceeded,
   type DAG,
   type DAGNode,
+  allSucceeded,
+  estimateDAGCost,
+  getReadyNodes,
+  getTransitiveDependents,
+  isComplete,
+  markNodeFailed,
+  replaceSubtree,
+  validateDAG,
 } from "../src/index"
 
 function makeNode(id: string, overrides?: Partial<DAGNode>): DAGNode {
@@ -30,11 +30,7 @@ function makeNode(id: string, overrides?: Partial<DAGNode>): DAGNode {
 function makeLinearDAG(): DAG {
   return {
     version: 1,
-    nodes: [
-      makeNode("a"),
-      makeNode("b", { dependencies: ["a"] }),
-      makeNode("c", { dependencies: ["b"] }),
-    ],
+    nodes: [makeNode("a"), makeNode("b", { dependencies: ["a"] }), makeNode("c", { dependencies: ["b"] })],
     edges: [
       ["a", "b"],
       ["b", "c"],

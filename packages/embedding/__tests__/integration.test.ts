@@ -6,23 +6,17 @@
  * embedding package.
  */
 
-import { describe, test, expect, beforeEach } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 
 // embedding internals
 import {
-  EnhancedTFIDF,
   CodeEmbeddingIndexer,
-  HybridSearch,
   EmbeddingProviderRegistry,
+  EnhancedTFIDF,
+  HybridSearch,
   SimpleEmbeddingProvider,
 } from "../src/index"
-import type {
-  EmbeddingProvider,
-  EmbeddingModel,
-  VectorStore,
-  CodeEmbeddingItem,
-  CodeGraph,
-} from "../src/index"
+import type { CodeEmbeddingItem, CodeGraph, EmbeddingModel, EmbeddingProvider, VectorStore } from "../src/index"
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
@@ -274,8 +268,14 @@ describe("Integration: EnhancedTFIDF × HybridSearch × CodeEmbeddingIndexer", (
       },
       async searchNeighbors(itemId: string, _opts: { maxDepth: number; maxNeighbors: number }) {
         const edges: Record<string, Array<{ id: string; score: number }>> = {
-          f1: [{ id: "f2", score: 0.8 }, { id: "c1", score: 0.9 }],
-          c1: [{ id: "f1", score: 0.9 }, { id: "f2", score: 0.7 }],
+          f1: [
+            { id: "f2", score: 0.8 },
+            { id: "c1", score: 0.9 },
+          ],
+          c1: [
+            { id: "f1", score: 0.9 },
+            { id: "f2", score: 0.7 },
+          ],
         }
         return edges[itemId] ?? []
       },
@@ -372,7 +372,9 @@ describe("Integration: Provider × Indexer × Hybrid → Complete Stack", () => 
 
 function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0
-  let dot = 0, normA = 0, normB = 0
+  let dot = 0,
+    normA = 0,
+    normB = 0
   for (let i = 0; i < a.length; i++) {
     dot += a[i]! * b[i]!
     normA += a[i]! * a[i]!

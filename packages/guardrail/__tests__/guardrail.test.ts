@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import {
+  DEFAULT_ENTROPY_CONFIG,
   EntropyController,
+  type EntropyMetrics,
+  type RiskLevel,
   describeRisk,
   isDestructive,
   requiresConfirmation,
-  DEFAULT_ENTROPY_CONFIG,
-  type RiskLevel,
-  type EntropyMetrics,
 } from "../src/index"
 
 function makeMetrics(overrides?: Partial<EntropyMetrics>): EntropyMetrics {
@@ -58,76 +58,94 @@ describe("EntropyController", () => {
 
   test("token budget exceeded returns TERMINATE", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget + 1,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget + 1,
+      }),
+    )
     expect(action).toBe("TERMINATE")
   })
 
   test("tokens above 90% returns ALERT", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget * 0.92,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget * 0.92,
+      }),
+    )
     expect(action).toBe("ALERT")
   })
 
   test("high contradiction entropy returns PAUSE", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      contradictionEntropy: 0.6,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        contradictionEntropy: 0.6,
+      }),
+    )
     expect(action).toBe("PAUSE")
   })
 
   test("moderate contradiction entropy returns DEGRADE", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      contradictionEntropy: 0.4,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        contradictionEntropy: 0.4,
+      }),
+    )
     expect(action).toBe("DEGRADE")
   })
 
   test("consecutive failures over limit returns DEGRADE", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      consecutiveFailures: DEFAULT_ENTROPY_CONFIG.maxConsecutiveFailures + 1,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        consecutiveFailures: DEFAULT_ENTROPY_CONFIG.maxConsecutiveFailures + 1,
+      }),
+    )
     expect(action).toBe("DEGRADE")
   })
 
   test("research mode downgrades PAUSE instead of DEGRADE/ROLLBACK", () => {
     const ctrl = new EntropyController()
     ctrl.enableResearchMode()
-    const action = ctrl.evaluate(makeMetrics({
-      consecutiveFailures: DEFAULT_ENTROPY_CONFIG.maxConsecutiveFailures + 1,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        consecutiveFailures: DEFAULT_ENTROPY_CONFIG.maxConsecutiveFailures + 1,
+      }),
+    )
     expect(action).toBe("PAUSE")
   })
 
   test("high divergence with significant token usage returns PAUSE", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      resultDivergence: DEFAULT_ENTROPY_CONFIG.maxResultDivergence + 0.1,
-      cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget * 0.6,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        resultDivergence: DEFAULT_ENTROPY_CONFIG.maxResultDivergence + 0.1,
+        cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget * 0.6,
+      }),
+    )
     expect(action).toBe("PAUSE")
   })
 
   test("low divergence with high token usage returns CONTINUE", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      resultDivergence: DEFAULT_ENTROPY_CONFIG.maxResultDivergence + 0.1,
-      cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget * 0.4,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        resultDivergence: DEFAULT_ENTROPY_CONFIG.maxResultDivergence + 0.1,
+        cumulativeTokens: DEFAULT_ENTROPY_CONFIG.tokenBudget * 0.4,
+      }),
+    )
     expect(action).toBe("CONTINUE")
   })
 
   test("low validation pass rate returns ROLLBACK", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      validationPassRate: 0.1,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        validationPassRate: 0.1,
+      }),
+    )
     expect(action).toBe("ROLLBACK")
   })
 
@@ -145,9 +163,11 @@ describe("EntropyController", () => {
   test("research mode on consecutive failures returns PAUSE", () => {
     const ctrl = new EntropyController()
     ctrl.enableResearchMode()
-    const action = ctrl.evaluate(makeMetrics({
-      consecutiveFailures: DEFAULT_ENTROPY_CONFIG.maxConsecutiveFailures + 2,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        consecutiveFailures: DEFAULT_ENTROPY_CONFIG.maxConsecutiveFailures + 2,
+      }),
+    )
     expect(action).toBe("PAUSE")
   })
 
@@ -184,10 +204,12 @@ describe("EntropyController", () => {
 
   test("stale node metrics do not crash evaluation", () => {
     const ctrl = new EntropyController()
-    const action = ctrl.evaluate(makeMetrics({
-      staleNodeCount: 5,
-      totalMemoryNodes: 10,
-    }))
+    const action = ctrl.evaluate(
+      makeMetrics({
+        staleNodeCount: 5,
+        totalMemoryNodes: 10,
+      }),
+    )
     expect(action).toBe("CONTINUE")
   })
 })

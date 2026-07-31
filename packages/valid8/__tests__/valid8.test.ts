@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  ValidationNetwork,
-  createDefaultExternalScanner,
-} from "../src/index"
+import { ValidationNetwork, createDefaultExternalScanner } from "../src/index"
 
 describe("ValidationNetwork", () => {
   const valid8 = new ValidationNetwork({ threshold: 0.7, maxRetries: 3 })
@@ -20,46 +17,31 @@ describe("ValidationNetwork", () => {
     })
 
     test("valid JavaScript passes regex fallback", async () => {
-      const result = await valid8.runSyntaxValidation(
-        "const x = 1;\nconsole.log(x);",
-        "test.js",
-      )
+      const result = await valid8.runSyntaxValidation("const x = 1;\nconsole.log(x);", "test.js")
       expect(result.layer).toBe("syntax")
       expect(result.score).toBeGreaterThanOrEqual(0.7)
     })
 
     test("non-TS/JS files use brace/paren/bracket matching", async () => {
-      const result = await valid8.runSyntaxValidation(
-        "def hello():\n    print('hello')\n",
-        "test.py",
-      )
+      const result = await valid8.runSyntaxValidation("def hello():\n    print('hello')\n", "test.py")
       expect(result.layer).toBe("syntax")
       expect(result.score).toBeGreaterThanOrEqual(0.7)
     })
 
     test("mismatched braces are detected in non-TS files", async () => {
-      const result = await valid8.runSyntaxValidation(
-        "function broken() { return 1;\n",
-        "test.txt",
-      )
+      const result = await valid8.runSyntaxValidation("function broken() { return 1;\n", "test.txt")
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("Mismatched")
     })
 
     test("duplicate const declaration is flagged", async () => {
-      const result = await valid8.runSyntaxValidation(
-        "const const x = 1;",
-        "test.ts",
-      )
+      const result = await valid8.runSyntaxValidation("const const x = 1;", "test.ts")
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("Duplicate")
     })
 
     test("bare TODO comments are flagged", async () => {
-      const result = await valid8.runSyntaxValidation(
-        "// TODO\nconst x = 1;",
-        "test.ts",
-      )
+      const result = await valid8.runSyntaxValidation("// TODO\nconst x = 1;", "test.ts")
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("TODO")
     })
@@ -78,10 +60,7 @@ describe("ValidationNetwork", () => {
     })
 
     test("unrelated output scores low on keyword fallback", async () => {
-      const result = await valid8.runSemanticValidation(
-        "lorem ipsum dolor sit amet",
-        "generate TypeScript unit tests",
-      )
+      const result = await valid8.runSemanticValidation("lorem ipsum dolor sit amet", "generate TypeScript unit tests")
       expect(result.layer).toBe("semantic")
       // Should score lower since output has no matching keywords
       expect(result.score).toBeLessThan(0.8)
@@ -92,10 +71,7 @@ describe("ValidationNetwork", () => {
         "This is a long and detailed response about TypeScript unit testing strategies",
         "generate TypeScript unit tests",
       )
-      const resultShort = await valid8.runSemanticValidation(
-        "hi",
-        "generate TypeScript unit tests",
-      )
+      const resultShort = await valid8.runSemanticValidation("hi", "generate TypeScript unit tests")
       expect(resultShort.score).toBeLessThanOrEqual(resultNormal.score)
     })
 
@@ -104,11 +80,7 @@ describe("ValidationNetwork", () => {
         score: 0.95,
         report: "Output perfectly matches the goal",
       })
-      const result = await valid8.runSemanticValidation(
-        "const test = () => {}",
-        "write tests",
-        mockLLM,
-      )
+      const result = await valid8.runSemanticValidation("const test = () => {}", "write tests", mockLLM)
       expect(result.layer).toBe("semantic")
       expect(result.score).toBe(0.95)
       expect(result.report).toContain("LLM review")
@@ -119,9 +91,7 @@ describe("ValidationNetwork", () => {
 
   describe("runRuntimeValidation", () => {
     test("clean output returns perfect score", async () => {
-      const result = await valid8.runRuntimeValidation(
-        "Build completed successfully. All tests passed.",
-      )
+      const result = await valid8.runRuntimeValidation("Build completed successfully. All tests passed.")
       expect(result.layer).toBe("runtime")
       expect(result.score).toBe(1.0)
       expect(result.report).toBe("No runtime errors detected")
@@ -144,17 +114,13 @@ describe("ValidationNetwork", () => {
     })
 
     test("crash patterns detected", async () => {
-      const result = await valid8.runRuntimeValidation(
-        "fatal: out of memory\nprocess exited with signal SIGSEGV",
-      )
+      const result = await valid8.runRuntimeValidation("fatal: out of memory\nprocess exited with signal SIGSEGV")
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("crash")
     })
 
     test("error categories are summarized", async () => {
-      const result = await valid8.runRuntimeValidation(
-        "error TS1000: bad\nFAIL test\ntypeerror: x is not a function",
-      )
+      const result = await valid8.runRuntimeValidation("error TS1000: bad\nFAIL test\ntypeerror: x is not a function")
       expect(result.report).toMatch(/compilation|test_failure|runtime_error/)
     })
   })
@@ -163,18 +129,14 @@ describe("ValidationNetwork", () => {
 
   describe("runSecurityValidation", () => {
     test("clean code passes security check", async () => {
-      const result = await valid8.runSecurityValidation(
-        "const greeting = 'hello world';\nconsole.log(greeting);",
-      )
+      const result = await valid8.runSecurityValidation("const greeting = 'hello world';\nconsole.log(greeting);")
       expect(result.layer).toBe("security")
       expect(result.score).toBe(1.0)
       expect(result.report).toBe("Security check passed")
     })
 
     test("destructive command patterns detected", async () => {
-      const result = await valid8.runSecurityValidation(
-        "rm -rf / && chmod 777 /",
-      )
+      const result = await valid8.runSecurityValidation("rm -rf / && chmod 777 /")
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("destructive")
     })
@@ -188,36 +150,27 @@ describe("ValidationNetwork", () => {
     })
 
     test("code injection patterns detected", async () => {
-      const result = await valid8.runSecurityValidation(
-        "eval(userInput); exec('rm -rf /');",
-      )
+      const result = await valid8.runSecurityValidation("eval(userInput); exec('rm -rf /');")
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("code_injection")
     })
 
     test("permission rules block bash when not allowed", async () => {
-      const result = await valid8.runSecurityValidation(
-        "spawn('ls', ['-la'])",
-        { allowBash: false },
-      )
+      const result = await valid8.runSecurityValidation("spawn('ls', ['-la'])", { allowBash: false })
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("permission")
     })
 
     test("permission rules allow bash when allowed", async () => {
-      const result = await valid8.runSecurityValidation(
-        "spawn('ls', ['-la'])",
-        { allowBash: true },
-      )
+      const result = await valid8.runSecurityValidation("spawn('ls', ['-la'])", { allowBash: true })
       // Should not flag bash when allowed
       expect(result.report).not.toContain("permission: bash")
     })
 
     test("blocked patterns are enforced", async () => {
-      const result = await valid8.runSecurityValidation(
-        "const secretKey = 'abc123'",
-        { blockedPatterns: ["secretKey"] },
-      )
+      const result = await valid8.runSecurityValidation("const secretKey = 'abc123'", {
+        blockedPatterns: ["secretKey"],
+      })
       expect(result.score).toBeLessThan(1.0)
       expect(result.report).toContain("blocked pattern")
     })

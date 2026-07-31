@@ -1,271 +1,271 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test"
 import {
-  ProcessRewardModel,
-  rolloutConfidence,
-  scoreMathStep,
-  scoreCodeStep,
-  scoreLogicStep,
-  heuristicScore,
-  weakSupervisionLabel,
+  DEFAULT_PRM_CONFIG,
+  DEFAULT_TRAINING_CONFIG,
   HeuristicStepScorer,
   PRMLabeler,
   PRMTrainer,
-  DEFAULT_PRM_CONFIG,
-  DEFAULT_TRAINING_CONFIG,
+  ProcessRewardModel,
   type StepScore,
   type TaskType,
   type TrainingSample,
-} from '../src/index.js';
+  heuristicScore,
+  rolloutConfidence,
+  scoreCodeStep,
+  scoreLogicStep,
+  scoreMathStep,
+  weakSupervisionLabel,
+} from "../src/index.js"
 
 // ─── Rollout Confidence ─────────────────────────────────────────────────────
 
-describe('rolloutConfidence', () => {
-  test('returns 0 for n=0', () => {
-    expect(rolloutConfidence(0)).toBe(0);
-  });
+describe("rolloutConfidence", () => {
+  test("returns 0 for n=0", () => {
+    expect(rolloutConfidence(0)).toBe(0)
+  })
 
-  test('monotonically increasing', () => {
-    const c1 = rolloutConfidence(2);
-    const c2 = rolloutConfidence(8);
-    const c3 = rolloutConfidence(16);
-    expect(c2).toBeGreaterThan(c1);
-    expect(c3).toBeGreaterThan(c2);
-  });
+  test("monotonically increasing", () => {
+    const c1 = rolloutConfidence(2)
+    const c2 = rolloutConfidence(8)
+    const c3 = rolloutConfidence(16)
+    expect(c2).toBeGreaterThan(c1)
+    expect(c3).toBeGreaterThan(c2)
+  })
 
-  test('bounded in [0, 1)', () => {
+  test("bounded in [0, 1)", () => {
     for (let n = 1; n <= 100; n++) {
-      const c = rolloutConfidence(n);
-      expect(c).toBeGreaterThanOrEqual(0);
-      expect(c).toBeLessThan(1);
+      const c = rolloutConfidence(n)
+      expect(c).toBeGreaterThanOrEqual(0)
+      expect(c).toBeLessThan(1)
     }
-  });
+  })
 
-  test('approaches 1 for large n', () => {
-    const c = rolloutConfidence(10000);
-    expect(c).toBeGreaterThan(0.99);
-  });
-});
+  test("approaches 1 for large n", () => {
+    const c = rolloutConfidence(10000)
+    expect(c).toBeGreaterThan(0.99)
+  })
+})
 
 // ─── Math Heuristic ─────────────────────────────────────────────────────────
 
-describe('scoreMathStep', () => {
-  test('valid equation scores above baseline', () => {
-    const score = scoreMathStep('2 + 3 = 5', null);
-    expect(score).toBeGreaterThan(0.5);
-  });
+describe("scoreMathStep", () => {
+  test("valid equation scores above baseline", () => {
+    const score = scoreMathStep("2 + 3 = 5", null)
+    expect(score).toBeGreaterThan(0.5)
+  })
 
-  test('divide by zero penalized', () => {
-    const good = scoreMathStep('2 + 3 = 5', null);
-    const bad = scoreMathStep('10 / 0 = 5', null);
-    expect(bad).toBeLessThan(good);
-  });
+  test("divide by zero penalized", () => {
+    const good = scoreMathStep("2 + 3 = 5", null)
+    const bad = scoreMathStep("10 / 0 = 5", null)
+    expect(bad).toBeLessThan(good)
+  })
 
-  test('cross-step coherence boosts score', () => {
-    const s1 = scoreMathStep('x = 5', null);
-    const s2 = scoreMathStep('x + 3 = 8', 'x = 5');
+  test("cross-step coherence boosts score", () => {
+    const s1 = scoreMathStep("x = 5", null)
+    const s2 = scoreMathStep("x + 3 = 8", "x = 5")
     // s2 references '5' from previous step, should score higher or equal
-    expect(s2).toBeGreaterThanOrEqual(s1 * 0.5);
-  });
+    expect(s2).toBeGreaterThanOrEqual(s1 * 0.5)
+  })
 
-  test('outputs in [0, 1] range', () => {
-    for (const step of ['2+2=4', '0/0=NaN', '', 'solve: x^2+2x+1=0']) {
-      const score = scoreMathStep(step, null);
-      expect(score).toBeGreaterThanOrEqual(0);
-      expect(score).toBeLessThanOrEqual(1);
+  test("outputs in [0, 1] range", () => {
+    for (const step of ["2+2=4", "0/0=NaN", "", "solve: x^2+2x+1=0"]) {
+      const score = scoreMathStep(step, null)
+      expect(score).toBeGreaterThanOrEqual(0)
+      expect(score).toBeLessThanOrEqual(1)
     }
-  });
-});
+  })
+})
 
 // ─── Code Heuristic ─────────────────────────────────────────────────────────
 
-describe('scoreCodeStep', () => {
-  test('function definition scores above baseline', () => {
-    const score = scoreCodeStep('def foo(x): return x + 1', null);
-    expect(score).toBeGreaterThan(0.5);
-  });
+describe("scoreCodeStep", () => {
+  test("function definition scores above baseline", () => {
+    const score = scoreCodeStep("def foo(x): return x + 1", null)
+    expect(score).toBeGreaterThan(0.5)
+  })
 
-  test('syntax errors penalized', () => {
-    const good = scoreCodeStep('const x = 1;', null);
-    const bad = scoreCodeStep('elsif x == 1:', null);
-    expect(bad).toBeLessThan(good);
-  });
+  test("syntax errors penalized", () => {
+    const good = scoreCodeStep("const x = 1;", null)
+    const bad = scoreCodeStep("elsif x == 1:", null)
+    expect(bad).toBeLessThan(good)
+  })
 
-  test('outputs in [0, 1] range', () => {
-    for (const step of ['def solve():', 'for i in range(10):', 'x = lambda:', '']) {
-      const score = scoreCodeStep(step, null);
-      expect(score).toBeGreaterThanOrEqual(0);
-      expect(score).toBeLessThanOrEqual(1);
+  test("outputs in [0, 1] range", () => {
+    for (const step of ["def solve():", "for i in range(10):", "x = lambda:", ""]) {
+      const score = scoreCodeStep(step, null)
+      expect(score).toBeGreaterThanOrEqual(0)
+      expect(score).toBeLessThanOrEqual(1)
     }
-  });
-});
+  })
+})
 
 // ─── Logic Heuristic ────────────────────────────────────────────────────────
 
-describe('scoreLogicStep', () => {
-  test('premise introduction scores above baseline', () => {
-    const score = scoreLogicStep('Assume P is true', null);
-    expect(score).toBeGreaterThan(0.5);
-  });
+describe("scoreLogicStep", () => {
+  test("premise introduction scores above baseline", () => {
+    const score = scoreLogicStep("Assume P is true", null)
+    expect(score).toBeGreaterThan(0.5)
+  })
 
-  test('conclusion markers boost score', () => {
-    const score = scoreLogicStep('Therefore, the statement holds. QED', null);
-    expect(score).toBeGreaterThan(0.5);
-  });
+  test("conclusion markers boost score", () => {
+    const score = scoreLogicStep("Therefore, the statement holds. QED", null)
+    expect(score).toBeGreaterThan(0.5)
+  })
 
-  test('outputs in [0, 1] range', () => {
-    for (const step of ['Let x be...', 'This is a contradiction', 'Q.E.D.', '']) {
-      const score = scoreLogicStep(step, null);
-      expect(score).toBeGreaterThanOrEqual(0);
-      expect(score).toBeLessThanOrEqual(1);
+  test("outputs in [0, 1] range", () => {
+    for (const step of ["Let x be...", "This is a contradiction", "Q.E.D.", ""]) {
+      const score = scoreLogicStep(step, null)
+      expect(score).toBeGreaterThanOrEqual(0)
+      expect(score).toBeLessThanOrEqual(1)
     }
-  });
-});
+  })
+})
 
 // ─── Heuristic Dispatch ─────────────────────────────────────────────────────
 
-describe('heuristicScore', () => {
-  test('dispatches to correct scorer', () => {
-    const mathScore = heuristicScore('2+2=4', null, 'math');
-    const codeScore = heuristicScore('def foo(): pass', null, 'code');
-    const logicScore = heuristicScore('Therefore QED', null, 'logic');
-    const generalScore = heuristicScore('something', null, 'general');
+describe("heuristicScore", () => {
+  test("dispatches to correct scorer", () => {
+    const mathScore = heuristicScore("2+2=4", null, "math")
+    const codeScore = heuristicScore("def foo(): pass", null, "code")
+    const logicScore = heuristicScore("Therefore QED", null, "logic")
+    const generalScore = heuristicScore("something", null, "general")
 
-    expect(mathScore).toBeGreaterThanOrEqual(0);
-    expect(codeScore).toBeGreaterThanOrEqual(0);
-    expect(logicScore).toBeGreaterThanOrEqual(0);
-    expect(generalScore).toBeGreaterThanOrEqual(0);
-  });
-});
+    expect(mathScore).toBeGreaterThanOrEqual(0)
+    expect(codeScore).toBeGreaterThanOrEqual(0)
+    expect(logicScore).toBeGreaterThanOrEqual(0)
+    expect(generalScore).toBeGreaterThanOrEqual(0)
+  })
+})
 
 // ─── Weak Supervision ───────────────────────────────────────────────────────
 
-describe('weakSupervisionLabel', () => {
-  test('correct outcome gives high base', () => {
-    const label = weakSupervisionLabel(0.5, true);
-    expect(label).toBeGreaterThan(0.5);
-    expect(label).toBeLessThan(1);
-  });
+describe("weakSupervisionLabel", () => {
+  test("correct outcome gives high base", () => {
+    const label = weakSupervisionLabel(0.5, true)
+    expect(label).toBeGreaterThan(0.5)
+    expect(label).toBeLessThan(1)
+  })
 
-  test('incorrect outcome gives low base', () => {
-    const label = weakSupervisionLabel(0.5, false);
-    expect(label).toBeLessThan(0.5);
-    expect(label).toBeGreaterThan(0);
-  });
+  test("incorrect outcome gives low base", () => {
+    const label = weakSupervisionLabel(0.5, false)
+    expect(label).toBeLessThan(0.5)
+    expect(label).toBeGreaterThan(0)
+  })
 
-  test('no position bias — same heuristic + same outcome = same label', () => {
-    const l1 = weakSupervisionLabel(0.6, true);
-    const l2 = weakSupervisionLabel(0.6, true);
-    expect(l1).toBe(l2);
-  });
+  test("no position bias — same heuristic + same outcome = same label", () => {
+    const l1 = weakSupervisionLabel(0.6, true)
+    const l2 = weakSupervisionLabel(0.6, true)
+    expect(l1).toBe(l2)
+  })
 
-  test('heuristic has more weight than outcome signal', () => {
+  test("heuristic has more weight than outcome signal", () => {
     // heuristic=0.6, outcome=true → 0.7*0.6 + 0.3*0.9 = 0.42 + 0.27 = 0.69
-    const label = weakSupervisionLabel(0.6, true);
-    expect(label).toBeCloseTo(0.69, 5);
-  });
-});
+    const label = weakSupervisionLabel(0.6, true)
+    expect(label).toBeCloseTo(0.69, 5)
+  })
+})
 
 // ─── ProcessRewardModel ─────────────────────────────────────────────────────
 
-describe('ProcessRewardModel', () => {
-  test('constructor with defaults', () => {
-    const prm = new ProcessRewardModel();
-    expect(prm.labelingStrategy).toBe('hybrid');
-    expect(prm.numRollouts).toBe(8);
-  });
+describe("ProcessRewardModel", () => {
+  test("constructor with defaults", () => {
+    const prm = new ProcessRewardModel()
+    expect(prm.labelingStrategy).toBe("hybrid")
+    expect(prm.numRollouts).toBe(8)
+  })
 
-  test('constructor with custom config', () => {
-    const prm = new ProcessRewardModel({ labelingStrategy: 'heuristic', numRollouts: 16 });
-    expect(prm.labelingStrategy).toBe('heuristic');
-    expect(prm.numRollouts).toBe(16);
-  });
+  test("constructor with custom config", () => {
+    const prm = new ProcessRewardModel({ labelingStrategy: "heuristic", numRollouts: 16 })
+    expect(prm.labelingStrategy).toBe("heuristic")
+    expect(prm.numRollouts).toBe(16)
+  })
 
-  test('scoreStep returns valid StepScore', async () => {
-    const prm = new ProcessRewardModel();
-    const result = await prm.scoreStep('', 'x = 5', '', 'math');
-    expect(result.score).toBeGreaterThanOrEqual(0);
-    expect(result.score).toBeLessThanOrEqual(1);
-    expect(result.confidence).toBeGreaterThanOrEqual(0);
-    expect(['mc_rollout', 'heuristic', 'weak_supervision']).toContain(result.method);
-  });
+  test("scoreStep returns valid StepScore", async () => {
+    const prm = new ProcessRewardModel()
+    const result = await prm.scoreStep("", "x = 5", "", "math")
+    expect(result.score).toBeGreaterThanOrEqual(0)
+    expect(result.score).toBeLessThanOrEqual(1)
+    expect(result.confidence).toBeGreaterThanOrEqual(0)
+    expect(["mc_rollout", "heuristic", "weak_supervision"]).toContain(result.method)
+  })
 
-  test('batchScoreSteps returns correct count', async () => {
-    const prm = new ProcessRewardModel();
-    const states = ['', 'x = 5'];
-    const actions = ['2+2=4', 'x + 3 = 8'];
-    const results = await prm.batchScoreSteps(states, actions, undefined, 'math');
-    expect(results.length).toBe(2);
-    expect(results[0]!.stepIndex).toBe(0);
-    expect(results[1]!.stepIndex).toBe(1);
-  });
+  test("batchScoreSteps returns correct count", async () => {
+    const prm = new ProcessRewardModel()
+    const states = ["", "x = 5"]
+    const actions = ["2+2=4", "x + 3 = 8"]
+    const results = await prm.batchScoreSteps(states, actions, undefined, "math")
+    expect(results.length).toBe(2)
+    expect(results[0]!.stepIndex).toBe(0)
+    expect(results[1]!.stepIndex).toBe(1)
+  })
 
-  test('scorePath returns one score per step', async () => {
-    const prm = new ProcessRewardModel({ labelingStrategy: 'heuristic' });
-    const steps = ['Step 1: define x = 5', 'Step 2: x + 3 = 8', 'Step 3: therefore x = 5'];
-    const scores = await prm.scorePath(steps, '', 'math');
-    expect(scores.length).toBe(3);
+  test("scorePath returns one score per step", async () => {
+    const prm = new ProcessRewardModel({ labelingStrategy: "heuristic" })
+    const steps = ["Step 1: define x = 5", "Step 2: x + 3 = 8", "Step 3: therefore x = 5"]
+    const scores = await prm.scorePath(steps, "", "math")
+    expect(scores.length).toBe(3)
     scores.forEach((s, i) => {
-      expect(s.stepIndex).toBe(i);
-      expect(s.score).toBeGreaterThanOrEqual(0);
-      expect(s.score).toBeLessThanOrEqual(1);
-    });
-  });
+      expect(s.stepIndex).toBe(i)
+      expect(s.score).toBeGreaterThanOrEqual(0)
+      expect(s.score).toBeLessThanOrEqual(1)
+    })
+  })
 
-  test('scorePathHeuristic is synchronous', () => {
-    const prm = new ProcessRewardModel();
-    const steps = ['2+2=4', 'def foo(): pass', 'therefore QED'];
-    const scores = prm.scorePathHeuristic(steps, 'general');
-    expect(scores.length).toBe(3);
-    expect(scores[0]!.method).toBe('heuristic');
-  });
+  test("scorePathHeuristic is synchronous", () => {
+    const prm = new ProcessRewardModel()
+    const steps = ["2+2=4", "def foo(): pass", "therefore QED"]
+    const scores = prm.scorePathHeuristic(steps, "general")
+    expect(scores.length).toBe(3)
+    expect(scores[0]!.method).toBe("heuristic")
+  })
 
-  test('labelSteps without MC falls back to weak supervision', async () => {
-    const prm = new ProcessRewardModel({ labelingStrategy: 'hybrid' });
-    const steps = ['step 1', 'step 2', 'step 3'];
-    const { labels, confidences } = await prm.labelSteps(steps, true, 'general');
-    expect(labels.length).toBe(3);
+  test("labelSteps without MC falls back to weak supervision", async () => {
+    const prm = new ProcessRewardModel({ labelingStrategy: "hybrid" })
+    const steps = ["step 1", "step 2", "step 3"]
+    const { labels, confidences } = await prm.labelSteps(steps, true, "general")
+    expect(labels.length).toBe(3)
     // For correct outcome, each label should be > 0.5 (bias toward positive)
-    labels.forEach(l => {
-      expect(l).toBeGreaterThanOrEqual(0);
-      expect(l).toBeLessThanOrEqual(1);
-    });
-    expect(confidences.every(c => c > 0)).toBe(true);
-  });
+    labels.forEach((l) => {
+      expect(l).toBeGreaterThanOrEqual(0)
+      expect(l).toBeLessThanOrEqual(1)
+    })
+    expect(confidences.every((c) => c > 0)).toBe(true)
+  })
 
-  test('registerScorer overrides default heuristic', async () => {
-    const prm = new ProcessRewardModel({ labelingStrategy: 'heuristic' });
-    prm.registerScorer('math', () => 0.99);
+  test("registerScorer overrides default heuristic", async () => {
+    const prm = new ProcessRewardModel({ labelingStrategy: "heuristic" })
+    prm.registerScorer("math", () => 0.99)
 
-    const result = await prm.scoreStep('', 'anything', '', 'math');
+    const result = await prm.scoreStep("", "anything", "", "math")
     // Note: registerScorer stores custom scorers but scoreStep currently uses
     // heuristicScore directly. The scorer map is there for external consumers.
     // Verify scorer was registered:
     // (Internal behavior is that heuristicScore is the primary path;
     //  the custom scorer map is available for integration.)
-    expect(result.score).toBeGreaterThanOrEqual(0);
-  });
+    expect(result.score).toBeGreaterThanOrEqual(0)
+  })
 
-  test('unregisterScorer returns true for existing', () => {
-    const prm = new ProcessRewardModel();
-    prm.registerScorer('custom', () => 0.5);
-    expect(prm.unregisterScorer('custom')).toBe(true);
-    expect(prm.unregisterScorer('custom')).toBe(false);
-  });
+  test("unregisterScorer returns true for existing", () => {
+    const prm = new ProcessRewardModel()
+    prm.registerScorer("custom", () => 0.5)
+    expect(prm.unregisterScorer("custom")).toBe(true)
+    expect(prm.unregisterScorer("custom")).toBe(false)
+  })
 
-  test('updateConfig changes behavior', () => {
-    const prm = new ProcessRewardModel();
-    prm.updateConfig({ numRollouts: 32, labelingStrategy: 'mc_rollout' });
-    expect(prm.numRollouts).toBe(32);
-    expect(prm.labelingStrategy).toBe('mc_rollout');
-  });
+  test("updateConfig changes behavior", () => {
+    const prm = new ProcessRewardModel()
+    prm.updateConfig({ numRollouts: 32, labelingStrategy: "mc_rollout" })
+    expect(prm.numRollouts).toBe(32)
+    expect(prm.labelingStrategy).toBe("mc_rollout")
+  })
 
-  test('math step scoring penalizes errors more than good steps', async () => {
-    const prm = new ProcessRewardModel({ labelingStrategy: 'heuristic' });
-    const goodResult = await prm.scoreStep('', '2 + 2 = 4', '', 'math');
-    const badResult = await prm.scoreStep('', '10 / 0 = 5', '', 'math');
-    expect(goodResult.score).toBeGreaterThan(badResult.score);
-  });
-});
+  test("math step scoring penalizes errors more than good steps", async () => {
+    const prm = new ProcessRewardModel({ labelingStrategy: "heuristic" })
+    const goodResult = await prm.scoreStep("", "2 + 2 = 4", "", "math")
+    const badResult = await prm.scoreStep("", "10 / 0 = 5", "", "math")
+    expect(goodResult.score).toBeGreaterThan(badResult.score)
+  })
+})
 
 // ─── HeuristicStepScorer (from prm-trainer) ────────────────────────────────
 
@@ -397,12 +397,7 @@ describe("PRMLabeler", () => {
   describe("heuristic labeling", () => {
     test("labels math path with heuristics", () => {
       const labeler = new PRMLabeler({ labelingStrategy: "heuristic" })
-      const steps = [
-        "Let x be the unknown",
-        "2x + 3 = 7",
-        "2x = 4",
-        "x = 2",
-      ]
+      const steps = ["Let x be the unknown", "2x + 3 = 7", "2x = 4", "x = 2"]
       const result = labeler.labelSteps(steps, 1, "math")
       expect(result.labels.length).toBe(4)
       expect(result.confidences.length).toBe(4)

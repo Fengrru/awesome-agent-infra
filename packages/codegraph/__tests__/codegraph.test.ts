@@ -1,33 +1,27 @@
 import { describe, expect, test } from "bun:test"
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import {
-  CodeGraph,
-  CodeGraphSearcher,
-  CodeGraphRanker,
-  CodeGraphWatcher,
-  flattenSubGraph,
-  buildRepoSummary,
-  estimateTokens,
   CallSiteStore,
-  createCallSite,
+  CodeGraph,
+  CodeGraphRanker,
+  CodeGraphSearcher,
+  CodeGraphWatcher,
   GraphPersistence,
-  IncrementalParser,
   ImpactAnalyzer,
+  IncrementalParser,
+  buildRepoSummary,
+  buildSignatureSource,
+  computeEntityHashes,
+  createCallSite,
+  estimateTokens,
+  flattenSubGraph,
   hashString,
   hashesEqual,
-  computeEntityHashes,
-  buildSignatureSource,
   signatureChanged,
 } from "../src/index"
-import type {
-  CodeGraphNode,
-  CodeGraphEdge,
-  ExtractResult,
-  ExtractorFn,
-  CallSite,
-} from "../src/index"
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs"
-import { join } from "node:path"
-import { tmpdir } from "node:os"
+import type { CallSite, CodeGraphEdge, CodeGraphNode, ExtractResult, ExtractorFn } from "../src/index"
 
 function makeNode(overrides?: Partial<CodeGraphNode>): CodeGraphNode {
   return {
@@ -375,43 +369,51 @@ describe("CodeGraphRanker", () => {
 describe("CodeGraphSearcher", () => {
   function buildSearchGraph(): CodeGraph {
     const g = new CodeGraph()
-    g.addNode(makeNode({
-      id: "symbol:processOrder",
-      name: "processOrder",
-      symbolType: "function",
-      filePath: "src/order.ts",
-      startLine: 10,
-      endLine: 30,
-      metadata: { isExported: true, visibility: "public" },
-    }))
-    g.addNode(makeNode({
-      id: "symbol:validateInput",
-      name: "validateInput",
-      symbolType: "function",
-      filePath: "src/order.ts",
-      startLine: 5,
-      endLine: 9,
-      metadata: { isExported: false },
-    }))
-    g.addNode(makeNode({
-      id: "symbol:Order",
-      name: "Order",
-      symbolType: "class",
-      filePath: "src/models.ts",
-      startLine: 1,
-      endLine: 50,
-      metadata: { isExported: true },
-    }))
-    g.addNode(makeNode({
-      id: "file:src/order.ts",
-      type: "file",
-      name: "order.ts",
-      filePath: "src/order.ts",
-      symbolType: undefined,
-      startLine: 1,
-      endLine: 0,
-      metadata: { language: "typescript", size: 100, imports: [], exports: [] },
-    }))
+    g.addNode(
+      makeNode({
+        id: "symbol:processOrder",
+        name: "processOrder",
+        symbolType: "function",
+        filePath: "src/order.ts",
+        startLine: 10,
+        endLine: 30,
+        metadata: { isExported: true, visibility: "public" },
+      }),
+    )
+    g.addNode(
+      makeNode({
+        id: "symbol:validateInput",
+        name: "validateInput",
+        symbolType: "function",
+        filePath: "src/order.ts",
+        startLine: 5,
+        endLine: 9,
+        metadata: { isExported: false },
+      }),
+    )
+    g.addNode(
+      makeNode({
+        id: "symbol:Order",
+        name: "Order",
+        symbolType: "class",
+        filePath: "src/models.ts",
+        startLine: 1,
+        endLine: 50,
+        metadata: { isExported: true },
+      }),
+    )
+    g.addNode(
+      makeNode({
+        id: "file:src/order.ts",
+        type: "file",
+        name: "order.ts",
+        filePath: "src/order.ts",
+        symbolType: undefined,
+        startLine: 1,
+        endLine: 0,
+        metadata: { language: "typescript", size: 100, imports: [], exports: [] },
+      }),
+    )
     g.addEdge(makeEdge({ sourceId: "symbol:processOrder", targetId: "symbol:validateInput", relation: "calls" }))
     g.addEdge(makeEdge({ sourceId: "file:src/order.ts", targetId: "symbol:processOrder", relation: "defines" }))
     g.addEdge(makeEdge({ sourceId: "file:src/order.ts", targetId: "symbol:validateInput", relation: "defines" }))
@@ -483,8 +485,29 @@ describe("CodeGraphSearcher", () => {
 describe("Helpers", () => {
   test("flattenSubGraph produces text output", () => {
     const nodes: CodeGraphNode[] = [
-      makeNode({ id: "symbol:add", name: "add", symbolType: "function", filePath: "src/main.ts", startLine: 1, metadata: { isExported: true, parameters: [{ name: "a", type: "number" }, { name: "b", type: "number" }], returnType: "number" } }),
-      makeNode({ id: "symbol:Helper", name: "Helper", symbolType: "class", filePath: "src/helper.ts", startLine: 5, metadata: { isExported: true, visibility: "public" } }),
+      makeNode({
+        id: "symbol:add",
+        name: "add",
+        symbolType: "function",
+        filePath: "src/main.ts",
+        startLine: 1,
+        metadata: {
+          isExported: true,
+          parameters: [
+            { name: "a", type: "number" },
+            { name: "b", type: "number" },
+          ],
+          returnType: "number",
+        },
+      }),
+      makeNode({
+        id: "symbol:Helper",
+        name: "Helper",
+        symbolType: "class",
+        filePath: "src/helper.ts",
+        startLine: 5,
+        metadata: { isExported: true, visibility: "public" },
+      }),
     ]
     const edges: CodeGraphEdge[] = [
       makeEdge({ sourceId: "symbol:add", targetId: "symbol:Helper", relation: "references" }),
@@ -497,7 +520,14 @@ describe("Helpers", () => {
 
   test("flattenSubGraph with doc comments", () => {
     const nodes: CodeGraphNode[] = [
-      makeNode({ id: "symbol:fn", name: "fn", symbolType: "function", filePath: "src/main.ts", startLine: 1, metadata: { docComment: "This is a documented function." } }),
+      makeNode({
+        id: "symbol:fn",
+        name: "fn",
+        symbolType: "function",
+        filePath: "src/main.ts",
+        startLine: 1,
+        metadata: { docComment: "This is a documented function." },
+      }),
     ]
     const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 50 }, { includeDocComments: true })
     expect(text).toContain("This is a documented function")
@@ -511,7 +541,12 @@ describe("Helpers", () => {
 
   test("estimateTokens returns positive number for non-empty graph", () => {
     const tokens = estimateTokens(
-      [makeNode({ id: "symbol:fn", metadata: { parameters: [{ name: "x", type: "string" }], returnType: "void", docComment: "doc" } })],
+      [
+        makeNode({
+          id: "symbol:fn",
+          metadata: { parameters: [{ name: "x", type: "string" }], returnType: "void", docComment: "doc" },
+        }),
+      ],
       [makeEdge({ sourceId: "symbol:fn", targetId: "symbol:other", relation: "calls" })],
     )
     expect(tokens).toBeGreaterThan(0)
@@ -530,11 +565,11 @@ describe("CodeGraphWatcher", () => {
   test("applyChanges on delete removes nodes", async () => {
     const g = new CodeGraph()
     g.addNode(makeNode({ id: "symbol:del", filePath: "src/del.ts" }))
-    g.addNode(makeNode({ id: "file:src/del.ts", type: "file", name: "del.ts", filePath: "src/del.ts", symbolType: undefined }))
+    g.addNode(
+      makeNode({ id: "file:src/del.ts", type: "file", name: "del.ts", filePath: "src/del.ts", symbolType: undefined }),
+    )
     const watcher = new CodeGraphWatcher(g, ".")
-    const result = await watcher.applyChanges([
-      { filePath: "src/del.ts", type: "delete" },
-    ])
+    const result = await watcher.applyChanges([{ filePath: "src/del.ts", type: "delete" }])
     expect(result.nodesRemoved).toBeGreaterThan(0)
     expect(g.hasNode("symbol:del")).toBe(false)
   })
@@ -542,19 +577,20 @@ describe("CodeGraphWatcher", () => {
   test("applyChanges with no extractor does nothing for add/modify", async () => {
     const g = new CodeGraph()
     const watcher = new CodeGraphWatcher(g, ".")
-    const result = await watcher.applyChanges([
-      { filePath: "src/new.ts", type: "add" },
-    ])
+    const result = await watcher.applyChanges([{ filePath: "src/new.ts", type: "add" }])
     expect(result.nodesAdded).toBe(0)
   })
 
   test("applyChange with extractor processes adds", async () => {
     const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-test-"))
     const filePath = join(tmpDir, "test.ts")
-    writeFileSync(filePath, `
+    writeFileSync(
+      filePath,
+      `
       export function hello() { return "world" }
       export class Greeter { greet() { return "hi" } }
-    `)
+    `,
+    )
 
     const g = new CodeGraph()
     const watcher = new CodeGraphWatcher(g, tmpDir)
@@ -585,9 +621,7 @@ describe("CodeGraphWatcher", () => {
       exports: ["hello", "Greeter"],
     }))
 
-    const result = await watcher.applyChanges([
-      { filePath, type: "add" },
-    ])
+    const result = await watcher.applyChanges([{ filePath, type: "add" }])
 
     expect(result.nodesAdded).toBeGreaterThan(0)
     expect(g.hasNode("symbol:hello")).toBe(true)
@@ -606,12 +640,20 @@ describe("CodeGraphWatcher", () => {
 
     const watcher = new CodeGraphWatcher(g, tmpDir)
     watcher.setExtractor(async (_fp, src, mtime) => ({
-      symbols: [{
-        id: "symbol:new", name: "new", symbolType: "function",
-        filePath: "mod.ts", startLine: 1, endLine: 1,
-        metadata: { isExported: true }, mtime,
-      }],
-      imports: [], exports: ["new"],
+      symbols: [
+        {
+          id: "symbol:new",
+          name: "new",
+          symbolType: "function",
+          filePath: "mod.ts",
+          startLine: 1,
+          endLine: 1,
+          metadata: { isExported: true },
+          mtime,
+        },
+      ],
+      imports: [],
+      exports: ["new"],
     }))
 
     const result = await watcher.applyChanges([{ filePath, type: "modify" }])
@@ -627,9 +669,7 @@ describe("CodeGraphWatcher", () => {
     const g = new CodeGraph()
     const watcher = new CodeGraphWatcher(g, ".")
     // No extractor set, applyChanges should return 0 nodes added
-    const result = await watcher.applyChanges([
-      { filePath: "src/nonexistent.ts", type: "modify" },
-    ])
+    const result = await watcher.applyChanges([{ filePath: "src/nonexistent.ts", type: "modify" }])
     expect(result.nodesAdded).toBe(0)
   })
 })
@@ -898,7 +938,13 @@ describe("CodeGraphSearcher extended", () => {
 describe("Helpers extended", () => {
   test("flattenSubGraph with module node", () => {
     const nodes: CodeGraphNode[] = [
-      makeNode({ id: "module:core", type: "module", name: "core", symbolType: undefined, metadata: { childFiles: [], childModules: [] } }),
+      makeNode({
+        id: "module:core",
+        type: "module",
+        name: "core",
+        symbolType: undefined,
+        metadata: { childFiles: [], childModules: [] },
+      }),
     ]
     const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 10 })
     expect(text).toContain("[Module]")
@@ -917,8 +963,17 @@ describe("Helpers extended", () => {
   test("flattenSubGraph with async static exported symbol", () => {
     const nodes: CodeGraphNode[] = [
       makeNode({
-        id: "symbol:complex", name: "complex", symbolType: "method",
-        metadata: { isAsync: true, isStatic: true, isExported: true, visibility: "public", returnType: "Promise<void>", parameters: [{ name: "x", type: "number" }] },
+        id: "symbol:complex",
+        name: "complex",
+        symbolType: "method",
+        metadata: {
+          isAsync: true,
+          isStatic: true,
+          isExported: true,
+          visibility: "public",
+          returnType: "Promise<void>",
+          parameters: [{ name: "x", type: "number" }],
+        },
       }),
     ]
     const text = flattenSubGraph({ nodes, edges: [], estimatedTokens: 50 })
@@ -931,15 +986,20 @@ describe("Helpers extended", () => {
 
   test("estimateTokens with doc comments and params", () => {
     const tokens = estimateTokens(
-      [makeNode({
-        id: "symbol:fn",
-        symbolType: "function",
-        metadata: {
-          returnType: "string",
-          parameters: [{ name: "a", type: "number" }, { name: "b", type: "string" }],
-          docComment: "A very important function that does many things.",
-        },
-      })],
+      [
+        makeNode({
+          id: "symbol:fn",
+          symbolType: "function",
+          metadata: {
+            returnType: "string",
+            parameters: [
+              { name: "a", type: "number" },
+              { name: "b", type: "string" },
+            ],
+            docComment: "A very important function that does many things.",
+          },
+        }),
+      ],
       [makeEdge({ sourceId: "symbol:fn", targetId: "symbol:callee", relation: "calls" })],
     )
     expect(tokens).toBeGreaterThan(20)
@@ -1026,7 +1086,9 @@ describe("Bidirectional edges", () => {
 
   test("findEntity resolves by name and kind", () => {
     const g = new CodeGraph()
-    g.addNode(makeNode({ id: "symbol:function:myFunc", name: "myFunc", symbolType: "function", filePath: "src/main.ts" }))
+    g.addNode(
+      makeNode({ id: "symbol:function:myFunc", name: "myFunc", symbolType: "function", filePath: "src/main.ts" }),
+    )
     const found = g.findEntity("myFunc", "function", "src/main.ts")
     expect(found).toBeDefined()
     expect(found!.name).toBe("myFunc")
@@ -1164,7 +1226,10 @@ describe("Hashing", () => {
   test("buildSignatureSource formats correctly", () => {
     const src = buildSignatureSource(
       "myFunc",
-      [{ name: "x", type: "number" }, { name: "y", type: "string", optional: true }],
+      [
+        { name: "x", type: "number" },
+        { name: "y", type: "string", optional: true },
+      ],
       "boolean",
     )
     expect(src).toBe("myFunc(x:number,y:string?):boolean")
@@ -1192,45 +1257,89 @@ describe("ImpactAnalyzer", () => {
     g.setBidirectional(true)
     const cs = new CallSiteStore()
 
-    g.addNode(makeNode({ id: "symbol:function:target", name: "target", symbolType: "function", filePath: "src/target.ts", startLine: 10 }))
-    g.addNode(makeNode({ id: "symbol:function:caller1", name: "caller1", symbolType: "function", filePath: "src/caller1.ts", startLine: 5 }))
-    g.addNode(makeNode({ id: "symbol:function:caller2", name: "caller2", symbolType: "function", filePath: "src/caller2.ts", startLine: 15 }))
-    g.addNode(makeNode({ id: "symbol:function:test_target", name: "test_target", symbolType: "function", filePath: "src/__tests__/target.test.ts", startLine: 1 }))
-    g.addNode(makeNode({ id: "symbol:class:MyClass", name: "MyClass", symbolType: "class", filePath: "src/MyClass.ts" }))
+    g.addNode(
+      makeNode({
+        id: "symbol:function:target",
+        name: "target",
+        symbolType: "function",
+        filePath: "src/target.ts",
+        startLine: 10,
+      }),
+    )
+    g.addNode(
+      makeNode({
+        id: "symbol:function:caller1",
+        name: "caller1",
+        symbolType: "function",
+        filePath: "src/caller1.ts",
+        startLine: 5,
+      }),
+    )
+    g.addNode(
+      makeNode({
+        id: "symbol:function:caller2",
+        name: "caller2",
+        symbolType: "function",
+        filePath: "src/caller2.ts",
+        startLine: 15,
+      }),
+    )
+    g.addNode(
+      makeNode({
+        id: "symbol:function:test_target",
+        name: "test_target",
+        symbolType: "function",
+        filePath: "src/__tests__/target.test.ts",
+        startLine: 1,
+      }),
+    )
+    g.addNode(
+      makeNode({ id: "symbol:class:MyClass", name: "MyClass", symbolType: "class", filePath: "src/MyClass.ts" }),
+    )
 
     g.addEdge(makeEdge({ sourceId: "symbol:function:caller1", targetId: "symbol:function:target", relation: "calls" }))
     g.addEdge(makeEdge({ sourceId: "symbol:function:caller2", targetId: "symbol:function:target", relation: "calls" }))
-    g.addEdge(makeEdge({ sourceId: "symbol:function:test_target", targetId: "symbol:function:target", relation: "test_covers" }))
+    g.addEdge(
+      makeEdge({
+        sourceId: "symbol:function:test_target",
+        targetId: "symbol:function:target",
+        relation: "test_covers",
+      }),
+    )
 
-    cs.add(createCallSite({
-      callerId: "symbol:function:caller1",
-      calleeName: "target",
-      calleeId: "symbol:function:target",
-      filePath: "src/caller1.ts",
-      startByte: 0,
-      endByte: 20,
-      startToken: 5,
-      endToken: 15,
-      startLine: 5,
-      endLine: 6,
-      argCount: 1,
-      keywordArgs: [],
-    }))
+    cs.add(
+      createCallSite({
+        callerId: "symbol:function:caller1",
+        calleeName: "target",
+        calleeId: "symbol:function:target",
+        filePath: "src/caller1.ts",
+        startByte: 0,
+        endByte: 20,
+        startToken: 5,
+        endToken: 15,
+        startLine: 5,
+        endLine: 6,
+        argCount: 1,
+        keywordArgs: [],
+      }),
+    )
 
-    cs.add(createCallSite({
-      callerId: "symbol:function:caller2",
-      calleeName: "target",
-      calleeId: "symbol:function:target",
-      filePath: "src/caller2.ts",
-      startByte: 0,
-      endByte: 25,
-      startToken: 10,
-      endToken: 20,
-      startLine: 15,
-      endLine: 16,
-      argCount: 2,
-      keywordArgs: ["old_param"],
-    }))
+    cs.add(
+      createCallSite({
+        callerId: "symbol:function:caller2",
+        calleeName: "target",
+        calleeId: "symbol:function:target",
+        filePath: "src/caller2.ts",
+        startByte: 0,
+        endByte: 25,
+        startToken: 10,
+        endToken: 20,
+        startLine: 15,
+        endLine: 16,
+        argCount: 2,
+        keywordArgs: ["old_param"],
+      }),
+    )
 
     return { graph: g, callSites: cs }
   }
@@ -1262,7 +1371,9 @@ describe("ImpactAnalyzer", () => {
 
     const g2 = new CodeGraph()
     g2.setBidirectional(true)
-    g2.addNode(makeNode({ id: "symbol:function:_private", name: "_private", symbolType: "function", filePath: "src/p.ts" }))
+    g2.addNode(
+      makeNode({ id: "symbol:function:_private", name: "_private", symbolType: "function", filePath: "src/p.ts" }),
+    )
     const analyzer2 = new ImpactAnalyzer(g2)
     const privResult = analyzer2.analyzeImpact("symbol:function:_private", "modify_body")
 
@@ -1454,10 +1565,14 @@ describe("IncrementalParser", () => {
     g.setBidirectional(true)
     const cs = new CallSiteStore()
 
-    g.addNode(makeNode({
-      id: "symbol:sig", name: "sig", symbolType: "function",
-      metadata: { signatureHash: hashString("old_sig") },
-    }))
+    g.addNode(
+      makeNode({
+        id: "symbol:sig",
+        name: "sig",
+        symbolType: "function",
+        metadata: { signatureHash: hashString("old_sig") },
+      }),
+    )
 
     const parser = new IncrementalParser(g, cs, ".")
     expect(parser.hasSignatureChanged("symbol:sig", hashString("old_sig"))).toBe(false)

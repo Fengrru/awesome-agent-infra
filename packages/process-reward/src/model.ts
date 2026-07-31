@@ -3,12 +3,9 @@
  * @module process-reward/model
  */
 
-import type {
-  TaskType, StepScore, PRMConfig, HeuristicConfig,
-  GenerateFn, VerifyFn, PRMModelData,
-} from "./types"
-import { DEFAULT_PRM_CONFIG } from "./types"
 import { heuristicScore, mcRolloutLabel, weakSupervisionLabel } from "./scoring"
+import type { GenerateFn, HeuristicConfig, PRMConfig, PRMModelData, StepScore, TaskType, VerifyFn } from "./types"
+import { DEFAULT_PRM_CONFIG } from "./types"
 
 /**
  * ProcessRewardModel — scores individual steps in a reasoning chain.
@@ -90,14 +87,10 @@ export class ProcessRewardModel {
   /**
    * Score all steps in a reasoning path.
    */
-  async scorePath(
-    steps: string[],
-    context?: string,
-    taskType: TaskType = "general",
-  ): Promise<StepScore[]> {
+  async scorePath(steps: string[], context?: string, taskType: TaskType = "general"): Promise<StepScore[]> {
     const scores: StepScore[] = []
     for (let i = 0; i < steps.length; i++) {
-      const prevStep = i > 0 ? steps[i - 1] ?? null : null
+      const prevStep = i > 0 ? (steps[i - 1] ?? null) : null
       const state = steps.slice(0, i).join("\n") || "Start"
 
       let result: StepScore
@@ -137,17 +130,19 @@ export class ProcessRewardModel {
     const confidences: number[] = []
 
     const hasMC = options?.generateFn && options?.verifyFn && options?.referenceAnswer
-    const useMC = (this.config.labelingStrategy === "mc_rollout" ||
-                   this.config.labelingStrategy === "hybrid") && hasMC
+    const useMC = (this.config.labelingStrategy === "mc_rollout" || this.config.labelingStrategy === "hybrid") && hasMC
 
     for (let i = 0; i < steps.length; i++) {
-      const prevStep = i > 0 ? steps[i - 1] ?? null : null
+      const prevStep = i > 0 ? (steps[i - 1] ?? null) : null
       const hScore = heuristicScore(steps[i] ?? "", prevStep, taskType, this.heuristicConfig)
 
       if (useMC && options?.generateFn && options?.verifyFn && options?.referenceAnswer) {
         const mc = await mcRolloutLabel(
-          steps, i, options.referenceAnswer,
-          options.generateFn, options.verifyFn,
+          steps,
+          i,
+          options.referenceAnswer,
+          options.generateFn,
+          options.verifyFn,
           this.config.numRollouts,
         )
         labels.push(mc.label)
@@ -170,7 +165,7 @@ export class ProcessRewardModel {
    */
   scorePathHeuristic(steps: string[], taskType: TaskType = "general"): StepScore[] {
     return steps.map((step, i) => {
-      const prevStep = i > 0 ? steps[i - 1] ?? null : null
+      const prevStep = i > 0 ? (steps[i - 1] ?? null) : null
       return {
         stepIndex: i,
         score: heuristicScore(step, prevStep, taskType, this.heuristicConfig),
@@ -261,4 +256,16 @@ export function savePRMModel(model: ProcessRewardModel, metadata?: Record<string
 export function loadPRMModel(data: PRMModelData): ProcessRewardModel {
   const model = new ProcessRewardModel(data.config, data.heuristicConfig)
   return model
+}
+
+/**
+ * Create a {@link ProcessRewardModel} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link ProcessRewardModel}.
+ * @returns A new {@link ProcessRewardModel}.
+ */
+export function createProcessRewardModel(
+  ...args: ConstructorParameters<typeof ProcessRewardModel>
+): ProcessRewardModel {
+  return new ProcessRewardModel(...args)
 }

@@ -15,12 +15,17 @@
   "license": "MIT",
   "keywords": ["filesystem", "transaction", "git", "merge", "rollback"],
   "scripts": {
-    "test": "bun test", "build": "tsc",
+    "test": "bun test",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
   },
-  "repository": { "type": "git", "url": "https://github.com/fengru/txn-fs" }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/txn-fs"
+  }
 }

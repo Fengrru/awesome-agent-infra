@@ -50,8 +50,7 @@ Actively developed packages. Breaking changes may appear in minor versions. Feed
 |---|---|---|
 | `@fengru/dreamdistill` | v0.1.0 | Self-evolution pipeline; reinforcement mechanisms under design |
 | `@fengru/process-reward` | v0.1.0 | PRM training and inference; scoring rubric format evolving |
-| `@fengru/agent-metacog` | v0.1.0 | Metacognitive monitoring; knowledge boundary detection tuning |
-| `@fengru/metacog-calibrator` | v0.1.0 | 3-stream Transformer calibration; model loading API unstable |
+| `@fengru/agent-metacog` | v0.1.0 | Metacognitive monitoring + 3-stream calibration; knowledge boundary detection tuning |
 | `@fengru/hallucination-detector` | v0.1.0 | Spectral clustering detection; pre-clustering heuristics evolving |
 | `@fengru/confidence-gate` | v0.1.0 | ECE/Brier calibration; threshold selection APIs evolving |
 | `@fengru/pomdp-planner` | v0.1.0 | Particle filter + QMDP; belief state representation evolving |

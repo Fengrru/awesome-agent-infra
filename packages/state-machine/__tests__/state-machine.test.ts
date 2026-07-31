@@ -1,9 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  AgentStateMachine,
-  AgentState,
-  StateTransitionError,
-} from "../src/index"
+import { AgentState, AgentStateMachine, StateTransitionError } from "../src/index"
 
 describe("AgentStateMachine", () => {
   // ── Initial State ────────────────────────────────────────────────────────
@@ -58,7 +54,11 @@ describe("AgentStateMachine", () => {
 
   test("stays in original state after invalid transition", async () => {
     const sm = new AgentStateMachine()
-    try { await sm.transition(AgentState.COMPLETED) } catch { /* expected */ }
+    try {
+      await sm.transition(AgentState.COMPLETED)
+    } catch {
+      /* expected */
+    }
     expect(sm.state).toBe(AgentState.IDLE)
     expect(sm.transitions).toBe(0)
   })
@@ -104,9 +104,15 @@ describe("AgentStateMachine", () => {
   test("multiple onEnter callbacks fire in order", async () => {
     const sm = new AgentStateMachine()
     const order: number[] = []
-    sm.onEnter(AgentState.READY, async () => { order.push(1) })
-    sm.onEnter(AgentState.READY, async () => { order.push(2) })
-    sm.onEnter(AgentState.READY, async () => { order.push(3) })
+    sm.onEnter(AgentState.READY, async () => {
+      order.push(1)
+    })
+    sm.onEnter(AgentState.READY, async () => {
+      order.push(2)
+    })
+    sm.onEnter(AgentState.READY, async () => {
+      order.push(3)
+    })
     await sm.transition(AgentState.INITIALIZING)
     await sm.transition(AgentState.READY)
     expect(order).toEqual([1, 2, 3])
@@ -117,7 +123,9 @@ describe("AgentStateMachine", () => {
   test("removeOnEnter removes a registered callback", async () => {
     const sm = new AgentStateMachine()
     let count = 0
-    const cb = async () => { count++ }
+    const cb = async () => {
+      count++
+    }
     sm.onEnter(AgentState.INITIALIZING, cb)
     const removed = sm.removeOnEnter(AgentState.INITIALIZING, cb)
     expect(removed).toBe(true)
@@ -135,7 +143,9 @@ describe("AgentStateMachine", () => {
   test("removeOnExit removes a registered callback", async () => {
     const sm = new AgentStateMachine()
     let count = 0
-    const cb = async () => { count++ }
+    const cb = async () => {
+      count++
+    }
     sm.onExit(AgentState.IDLE, cb)
     sm.removeOnExit(AgentState.IDLE, cb)
     await sm.transition(AgentState.INITIALIZING)
@@ -408,8 +418,12 @@ describe("AgentStateMachine", () => {
   test("all READY valid transitions", () => {
     const sm = new AgentStateMachine()
     const validFromReady = new Set([
-      AgentState.PLANNING, AgentState.THINKING, AgentState.EXECUTING,
-      AgentState.RECOVERING, AgentState.PAUSED, AgentState.SHUTTING_DOWN,
+      AgentState.PLANNING,
+      AgentState.THINKING,
+      AgentState.EXECUTING,
+      AgentState.RECOVERING,
+      AgentState.PAUSED,
+      AgentState.SHUTTING_DOWN,
       AgentState.INITIALIZING,
     ])
     for (const target of Object.values(AgentState)) {

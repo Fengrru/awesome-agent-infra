@@ -99,7 +99,9 @@ export class GoalVerifier {
     this.config = { ...DEFAULT_GOAL_VERIFIER_CONFIG, ...config }
   }
 
-  setProvider(provider: ProviderAdapter): void { this.provider = provider }
+  setProvider(provider: ProviderAdapter): void {
+    this.provider = provider
+  }
 
   /**
    * Verify whether the agent has completed the user's goal.
@@ -237,10 +239,7 @@ export class GoalVerifier {
 
   // ── Response Parsing ─────────────────────────────────────────────────
 
-  private parseVerificationResponse(
-    text: string,
-    context: GoalContext,
-  ): GoalVerificationResult {
+  private parseVerificationResponse(text: string, context: GoalContext): GoalVerificationResult {
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       return this.heuristicVerify(context)
@@ -256,9 +255,7 @@ export class GoalVerifier {
         gap: parsed.gap ?? undefined,
         impossible: Boolean(parsed.impossible),
         impossible_reason: parsed.impossible_reason ?? undefined,
-        suggestions: Array.isArray(parsed.suggestions)
-          ? (parsed.suggestions as unknown[]).map(String)
-          : undefined,
+        suggestions: Array.isArray(parsed.suggestions) ? (parsed.suggestions as unknown[]).map(String) : undefined,
       }
     } catch {
       return this.heuristicVerify(context)
@@ -269,4 +266,14 @@ export class GoalVerifier {
 function clampConfidence(value: number): number {
   if (Number.isNaN(value)) return 0.5
   return Math.max(0, Math.min(1, value))
+}
+
+/**
+ * Create a {@link GoalVerifier} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link GoalVerifier}.
+ * @returns A new {@link GoalVerifier}.
+ */
+export function createGoalVerifier(...args: ConstructorParameters<typeof GoalVerifier>): GoalVerifier {
+  return new GoalVerifier(...args)
 }

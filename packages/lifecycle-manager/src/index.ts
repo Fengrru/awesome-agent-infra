@@ -96,10 +96,7 @@ export class LifecycleManager {
   }
 
   /** Register a module's lifecycle with typed dependencies */
-  register<TModules extends Record<string, unknown>>(
-    lifecycle: ModuleLifecycle<TModules>,
-    deps: TModules,
-  ): void {
+  register<TModules extends Record<string, unknown>>(lifecycle: ModuleLifecycle<TModules>, deps: TModules): void {
     this.modules.set(lifecycle.id, { lifecycle: lifecycle as ModuleLifecycle, deps })
   }
 
@@ -192,4 +189,14 @@ export class LifecycleManager {
       ...ctx,
     }
   }
+}
+
+/**
+ * Create a {@link LifecycleManager} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link LifecycleManager}.
+ * @returns A new {@link LifecycleManager}.
+ */
+export function createLifecycleManager(...args: ConstructorParameters<typeof LifecycleManager>): LifecycleManager {
+  return new LifecycleManager(...args)
 }

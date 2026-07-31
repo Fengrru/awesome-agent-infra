@@ -189,8 +189,7 @@ export class SkillCurator {
     }
 
     try {
-      const prompt = QUALITY_REVIEW_PROMPT
-        .replace("{{name}}", skillName)
+      const prompt = QUALITY_REVIEW_PROMPT.replace("{{name}}", skillName)
         .replace("{{description}}", "")
         .replace("{{content}}", content.slice(0, 4000))
 
@@ -252,8 +251,17 @@ export class SkillCurator {
     const skill = this.skillManager.skillSystem.getAgentSkill(skillName)
     if (!skill || skill.pinned) return false
 
-    const cutoff =
-      Date.now() - (daysThreshold ?? this.config.archiveDaysThreshold) * 24 * 60 * 60 * 1000
+    const cutoff = Date.now() - (daysThreshold ?? this.config.archiveDaysThreshold) * 24 * 60 * 60 * 1000
     return skill.last_used_at < cutoff
   }
+}
+
+/**
+ * Create a {@link SkillCurator} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link SkillCurator}.
+ * @returns A new {@link SkillCurator}.
+ */
+export function createSkillCurator(...args: ConstructorParameters<typeof SkillCurator>): SkillCurator {
+  return new SkillCurator(...args)
 }

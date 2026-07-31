@@ -26,7 +26,7 @@
  * @module checkpoint-writer
  */
 
-import { writeFile, mkdir } from "node:fs/promises"
+import { mkdir, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 
 // ── Minimal LLM Provider Interface ────────────────────────────────────────
@@ -170,8 +170,12 @@ export class CheckpointWriter {
     this.config = { ...DEFAULT_WRITER_CONFIG, ...config }
   }
 
-  setProvider(provider: ProviderAdapter): void { this.provider = provider }
-  setProjectMemoryWriter(writer: IProjectMemoryWriter): void { this.projectMemory = writer }
+  setProvider(provider: ProviderAdapter): void {
+    this.provider = provider
+  }
+  setProjectMemoryWriter(writer: IProjectMemoryWriter): void {
+    this.projectMemory = writer
+  }
 
   // ── Write ──────────────────────────────────────────────────────────────
 
@@ -243,10 +247,7 @@ export class CheckpointWriter {
         : ""
 
     const historyText = conversationHistory
-      .map(
-        (t) =>
-          `[${t.role}]: ${t.content.slice(0, 500)}${t.content.length > 500 ? "..." : ""}`,
-      )
+      .map((t) => `[${t.role}]: ${t.content.slice(0, 500)}${t.content.length > 500 ? "..." : ""}`)
       .join("\n\n")
 
     return [
@@ -286,22 +287,14 @@ export class CheckpointWriter {
         ? (raw.involved_files as unknown[]).map((f) => this.normalizeFile(f as Record<string, unknown>))
         : [],
       cross_task_discoveries: Array.isArray(raw.cross_task_discoveries)
-        ? (raw.cross_task_discoveries as unknown[]).map((d) =>
-            this.normalizeDiscovery(d as Record<string, unknown>),
-          )
+        ? (raw.cross_task_discoveries as unknown[]).map((d) => this.normalizeDiscovery(d as Record<string, unknown>))
         : [],
       errors_and_fixes: Array.isArray(raw.errors_and_fixes)
-        ? (raw.errors_and_fixes as unknown[]).map((e) =>
-            this.normalizeErrorFix(e as Record<string, unknown>),
-          )
+        ? (raw.errors_and_fixes as unknown[]).map((e) => this.normalizeErrorFix(e as Record<string, unknown>))
         : [],
-      runtime_state: this.normalizeRuntimeState(
-        (raw.runtime_state ?? {}) as Record<string, unknown>,
-      ),
+      runtime_state: this.normalizeRuntimeState((raw.runtime_state ?? {}) as Record<string, unknown>),
       design_decisions: Array.isArray(raw.design_decisions)
-        ? (raw.design_decisions as unknown[]).map((d) =>
-            this.normalizeDecision(d as Record<string, unknown>),
-          )
+        ? (raw.design_decisions as unknown[]).map((d) => this.normalizeDecision(d as Record<string, unknown>))
         : [],
       miscellaneous_notes: Array.isArray(raw.miscellaneous_notes)
         ? (raw.miscellaneous_notes as unknown[]).map(String)
@@ -328,9 +321,7 @@ export class CheckpointWriter {
       turn_number: Number(t.turn_number ?? 0),
       action: String(t.action ?? ""),
       result_summary: String(t.result_summary ?? ""),
-      files_changed: Array.isArray(t.files_changed)
-        ? (t.files_changed as unknown[]).map(String)
-        : [],
+      files_changed: Array.isArray(t.files_changed) ? (t.files_changed as unknown[]).map(String) : [],
     }
   }
 
@@ -338,9 +329,7 @@ export class CheckpointWriter {
     const role = String(f.role ?? "read")
     return {
       path: String(f.path ?? ""),
-      role: (["read", "modified", "created", "deleted"].includes(role)
-        ? role
-        : "read") as InvolvedFile["role"],
+      role: (["read", "modified", "created", "deleted"].includes(role) ? role : "read") as InvolvedFile["role"],
       summary: String(f.summary ?? ""),
       key_changes: f.key_changes ? String(f.key_changes) : undefined,
     }
@@ -351,9 +340,7 @@ export class CheckpointWriter {
       id: String(d.id ?? `discovery_${Date.now()}`),
       description: String(d.description ?? ""),
       confidence: Number(d.confidence ?? 0.5),
-      applicable_to: Array.isArray(d.applicable_to)
-        ? (d.applicable_to as unknown[]).map(String)
-        : [],
+      applicable_to: Array.isArray(d.applicable_to) ? (d.applicable_to as unknown[]).map(String) : [],
     }
   }
 
@@ -369,9 +356,7 @@ export class CheckpointWriter {
   private normalizeRuntimeState(raw: Record<string, unknown>): RuntimeState {
     return {
       git_head: raw.git_head ? String(raw.git_head) : undefined,
-      active_ports: Array.isArray(raw.active_ports)
-        ? (raw.active_ports as unknown[]).map(Number)
-        : undefined,
+      active_ports: Array.isArray(raw.active_ports) ? (raw.active_ports as unknown[]).map(Number) : undefined,
       current_branch: raw.current_branch ? String(raw.current_branch) : undefined,
       workspace_hash: raw.workspace_hash ? String(raw.workspace_hash) : undefined,
     }
@@ -400,8 +385,7 @@ export class CheckpointWriter {
     const errorPattern = /error|fail|exception|crash/i
     const files = new Set<string>()
 
-    let match: RegExpExecArray | null
-    while ((match = filePattern.exec(fullText)) !== null) {
+    for (const match of fullText.matchAll(filePattern)) {
       files.add(match[1]!)
     }
 
@@ -447,10 +431,7 @@ export class CheckpointWriter {
 
   // ── Discovery Stability Tracking ────────────────────────────────────────
 
-  private async trackAndPromoteDiscoveries(
-    sessionId: string,
-    discoveries: Discovery[],
-  ): Promise<void> {
+  private async trackAndPromoteDiscoveries(sessionId: string, discoveries: Discovery[]): Promise<void> {
     if (!this.projectMemory) return
 
     for (const disc of discoveries) {
@@ -465,10 +446,7 @@ export class CheckpointWriter {
 
   // ── File I/O ───────────────────────────────────────────────────────────
 
-  private async writeToFile(
-    sessionId: string,
-    checkpoint: StructuredCheckpoint,
-  ): Promise<string> {
+  private async writeToFile(sessionId: string, checkpoint: StructuredCheckpoint): Promise<string> {
     const dir = join(this.config.outputDir, sessionId)
     await mkdir(dir, { recursive: true })
 
@@ -481,75 +459,57 @@ export class CheckpointWriter {
     return filePath
   }
 
-  private async writeMarkdownCheckpoint(
-    sessionId: string,
-    checkpoint: StructuredCheckpoint,
-  ): Promise<void> {
+  private async writeMarkdownCheckpoint(sessionId: string, checkpoint: StructuredCheckpoint): Promise<void> {
     const dir = join(this.config.outputDir, sessionId)
     await mkdir(dir, { recursive: true })
 
     const f = checkpoint.fields
     const md = [
-      `# Session Checkpoint`,
-      ``,
+      "# Session Checkpoint",
+      "",
       `> Version ${checkpoint.version} | Cycle ${checkpoint.cycle_index} | ${checkpoint.created_at}`,
       `> ${checkpoint.is_incremental ? "Incremental update" : "Full checkpoint"}`,
-      ``,
-      `## Current Intent`,
+      "",
+      "## Current Intent",
       f.current_intent,
-      ``,
-      `## Next Action`,
+      "",
+      "## Next Action",
       f.next_action,
-      ``,
-      `## Working Constraints`,
+      "",
+      "## Working Constraints",
       f.working_constraints.map((c) => `- ${c}`).join("\n") || "None",
-      ``,
-      `## Task Tree`,
+      "",
+      "## Task Tree",
       this.renderTaskTree(f.task_tree),
-      ``,
-      `## Current Work`,
-      f.current_work
-        .map((t) => `- [Turn ${t.turn_number}] ${t.action}: ${t.result_summary}`)
-        .join("\n") || "None",
-      ``,
-      `## Involved Files`,
-      f.involved_files
-        .map((ifile) => `- \`${ifile.path}\` (${ifile.role}): ${ifile.summary}`)
-        .join("\n") || "None",
-      ``,
-      `## Cross-Task Discoveries`,
+      "",
+      "## Current Work",
+      f.current_work.map((t) => `- [Turn ${t.turn_number}] ${t.action}: ${t.result_summary}`).join("\n") || "None",
+      "",
+      "## Involved Files",
+      f.involved_files.map((ifile) => `- \`${ifile.path}\` (${ifile.role}): ${ifile.summary}`).join("\n") || "None",
+      "",
+      "## Cross-Task Discoveries",
       f.cross_task_discoveries
-        .map(
-          (d) =>
-            `- [**${d.id}**] ${d.description} (confidence: ${d.confidence})`,
-        )
+        .map((d) => `- [**${d.id}**] ${d.description} (confidence: ${d.confidence})`)
         .join("\n") || "None",
-      ``,
-      `## Errors & Fixes`,
+      "",
+      "## Errors & Fixes",
       f.errors_and_fixes
-        .map(
-          (e) =>
-            `- **${e.error_summary}** → ${e.fix_applied} ${e.verified ? "✓" : "⚠"}`,
-        )
+        .map((e) => `- **${e.error_summary}** → ${e.fix_applied} ${e.verified ? "✓" : "⚠"}`)
         .join("\n") || "None",
-      ``,
-      `## Runtime State`,
+      "",
+      "## Runtime State",
       Object.entries(f.runtime_state)
         .filter(([, v]) => v !== undefined)
         .map(([k, v]) => `- ${k}: ${JSON.stringify(v)}`)
         .join("\n") || "No runtime state captured",
-      ``,
-      `## Design Decisions`,
-      f.design_decisions
-        .map(
-          (d) =>
-            `- [${d.id}] **${d.decision}**: ${d.rationale}`,
-        )
-        .join("\n") || "None",
-      ``,
-      `## Miscellaneous Notes`,
+      "",
+      "## Design Decisions",
+      f.design_decisions.map((d) => `- [${d.id}] **${d.decision}**: ${d.rationale}`).join("\n") || "None",
+      "",
+      "## Miscellaneous Notes",
       f.miscellaneous_notes.map((n) => `- ${n}`).join("\n") || "None",
-      ``,
+      "",
     ].join("\n")
 
     await writeFile(join(dir, "checkpoint.md"), md, "utf-8")
@@ -566,10 +526,7 @@ export class CheckpointWriter {
           blocked: "✗",
         }[n.status]
         const line = `${prefix}- ${statusIcon} ${n.description}`
-        const children =
-          n.children.length > 0
-            ? "\n" + this.renderTaskTree(n.children, indent + 1)
-            : ""
+        const children = n.children.length > 0 ? `\n${this.renderTaskTree(n.children, indent + 1)}` : ""
         return line + children
       })
       .join("\n")
@@ -589,4 +546,14 @@ export class CheckpointWriter {
     this.previousCheckpoint = null
     this.discoveryStability.clear()
   }
+}
+
+/**
+ * Create a {@link CheckpointWriter} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link CheckpointWriter}.
+ * @returns A new {@link CheckpointWriter}.
+ */
+export function createCheckpointWriter(...args: ConstructorParameters<typeof CheckpointWriter>): CheckpointWriter {
+  return new CheckpointWriter(...args)
 }

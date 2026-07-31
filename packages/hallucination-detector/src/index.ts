@@ -37,15 +37,13 @@ export const DEFAULT_DETECTOR_CONFIG: DetectorConfig = {
   hallucinationThreshold: 0.3,
 }
 
-import { tokenize, buildTFIDFVectors, computeCosineSimilarity } from "@fengru/internal-tfidf"
+import { buildTFIDFVectors, computeCosineSimilarity, tokenize } from "@fengru/internal-tfidf"
 
 function splitSentences(text: string): string[] {
   if (!text.trim()) return []
   const parts = text.match(/[^.!?\n]+[.!?\n]*/g)
   if (!parts || parts.length === 0) return [text.trim()]
-  return parts
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
+  return parts.map((s) => s.trim()).filter((s) => s.length > 0)
 }
 
 function computeJaccardSimilarity(a: Set<string>, b: Set<string>): number {
@@ -58,11 +56,7 @@ function computeJaccardSimilarity(a: Set<string>, b: Set<string>): number {
   return union.size > 0 ? intersection / union.size : 0
 }
 
-function computeTextSimilarity(
-  a: string,
-  b: string,
-  similarityThreshold: number,
-): number {
+function computeTextSimilarity(a: string, b: string, _similarityThreshold: number): number {
   const tokensA = new Set(tokenize(a))
   const tokensB = new Set(tokenize(b))
   const jaccard = computeJaccardSimilarity(tokensA, tokensB)
@@ -95,19 +89,15 @@ export class HallucinationDetector {
       let confidence = 0.25
 
       if (/\d+/.test(sentence)) confidence += 0.15
-      if (/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(sentence))
-        confidence += 0.1
+      if (/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}/.test(sentence)) confidence += 0.1
       if (/\d+(\.\d+)?\s*%/.test(sentence)) confidence += 0.1
 
       const words = sentence.split(/\s+/)
       const capitalWords = words.filter((w) => /^[A-Z][a-z]{2,}$/.test(w))
-      if (capitalWords.length > 0)
-        confidence += Math.min(0.2, capitalWords.length * 0.05)
+      if (capitalWords.length > 0) confidence += Math.min(0.2, capitalWords.length * 0.05)
 
       if (
-        /\b(is|are|was|were|has|have|will|shall|must|can|could|should|would|did|does|do|had|been)\b/i.test(
-          sentence,
-        )
+        /\b(is|are|was|were|has|have|will|shall|must|can|could|should|would|did|does|do|had|been)\b/i.test(sentence)
       ) {
         confidence += 0.1
       }
@@ -164,8 +154,7 @@ export class HallucinationDetector {
       }
     }
 
-    const rate =
-      claims.length > 0 ? consistent.length / claims.length : 1
+    const rate = claims.length > 0 ? consistent.length / claims.length : 1
     return { consistent, inconsistent, rate }
   }
 
@@ -187,26 +176,16 @@ export class HallucinationDetector {
       }
     }
 
-    const k = Math.min(
-      this.config.maxClusters,
-      Math.max(1, Math.ceil(claims.length / this.config.minClusterSize)),
-    )
+    const k = Math.min(this.config.maxClusters, Math.max(1, Math.ceil(claims.length / this.config.minClusterSize)))
     const clusters = this.spectralCluster(claims, k)
 
     const hallucinations: FactClaim[] = []
     const scores: number[] = []
 
     for (const claim of claims) {
-      const score = this.scoreClaim(
-        claim,
-        clusters,
-        options?.referenceFacts,
-      )
+      const score = this.scoreClaim(claim, clusters, options?.referenceFacts)
       if (options?.knowledgeBase && options.knowledgeBase.length > 0) {
-        const kbScore = this.checkAgainstKnowledge(
-          claim.text,
-          options.knowledgeBase,
-        )
+        const kbScore = this.checkAgainstKnowledge(claim.text, options.knowledgeBase)
         const adjustedScore = score * 0.7 + kbScore * 0.3
         scores.push(adjustedScore)
         if (adjustedScore < this.config.hallucinationThreshold) {
@@ -220,10 +199,7 @@ export class HallucinationDetector {
       }
     }
 
-    const overallScore =
-      scores.length > 0
-        ? scores.reduce((a, b) => a + b, 0) / scores.length
-        : 1
+    const overallScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 1
 
     const hCount = hallucinations.length
     const details =
@@ -234,10 +210,7 @@ export class HallucinationDetector {
     return { claims, clusters, hallucinations, overallScore, details }
   }
 
-  private spectralCluster(
-    claims: FactClaim[],
-    k: number,
-  ): ClusterResult[] {
+  private spectralCluster(claims: FactClaim[], k: number): ClusterResult[] {
     if (claims.length === 0) return []
     if (claims.length === 1) {
       return [
@@ -254,9 +227,7 @@ export class HallucinationDetector {
     const { vectors } = buildTFIDFVectors(docs)
 
     const n = claims.length
-    const simMatrix: number[][] = Array.from({ length: n }, () =>
-      new Array(n).fill(0),
-    )
+    const simMatrix: number[][] = Array.from({ length: n }, () => new Array(n).fill(0))
 
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
@@ -299,8 +270,7 @@ export class HallucinationDetector {
       const clusterClaims = comp.map((idx) => claims[idx])
       const clusterVectors = comp.map((idx) => vectors[idx])
 
-      const dim =
-        clusterVectors.length > 0 ? clusterVectors[0].length : 0
+      const dim = clusterVectors.length > 0 ? clusterVectors[0].length : 0
       const centroid: number[] = new Array(dim).fill(0)
       for (const v of clusterVectors) {
         for (let d = 0; d < dim; d++) {
@@ -335,17 +305,10 @@ export class HallucinationDetector {
     return clusters
   }
 
-  private scoreClaim(
-    claim: FactClaim,
-    clusters: ClusterResult[],
-    referenceFacts?: string[],
-  ): number {
+  private scoreClaim(claim: FactClaim, clusters: ClusterResult[], referenceFacts?: string[]): number {
     let clusterCoherence = 0
     for (const cluster of clusters) {
-      const found = cluster.claims.some(
-        (c) =>
-          c.text === claim.text && c.startIndex === claim.startIndex,
-      )
+      const found = cluster.claims.some((c) => c.text === claim.text && c.startIndex === claim.startIndex)
       if (found) {
         clusterCoherence = cluster.coherence
         break
@@ -358,11 +321,7 @@ export class HallucinationDetector {
         const sim = this.computeSimilarity(claim.text, fact)
         if (sim > maxSim) maxSim = sim
       }
-      return (
-        claim.confidence * 0.25 +
-        clusterCoherence * 0.35 +
-        maxSim * 0.4
-      )
+      return claim.confidence * 0.25 + clusterCoherence * 0.35 + maxSim * 0.4
     }
 
     return claim.confidence * 0.4 + clusterCoherence * 0.6
@@ -386,9 +345,7 @@ export class HallucinationDetector {
     return computeCosineSimilarity(a, b)
   }
 
-  private buildTFIDF(
-    docs: string[],
-  ): { vectors: number[][]; terms: string[] } {
+  private buildTFIDF(docs: string[]): { vectors: number[][]; terms: string[] } {
     return buildTFIDFVectors(docs)
   }
 }
@@ -419,14 +376,10 @@ export class SpectralHallucinationDetector extends HallucinationDetector {
       projections.push(proj)
     }
 
-    const assignments: number[][] = vectors.map(() =>
-      new Array(k).fill(0),
-    )
+    const assignments: number[][] = vectors.map(() => new Array(k).fill(0))
 
     for (let i = 0; i < vectors.length; i++) {
-      const sims = projections.map((proj) =>
-        computeCosineSimilarity(vectors[i], proj),
-      )
+      const sims = projections.map((proj) => computeCosineSimilarity(vectors[i], proj))
       const maxIdx = sims.indexOf(Math.max(...sims))
       assignments[i][maxIdx] = 1
     }
@@ -444,9 +397,7 @@ export class SpectralHallucinationDetector extends HallucinationDetector {
       return { eigenvalues: [], eigenvectors: [] }
     }
 
-    const degree: number[] = similarityMatrix.map((row) =>
-      row.reduce((s, v) => s + v, 0),
-    )
+    const degree: number[] = similarityMatrix.map((row) => row.reduce((s, v) => s + v, 0))
 
     const laplacian: number[][] = Array.from({ length: n }, (_, i) =>
       Array.from({ length: n }, (_, j) => {
@@ -454,9 +405,7 @@ export class SpectralHallucinationDetector extends HallucinationDetector {
           const deg = degree[i] > 0 ? degree[i] : 1
           return 1 + similarityMatrix[i][j] / deg
         }
-        const denom = Math.sqrt(
-          Math.max(degree[i] * degree[j], 1e-10),
-        )
+        const denom = Math.sqrt(Math.max(degree[i] * degree[j], 1e-10))
         return similarityMatrix[i][j] / denom
       }),
     )
@@ -466,10 +415,7 @@ export class SpectralHallucinationDetector extends HallucinationDetector {
     const effectiveK = Math.min(k, n)
 
     for (let v = 0; v < effectiveK; v++) {
-      let vec: number[] = Array.from(
-        { length: n },
-        () => Math.random() * 2 - 1,
-      )
+      let vec: number[] = Array.from({ length: n }, () => Math.random() * 2 - 1)
       let norm = Math.sqrt(vec.reduce((s, x) => s + x * x, 0))
       if (norm > 0) vec = vec.map((x) => x / norm)
       else vec = new Array(n).fill(0)
@@ -492,23 +438,15 @@ export class SpectralHallucinationDetector extends HallucinationDetector {
         }
 
         for (const prev of eigenvectors) {
-          const dot = newVec.reduce(
-            (s, x, i) => s + x * prev[i],
-            0,
-          )
+          const dot = newVec.reduce((s, x, i) => s + x * prev[i], 0)
           for (let i = 0; i < n; i++) newVec[i] -= dot * prev[i]
         }
 
-        const nrm = Math.sqrt(
-          newVec.reduce((s, x) => s + x * x, 0),
-        )
+        const nrm = Math.sqrt(newVec.reduce((s, x) => s + x * x, 0))
         if (nrm === 0) break
         for (let i = 0; i < n; i++) newVec[i] /= nrm
 
-        const diff = vec.reduce(
-          (s, x, i) => s + Math.abs(x - newVec[i]),
-          0,
-        )
+        const diff = vec.reduce((s, x, i) => s + Math.abs(x - newVec[i]), 0)
         vec = newVec
 
         if (diff < tol) break
@@ -529,4 +467,28 @@ export class SpectralHallucinationDetector extends HallucinationDetector {
 
     return { eigenvalues, eigenvectors }
   }
+}
+
+/**
+ * Create a {@link HallucinationDetector} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link HallucinationDetector}.
+ * @returns A new {@link HallucinationDetector}.
+ */
+export function createHallucinationDetector(
+  ...args: ConstructorParameters<typeof HallucinationDetector>
+): HallucinationDetector {
+  return new HallucinationDetector(...args)
+}
+
+/**
+ * Create a {@link SpectralHallucinationDetector} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link SpectralHallucinationDetector}.
+ * @returns A new {@link SpectralHallucinationDetector}.
+ */
+export function createSpectralHallucinationDetector(
+  ...args: ConstructorParameters<typeof SpectralHallucinationDetector>
+): SpectralHallucinationDetector {
+  return new SpectralHallucinationDetector(...args)
 }

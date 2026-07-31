@@ -129,10 +129,7 @@ export class DAGGenerator {
       )
       .join("\n")
 
-    return DAG_PROMPT_TEMPLATE.replace("{{goal}}", goal).replace(
-      "{{capabilities}}",
-      capList,
-    )
+    return DAG_PROMPT_TEMPLATE.replace("{{goal}}", goal).replace("{{capabilities}}", capList)
   }
 
   async generateDAG(goal: string, capabilities: Capability[]): Promise<DAG> {
@@ -147,29 +144,20 @@ export class DAGGenerator {
       const jsonStr = this.extractJSON(response)
       const parsed = JSON.parse(jsonStr)
 
-      const nodes: DAGNode[] = (
-        parsed.nodes || []
-      ).map((n: Record<string, unknown>, i: number) => ({
+      const nodes: DAGNode[] = (parsed.nodes || []).map((n: Record<string, unknown>, i: number) => ({
         node_id: (n.node_id as string) || `n${i + 1}`,
         capability_id: (n.capability_id as string) || "unknown",
         inputs: (n.inputs as Record<string, unknown>) || {},
-        dependencies: Array.isArray(n.dependencies)
-          ? (n.dependencies as string[])
-          : [],
+        dependencies: Array.isArray(n.dependencies) ? (n.dependencies as string[]) : [],
         risk_level: (n.risk_level as number) ?? 0,
         estimated_tokens: (n.estimated_tokens as number) || 100,
-        estimated_duration_ms:
-          (n.estimated_duration_ms as number) || 5000,
+        estimated_duration_ms: (n.estimated_duration_ms as number) || 5000,
         status: "pending" as const,
       }))
 
       const edges: [string, string][] = Array.isArray(parsed.edges)
         ? parsed.edges
-            .filter(
-              (e: unknown) =>
-                Array.isArray(e) &&
-                e.length === 2,
-            )
+            .filter((e: unknown) => Array.isArray(e) && e.length === 2)
             .map((e: [string, string]) => [e[0], e[1]])
         : []
 
@@ -215,28 +203,19 @@ Generate an updated DAG that preserves completed node outputs and retries or rep
 
       return {
         version: 2,
-        nodes: (parsed.nodes || []).map(
-          (n: Record<string, unknown>, i: number) => ({
-            node_id: (n.node_id as string) || `n${i + 1}`,
-            capability_id: (n.capability_id as string) || "unknown",
-            inputs: (n.inputs as Record<string, unknown>) || {},
-            dependencies: Array.isArray(n.dependencies)
-              ? (n.dependencies as string[])
-              : [],
-            risk_level: (n.risk_level as number) ?? 0,
-            estimated_tokens: (n.estimated_tokens as number) || 100,
-            estimated_duration_ms:
-              (n.estimated_duration_ms as number) || 5000,
-            status: "pending" as const,
-          }),
-        ),
+        nodes: (parsed.nodes || []).map((n: Record<string, unknown>, i: number) => ({
+          node_id: (n.node_id as string) || `n${i + 1}`,
+          capability_id: (n.capability_id as string) || "unknown",
+          inputs: (n.inputs as Record<string, unknown>) || {},
+          dependencies: Array.isArray(n.dependencies) ? (n.dependencies as string[]) : [],
+          risk_level: (n.risk_level as number) ?? 0,
+          estimated_tokens: (n.estimated_tokens as number) || 100,
+          estimated_duration_ms: (n.estimated_duration_ms as number) || 5000,
+          status: "pending" as const,
+        })),
         edges: Array.isArray(parsed.edges)
           ? parsed.edges
-              .filter(
-                (e: unknown) =>
-                  Array.isArray(e) &&
-                  e.length === 2,
-              )
+              .filter((e: unknown) => Array.isArray(e) && e.length === 2)
               .map((e: [string, string]) => [e[0], e[1]])
           : [],
         metadata: {
@@ -252,9 +231,7 @@ Generate an updated DAG that preserves completed node outputs and retries or rep
   }
 
   protected generateFallbackDAG(goal: string, capabilities: Capability[]): DAG {
-    const sorted = [...capabilities].sort(
-      (a, b) => a.risk_level - b.risk_level,
-    )
+    const sorted = [...capabilities].sort((a, b) => a.risk_level - b.risk_level)
     const nodes: DAGNode[] = sorted.slice(0, 5).map((cap, i) => ({
       node_id: `n${i + 1}`,
       capability_id: cap.capability_id,
@@ -266,9 +243,7 @@ Generate an updated DAG that preserves completed node outputs and retries or rep
       status: "pending" as const,
     }))
 
-    const edges: [string, string][] = nodes
-      .slice(1)
-      .map((n, i) => [`n${i}`, n.node_id])
+    const edges: [string, string][] = nodes.slice(1).map((n, i) => [`n${i}`, n.node_id])
 
     return {
       version: 1,
@@ -310,10 +285,6 @@ Generate an updated DAG that preserves completed node outputs and retries or rep
 export class LLMDAGGenerator extends DAGGenerator {
   private provider: ProviderAdapter | null = null
 
-  constructor(config?: DAGGeneratorConfig) {
-    super(config)
-  }
-
   /** Set provider and auto-wire the LLM caller */
   setProvider(provider: ProviderAdapter): void {
     this.provider = provider
@@ -322,8 +293,7 @@ export class LLMDAGGenerator extends DAGGenerator {
         messages: [
           {
             role: "system",
-            content:
-              "You are a task planning assistant. Output valid JSON only. No explanation.",
+            content: "You are a task planning assistant. Output valid JSON only. No explanation.",
           },
           { role: "user", content: prompt },
         ],
@@ -332,10 +302,7 @@ export class LLMDAGGenerator extends DAGGenerator {
     })
   }
 
-  override async generateDAG(
-    goal: string,
-    capabilities: Capability[],
-  ): Promise<DAG> {
+  override async generateDAG(goal: string, capabilities: Capability[]): Promise<DAG> {
     if (this.provider) {
       return super.generateDAG(goal, capabilities)
     }
@@ -346,11 +313,7 @@ export class LLMDAGGenerator extends DAGGenerator {
    * Batch planning: generate K DAG variants for K-Parallel strategy.
    * Each variant is a different approach to the same goal.
    */
-  async generateKParallelDAGs(
-    goal: string,
-    capabilities: Capability[],
-    k: number = 3,
-  ): Promise<DAG[]> {
+  async generateKParallelDAGs(goal: string, capabilities: Capability[], k = 3): Promise<DAG[]> {
     const dags: DAG[] = []
 
     for (let i = 0; i < k; i++) {
@@ -362,8 +325,7 @@ export class LLMDAGGenerator extends DAGGenerator {
             messages: [
               {
                 role: "system",
-                content:
-                  "You are a task planning assistant. Output valid JSON only.",
+                content: "You are a task planning assistant. Output valid JSON only.",
               },
               { role: "user", content: prompt },
             ],
@@ -372,28 +334,18 @@ export class LLMDAGGenerator extends DAGGenerator {
           const parsed = JSON.parse(jsonStr)
           dags.push({
             version: 1,
-            nodes: (parsed.nodes || []).map(
-              (n: Record<string, unknown>, j: number) => ({
-                node_id: `k${i}_n${j}`,
-                capability_id: (n.capability_id as string) || "unknown",
-                inputs: (n.inputs as Record<string, unknown>) || {},
-                dependencies: Array.isArray(n.dependencies)
-                  ? (n.dependencies as string[])
-                  : [],
-                risk_level: (n.risk_level as number) ?? 0,
-                estimated_tokens: (n.estimated_tokens as number) || 100,
-                estimated_duration_ms:
-                  (n.estimated_duration_ms as number) || 5000,
-                status: "pending" as const,
-              }),
-            ),
+            nodes: (parsed.nodes || []).map((n: Record<string, unknown>, j: number) => ({
+              node_id: `k${i}_n${j}`,
+              capability_id: (n.capability_id as string) || "unknown",
+              inputs: (n.inputs as Record<string, unknown>) || {},
+              dependencies: Array.isArray(n.dependencies) ? (n.dependencies as string[]) : [],
+              risk_level: (n.risk_level as number) ?? 0,
+              estimated_tokens: (n.estimated_tokens as number) || 100,
+              estimated_duration_ms: (n.estimated_duration_ms as number) || 5000,
+              status: "pending" as const,
+            })),
             edges: Array.isArray(parsed.edges)
-              ? parsed.edges
-                  .filter(
-                    (e: unknown) =>
-                      Array.isArray(e) &&
-                      e.length === 2,
-                  )
+              ? parsed.edges.filter((e: unknown) => Array.isArray(e) && e.length === 2)
               : [],
             metadata: {
               goal,
@@ -416,10 +368,7 @@ export class LLMDAGGenerator extends DAGGenerator {
 
 // ── Factory ────────────────────────────────────────────────────────────────
 
-export function createLLMDAGGenerator(
-  provider?: ProviderAdapter,
-  config?: DAGGeneratorConfig,
-): LLMDAGGenerator {
+export function createLLMDAGGenerator(provider?: ProviderAdapter, config?: DAGGeneratorConfig): LLMDAGGenerator {
   const gen = new LLMDAGGenerator(config)
   if (provider) gen.setProvider(provider)
   return gen

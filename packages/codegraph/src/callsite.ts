@@ -74,28 +74,36 @@ export class CallSiteStore {
   getByCaller(callerId: string): CallSite[] {
     const ids = this._byCaller.get(callerId)
     if (!ids) return []
-    return Array.from(ids).map((id) => this._byId.get(id)!).filter(Boolean)
+    return Array.from(ids)
+      .map((id) => this._byId.get(id)!)
+      .filter(Boolean)
   }
 
   /** Get call sites targeting the given callee entity ID */
   getByCallee(calleeId: string): CallSite[] {
     const ids = this._byCallee.get(calleeId)
     if (!ids) return []
-    return Array.from(ids).map((id) => this._byId.get(id)!).filter(Boolean)
+    return Array.from(ids)
+      .map((id) => this._byId.get(id)!)
+      .filter(Boolean)
   }
 
   /** Get call sites targeting a symbol by name (for dynamic/unresolved calls) */
   getByCalleeName(calleeName: string): CallSite[] {
     const ids = this._byCalleeName.get(calleeName.toLowerCase())
     if (!ids) return []
-    return Array.from(ids).map((id) => this._byId.get(id)!).filter(Boolean)
+    return Array.from(ids)
+      .map((id) => this._byId.get(id)!)
+      .filter(Boolean)
   }
 
   /** Get all call sites in a file */
   getByFile(filePath: string): CallSite[] {
     const ids = this._byFile.get(filePath)
     if (!ids) return []
-    return Array.from(ids).map((id) => this._byId.get(id)!).filter(Boolean)
+    return Array.from(ids)
+      .map((id) => this._byId.get(id)!)
+      .filter(Boolean)
   }
 
   /** Get call sites overlapping a token range in a file */
@@ -113,7 +121,7 @@ export class CallSiteStore {
   /** Get call sites that would break if the callee's signature changes */
   getStaleCallSites(
     calleeId: string,
-    newParamCount: number,
+    _newParamCount: number,
     newRequiredParamCount: number,
     newParamNames: string[],
   ): CallSite[] {

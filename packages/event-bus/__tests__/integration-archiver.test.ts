@@ -6,22 +6,15 @@
  * back after archival.
  */
 
-import { describe, test, expect, beforeEach, afterEach } from "bun:test"
+import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import * as fs from "node:fs/promises"
-import * as path from "node:path"
 import * as os from "node:os"
+import * as path from "node:path"
 
-import {
-  createSimpleEventBus,
-  EventType,
-  EventPriority,
-} from "../src/index"
+import { DEFAULT_ARCHIVE_CONFIG, EventArchiver } from "../../archiver/src/index"
+import type { ArchiveConfig, ArchiveDatabase } from "../../archiver/src/index"
+import { EventPriority, EventType, createSimpleEventBus } from "../src/index"
 import type { BusEvent, EventBus } from "../src/index"
-import {
-  EventArchiver,
-  DEFAULT_ARCHIVE_CONFIG,
-} from "../../archiver/src/index"
-import type { ArchiveDatabase, ArchiveConfig } from "../../archiver/src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -55,9 +48,7 @@ function createMockArchiveDatabase(): {
     },
 
     async getEventsOlderThan(timestamp: number, limit: number): Promise<StoredEvent[]> {
-      return events
-        .filter((e) => (e.timestamp ?? 0) < timestamp)
-        .slice(0, limit)
+      return events.filter((e) => (e.timestamp ?? 0) < timestamp).slice(0, limit)
     },
 
     async deleteEventsByIds(ids: string[]): Promise<number> {
@@ -98,7 +89,6 @@ function createBusEvent(overrides?: Partial<BusEvent>): BusEvent {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("Integration: EventBus × EventArchiver", () => {
-
   let bus: EventBus
   let archiver: EventArchiver
   let mockDb: ReturnType<typeof createMockArchiveDatabase>
@@ -118,7 +108,9 @@ describe("Integration: EventBus × EventArchiver", () => {
     await bus.shutdown()
     try {
       await fs.rm(tempDir, { recursive: true, force: true })
-    } catch { /* cleanup best-effort */ }
+    } catch {
+      /* cleanup best-effort */
+    }
   })
 
   // ── Event publishing → archiver storage ───────────────────────────────
@@ -126,21 +118,19 @@ describe("Integration: EventBus × EventArchiver", () => {
   test("events published on event-bus with require_persistence reach persist handler", async () => {
     const persistedEvents: BusEvent[] = []
 
-    const persistBus = createSimpleEventBus(
-      (event) => {
-        persistedEvents.push(event)
-        mockDb.db.events.push({
-          id: `ev-${mockDb.db.events.length}`,
-          eventId: `ev-${mockDb.db.events.length}`,
-          event_id: `ev-${mockDb.db.events.length}`,
-          timestamp: event.timestamp,
-          type: event.type,
-          session_id: event.session_id,
-          data: event.data,
-          payload: JSON.stringify(event.data),
-        })
-      },
-    )
+    const persistBus = createSimpleEventBus((event) => {
+      persistedEvents.push(event)
+      mockDb.db.events.push({
+        id: `ev-${mockDb.db.events.length}`,
+        eventId: `ev-${mockDb.db.events.length}`,
+        event_id: `ev-${mockDb.db.events.length}`,
+        timestamp: event.timestamp,
+        type: event.type,
+        session_id: event.session_id,
+        data: event.data,
+        payload: JSON.stringify(event.data),
+      })
+    })
 
     const event = createBusEvent({
       type: EventType.TASK_START,
@@ -197,13 +187,15 @@ describe("Integration: EventBus × EventArchiver", () => {
 
     // Publish multiple events
     for (let i = 0; i < 5; i++) {
-      await persistBus.publish(createBusEvent({
-        type: EventType.TOOL_CALL,
-        source: `tool-${i}`,
-        data: { tool: `cmd_${i}` },
-        require_persistence: true,
-        timestamp: Date.now() - 8 * 24 * 60 * 60 * 1000, // 8 days old
-      }))
+      await persistBus.publish(
+        createBusEvent({
+          type: EventType.TOOL_CALL,
+          source: `tool-${i}`,
+          data: { tool: `cmd_${i}` },
+          require_persistence: true,
+          timestamp: Date.now() - 8 * 24 * 60 * 60 * 1000, // 8 days old
+        }),
+      )
     }
 
     await new Promise((r) => setTimeout(r, 100))
@@ -261,20 +253,18 @@ describe("Integration: EventBus × EventArchiver", () => {
     const subLog: string[] = []
     const persistLog: BusEvent[] = []
 
-    const persistBus = createSimpleEventBus(
-      (event) => {
-        persistLog.push(event)
-        // Simulate archiver-style storage
-        mockDb.db.events.push({
-          id: event.data.id as string ?? `ev-${mockDb.db.events.length}`,
-          eventId: event.data.id as string ?? `ev-${mockDb.db.events.length}`,
-          timestamp: event.timestamp,
-          type: event.type,
-          session_id: event.session_id,
-          data: event.data,
-        })
-      },
-    )
+    const persistBus = createSimpleEventBus((event) => {
+      persistLog.push(event)
+      // Simulate archiver-style storage
+      mockDb.db.events.push({
+        id: (event.data.id as string) ?? `ev-${mockDb.db.events.length}`,
+        eventId: (event.data.id as string) ?? `ev-${mockDb.db.events.length}`,
+        timestamp: event.timestamp,
+        type: event.type,
+        session_id: event.session_id,
+        data: event.data,
+      })
+    })
 
     persistBus.subscribe(EventType.STATE_TRANSITION, (event) => {
       subLog.push((event.data.from as string) ?? "unknown")
@@ -304,28 +294,28 @@ describe("Integration: EventBus × EventArchiver", () => {
   // ── Event persistence + archive tiering workflow ──────────────────────
 
   test("full workflow: publish → persist → shouldArchive → archive → loadArchive", async () => {
-    const persistBus = createSimpleEventBus(
-      (event) => {
-        mockDb.db.events.push({
-          id: `wf-ev-${mockDb.db.events.length}`,
-          eventId: `wf-ev-${mockDb.db.events.length}`,
-          timestamp: event.timestamp,
-          type: event.type,
-          session_id: event.session_id,
-          data: event.data,
-        })
-      },
-    )
+    const persistBus = createSimpleEventBus((event) => {
+      mockDb.db.events.push({
+        id: `wf-ev-${mockDb.db.events.length}`,
+        eventId: `wf-ev-${mockDb.db.events.length}`,
+        timestamp: event.timestamp,
+        type: event.type,
+        session_id: event.session_id,
+        data: event.data,
+      })
+    })
 
     // Publish events with old timestamps (simulating old hot storage)
     for (let i = 0; i < 15; i++) {
-      await persistBus.publish(createBusEvent({
-        type: EventType.AGENT_OUTPUT,
-        source: "agent",
-        data: { content: `output ${i}`, step: i },
-        require_persistence: true,
-        timestamp: Date.now() - 10 * 24 * 60 * 60 * 1000, // 10 days ago
-      }))
+      await persistBus.publish(
+        createBusEvent({
+          type: EventType.AGENT_OUTPUT,
+          source: "agent",
+          data: { content: `output ${i}`, step: i },
+          require_persistence: true,
+          timestamp: Date.now() - 10 * 24 * 60 * 60 * 1000, // 10 days ago
+        }),
+      )
     }
 
     await new Promise((r) => setTimeout(r, 100))

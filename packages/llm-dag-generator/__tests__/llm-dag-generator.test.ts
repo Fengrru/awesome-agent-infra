@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test"
 import {
-  DAGGenerator,
-  LLMDAGGenerator,
-  createLLMDAGGenerator,
-  DAG_PROMPT_TEMPLATE,
   type Capability,
+  DAGGenerator,
+  DAG_PROMPT_TEMPLATE,
+  LLMDAGGenerator,
   type ProviderAdapter,
+  createLLMDAGGenerator,
 } from "../src/index"
 
 function makeCapability(id: string, overrides?: Partial<Capability>): Capability {
@@ -23,19 +23,33 @@ function makeCapability(id: string, overrides?: Partial<Capability>): Capability
 const VALID_DAG_JSON = JSON.stringify({
   nodes: [
     {
-      node_id: "n1", capability_id: "read_file", inputs: { path: "a.ts" },
-      dependencies: [], risk_level: 0, estimated_tokens: 200, estimated_duration_ms: 1000,
+      node_id: "n1",
+      capability_id: "read_file",
+      inputs: { path: "a.ts" },
+      dependencies: [],
+      risk_level: 0,
+      estimated_tokens: 200,
+      estimated_duration_ms: 1000,
     },
     {
-      node_id: "n2", capability_id: "write_file", inputs: {},
-      dependencies: ["n1"], risk_level: 1, estimated_tokens: 300, estimated_duration_ms: 2000,
+      node_id: "n2",
+      capability_id: "write_file",
+      inputs: {},
+      dependencies: ["n1"],
+      risk_level: 1,
+      estimated_tokens: 300,
+      estimated_duration_ms: 2000,
     },
   ],
   edges: [["n1", "n2"]],
 })
 
 function providerReturning(content: string): ProviderAdapter {
-  return { async chat() { return { content } } }
+  return {
+    async chat() {
+      return { content }
+    },
+  }
 }
 
 describe("buildPrompt", () => {
@@ -92,9 +106,7 @@ describe("generateDAG with LLM caller", () => {
 
   test("malformed edges are filtered out", async () => {
     const gen = new DAGGenerator()
-    gen.setLLMCaller(async () =>
-      JSON.stringify({ nodes: [], edges: [["a", "b"], ["only-one"], "junk"] }),
-    )
+    gen.setLLMCaller(async () => JSON.stringify({ nodes: [], edges: [["a", "b"], ["only-one"], "junk"] }))
     const dag = await gen.generateDAG("goal", [])
     expect(dag.edges).toEqual([["a", "b"]])
   })
@@ -108,7 +120,9 @@ describe("generateDAG with LLM caller", () => {
 
   test("falls back to heuristic when LLM caller throws", async () => {
     const gen = new DAGGenerator()
-    gen.setLLMCaller(async () => { throw new Error("timeout") })
+    gen.setLLMCaller(async () => {
+      throw new Error("timeout")
+    })
     const dag = await gen.generateDAG("goal", [makeCapability("a")])
     expect(dag.nodes.length).toBe(1)
     expect(dag.nodes[0]!.capability_id).toBe("a")
@@ -150,7 +164,10 @@ describe("generateReplanDAG", () => {
   test("replan uses LLM and bumps version and replan_count", async () => {
     const gen = new DAGGenerator()
     let capturedPrompt = ""
-    gen.setLLMCaller(async (prompt) => { capturedPrompt = prompt; return VALID_DAG_JSON })
+    gen.setLLMCaller(async (prompt) => {
+      capturedPrompt = prompt
+      return VALID_DAG_JSON
+    })
 
     const dag = await gen.generateReplanDAG("goal", [makeCapability("a")], "disk full", ["n1"], "n2")
     expect(dag.version).toBe(2)

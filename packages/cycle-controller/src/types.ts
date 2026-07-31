@@ -26,8 +26,8 @@ export interface CycleConfig {
 
 export const DEFAULT_CYCLE_CONFIG: CycleConfig = {
   tokenBudget: 128_000,
-  checkpointThresholds: [0.20, 0.45, 0.70],
-  rebuildThreshold: 0.90,
+  checkpointThresholds: [0.2, 0.45, 0.7],
+  rebuildThreshold: 0.9,
   minStepsBetweenCheckpoints: 5,
   maxCycles: 20,
 }
@@ -69,12 +69,7 @@ export interface CycleSnapshot {
 }
 
 export interface ICheckpointWriter {
-  write(
-    sessionId: string,
-    history: ConversationMessage[],
-    isIncremental: boolean,
-    cycleIndex: number,
-  ): Promise<string>
+  write(sessionId: string, history: ConversationMessage[], isIncremental: boolean, cycleIndex: number): Promise<string>
 }
 
 export interface CycleCallbacks {

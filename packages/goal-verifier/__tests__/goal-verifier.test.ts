@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  GoalVerifier,
-  DEFAULT_GOAL_VERIFIER_CONFIG,
-  type GoalContext,
-  type ProviderAdapter,
-} from "../src/index"
+import { DEFAULT_GOAL_VERIFIER_CONFIG, type GoalContext, GoalVerifier, type ProviderAdapter } from "../src/index"
 
 function makeContext(overrides?: Partial<GoalContext>): GoalContext {
   return {
@@ -22,45 +17,55 @@ describe("GoalVerifier", () => {
 
   test("heuristic: all tasks completed returns satisfied", async () => {
     const v = new GoalVerifier()
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(true)
     expect(result.confidence).toBe(0.8)
   })
 
   test("heuristic: high completion with low failure returns satisfied", async () => {
     const v = new GoalVerifier()
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 10, completed: 9, failed: 1, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 10, completed: 9, failed: 1, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(true)
     expect(result.confidence).toBe(0.6)
   })
 
   test("heuristic: moderate completion returns not satisfied", async () => {
     const v = new GoalVerifier()
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 10, completed: 5, failed: 2, pending: 3 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 10, completed: 5, failed: 2, pending: 3 },
+      }),
+    )
     expect(result.satisfied).toBe(false)
     expect(result.confidence).toBeGreaterThanOrEqual(0.5)
   })
 
   test("heuristic: no tasks returns not satisfied", async () => {
     const v = new GoalVerifier()
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 0, completed: 0, failed: 0, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 0, completed: 0, failed: 0, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(false)
     expect(result.confidence).toBe(0.3)
   })
 
   test("heuristic: low completion returns not satisfied with high confidence", async () => {
     const v = new GoalVerifier()
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 10, completed: 2, failed: 3, pending: 5 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 10, completed: 2, failed: 3, pending: 5 },
+      }),
+    )
     expect(result.satisfied).toBe(false)
     expect(result.confidence).toBe(0.9)
   })
@@ -69,20 +74,24 @@ describe("GoalVerifier", () => {
 
   test("forces satisfied when retryCount >= maxRetries", async () => {
     const v = new GoalVerifier({ maxRetries: 3 })
-    const result = await v.verify(makeContext({
-      retryCount: 3,
-      dagProgress: { total: 10, completed: 0, failed: 10, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        retryCount: 3,
+        dagProgress: { total: 10, completed: 0, failed: 10, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(true)
     expect(result.confidence).toBe(0.5)
   })
 
   test("retryCount below maxRetries does not trigger dead-loop", async () => {
     const v = new GoalVerifier({ maxRetries: 3 })
-    const result = await v.verify(makeContext({
-      retryCount: 2,
-      dagProgress: { total: 10, completed: 0, failed: 0, pending: 10 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        retryCount: 2,
+        dagProgress: { total: 10, completed: 0, failed: 0, pending: 10 },
+      }),
+    )
     expect(result.satisfied).toBe(false)
   })
 
@@ -100,9 +109,11 @@ describe("GoalVerifier", () => {
       }),
     }
     v.setProvider(mockProvider)
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(true)
     expect(result.confidence).toBe(0.95)
   })
@@ -151,9 +162,11 @@ describe("GoalVerifier", () => {
       chat: async () => ({ content: "not valid json!" }),
     }
     v.setProvider(mockProvider)
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(true)
     expect(result.confidence).toBe(0.8)
   })
@@ -161,12 +174,16 @@ describe("GoalVerifier", () => {
   test("provider error falls back to heuristic", async () => {
     const v = new GoalVerifier()
     const mockProvider: ProviderAdapter = {
-      chat: async () => { throw new Error("Network error") },
+      chat: async () => {
+        throw new Error("Network error")
+      },
     }
     v.setProvider(mockProvider)
-    const result = await v.verify(makeContext({
-      dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
-    }))
+    const result = await v.verify(
+      makeContext({
+        dagProgress: { total: 5, completed: 5, failed: 0, pending: 0 },
+      }),
+    )
     expect(result.satisfied).toBe(true)
     expect(result.confidence).toBe(0.8)
   })
@@ -188,9 +205,11 @@ describe("GoalVerifier", () => {
 
   test("context can include stop conditions", async () => {
     const v = new GoalVerifier()
-    const result = await v.verify(makeContext({
-      stopConditions: ["max tokens exceeded"],
-    }))
+    const result = await v.verify(
+      makeContext({
+        stopConditions: ["max tokens exceeded"],
+      }),
+    )
     expect(result.satisfied).toBeDefined()
   })
 })

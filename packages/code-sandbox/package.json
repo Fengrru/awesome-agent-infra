@@ -1,7 +1,7 @@
 {
   "name": "@fengru/code-sandbox",
   "version": "0.1.0",
-  "description": "Secure code execution sandbox with math/code/logic verification —?zero-dependency, subprocess isolation, verifier pool",
+  "description": "Secure code execution sandbox with math/code/logic verification — zero-dependency, subprocess isolation, verifier pool",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

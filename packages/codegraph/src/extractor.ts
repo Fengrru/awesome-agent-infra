@@ -1,5 +1,5 @@
-import type { CodeGraphNode, SymbolType, SymbolMetadata } from "./types"
 import { hashString } from "./hashing"
+import type { CodeGraphNode, SymbolMetadata, SymbolType } from "./types"
 
 export interface TreeSitterNode {
   type: string
@@ -107,14 +107,17 @@ async function getParsers(deps?: ExtractorDependencies): Promise<LanguageParser[
       const { default: treeWasm } = await import("web-tree-sitter/tree-sitter.wasm" as string, {
         with: { type: "wasm" },
       })
-      const wasmBuffer: ArrayBuffer = treeWasm instanceof ArrayBuffer
-        ? treeWasm
-        : (treeWasm as { default: ArrayBuffer }).default
-      const treePath = resolveWasmPath(
-        URL.createObjectURL(new Blob([wasmBuffer], { type: "application/wasm" })),
-      )
-      await ParserCtor.init({ locateFile() { return treePath } })
-    } catch { return [] }
+      const wasmBuffer: ArrayBuffer =
+        treeWasm instanceof ArrayBuffer ? treeWasm : (treeWasm as { default: ArrayBuffer }).default
+      const treePath = resolveWasmPath(URL.createObjectURL(new Blob([wasmBuffer], { type: "application/wasm" })))
+      await ParserCtor.init({
+        locateFile() {
+          return treePath
+        },
+      })
+    } catch {
+      return []
+    }
 
     const parsers: LanguageParser[] = []
     if (LangCtor) {
@@ -128,7 +131,9 @@ async function getParsers(deps?: ExtractorDependencies): Promise<LanguageParser[
         const p = new ParserCtor()
         p.setLanguage(tsLang)
         parsers.push({ parser: p, languageId: "typescript", filePatterns: [".ts", ".tsx"] })
-      } catch (e) { console.warn("[CodeGraph] TypeScript parser unavailable:", e) }
+      } catch (e) {
+        console.warn("[CodeGraph] TypeScript parser unavailable:", e)
+      }
       try {
         const jsMod = await import("tree-sitter-javascript/tree-sitter-javascript.wasm" as string, {
           with: { type: "wasm" },
@@ -139,7 +144,9 @@ async function getParsers(deps?: ExtractorDependencies): Promise<LanguageParser[
         const p = new ParserCtor()
         p.setLanguage(jsLang)
         parsers.push({ parser: p, languageId: "javascript", filePatterns: [".js", ".jsx", ".mjs", ".cjs"] })
-      } catch (e) { console.warn("[CodeGraph] JavaScript parser unavailable:", e) }
+      } catch (e) {
+        console.warn("[CodeGraph] JavaScript parser unavailable:", e)
+      }
     }
     return parsers
   })()
@@ -158,12 +165,13 @@ export async function extractFromFile(
   deps?: ExtractorDependencies,
   tokenizerName?: string,
 ): Promise<ExtractResult> {
-  const startTime = Date.now()
   try {
     const parsers = await getParsers(deps)
     const langParser = parserForFile(parsers, filePath)
     if (langParser) return treeSitterExtract(langParser, filePath, source, mtime, tokenizerName)
-  } catch { /* Fall through to fallback */ }
+  } catch {
+    /* Fall through to fallback */
+  }
   return fallbackExtract(filePath, source, mtime, tokenizerName)
 }
 
@@ -306,12 +314,7 @@ function walkChildren(
   }
 }
 
-function parseCallExpression(
-  node: TreeSitterNode,
-  source: string,
-  callerName: string,
-  calls: ExtractedCall[],
-): void {
+function parseCallExpression(node: TreeSitterNode, source: string, callerName: string, calls: ExtractedCall[]): void {
   const funcNode = node.childForFieldName("function")
   if (!funcNode) return
 
@@ -358,20 +361,49 @@ function parseCallExpression(
 
 function shouldRecurseInto(nodeType: string): boolean {
   const containerTypes = new Set([
-    "program", "module", "statement_block", "body", "declaration_list",
-    "export_statement", "export_clause", "named_imports",
-    "enum_body", "interface_body", "object_type",
-    "expression_statement", "return_statement", "class_body",
-    "formal_parameters", "arrow_function",
-    "if_statement", "else_clause", "while_statement", "do_statement",
-    "for_statement", "for_in_statement", "switch_statement",
-    "switch_body", "switch_case", "try_statement", "catch_clause",
-    "finally_clause", "block", "parenthesized_expression",
-    "ternary_expression", "binary_expression", "unary_expression",
-    "assignment_expression", "sequence_expression",
-    "call_expression", "arguments", "new_expression",
-    "template_substitution", "subscript_expression",
-    "array", "object", "pair",
+    "program",
+    "module",
+    "statement_block",
+    "body",
+    "declaration_list",
+    "export_statement",
+    "export_clause",
+    "named_imports",
+    "enum_body",
+    "interface_body",
+    "object_type",
+    "expression_statement",
+    "return_statement",
+    "class_body",
+    "formal_parameters",
+    "arrow_function",
+    "if_statement",
+    "else_clause",
+    "while_statement",
+    "do_statement",
+    "for_statement",
+    "for_in_statement",
+    "switch_statement",
+    "switch_body",
+    "switch_case",
+    "try_statement",
+    "catch_clause",
+    "finally_clause",
+    "block",
+    "parenthesized_expression",
+    "ternary_expression",
+    "binary_expression",
+    "unary_expression",
+    "assignment_expression",
+    "sequence_expression",
+    "call_expression",
+    "arguments",
+    "new_expression",
+    "template_substitution",
+    "subscript_expression",
+    "array",
+    "object",
+    "pair",
   ])
   return containerTypes.has(nodeType)
 }
@@ -386,8 +418,15 @@ function extractModifierTexts(node: TreeSitterNode, source: string): string[] {
     const child = node.namedChild(i)
     if (!child) continue
     const type = child.type
-    if (type === "accessibility_modifier" || type === "static" || type === "abstract"
-        || type === "readonly" || type === "async" || type === "override" || type === "decorator") {
+    if (
+      type === "accessibility_modifier" ||
+      type === "static" ||
+      type === "abstract" ||
+      type === "readonly" ||
+      type === "async" ||
+      type === "override" ||
+      type === "decorator"
+    ) {
       texts.push(type === "accessibility_modifier" ? getNodeText(child, source) : type)
     }
   }
@@ -405,7 +444,7 @@ function getVisibility(modifiers: string[]): "public" | "private" | "protected" 
   return undefined
 }
 
-function isNodeExported(node: TreeSitterNode, source: string): boolean {
+function isNodeExported(node: TreeSitterNode, _source: string): boolean {
   let current: TreeSitterNode | null = node.parent
   while (current) {
     if (current.type === "export_statement" || current.type === "export_clause") return true
@@ -419,9 +458,17 @@ function extractDocComment(node: TreeSitterNode, source: string): string | undef
   while (current) {
     const text = getNodeText(current, source)
     if (text.startsWith("/**") || text.startsWith("///")) {
-      return text.replace(/^\/\*\*/, "").replace(/\*\/$/, "").replace(/^\s*\*[ \t]?/gm, "").replace(/^\/\/\/? ?/gm, "").trim()
+      return text
+        .replace(/^\/\*\*/, "")
+        .replace(/\*\/$/, "")
+        .replace(/^\s*\*[ \t]?/gm, "")
+        .replace(/^\/\/\/? ?/gm, "")
+        .trim()
     }
-    if (text.startsWith("//") || text.startsWith("/*")) { current = current.previousSibling; continue }
+    if (text.startsWith("//") || text.startsWith("/*")) {
+      current = current.previousSibling
+      continue
+    }
     break
   }
   return undefined
@@ -454,9 +501,13 @@ function parseExport(node: TreeSitterNode, source: string, exports: string[]): v
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i)
     if (!child) continue
-    if (child.type === "declaration" || child.type === "function_declaration"
-        || child.type === "class_declaration" || child.type === "variable_declaration"
-        || child.type === "lexical_declaration") {
+    if (
+      child.type === "declaration" ||
+      child.type === "function_declaration" ||
+      child.type === "class_declaration" ||
+      child.type === "variable_declaration" ||
+      child.type === "lexical_declaration"
+    ) {
       walkTree(child, source, [], [], exports, [], null)
       return
     }
@@ -511,8 +562,12 @@ function parseClassDeclaration(node: TreeSitterNode, source: string): ExtractedS
     for (let i = 0; i < bodyNode.namedChildCount; i++) {
       const child = bodyNode.namedChild(i)
       if (!child) continue
-      if (child.type === "method_definition" || child.type === "method"
-          || child.type === "public_field_definition" || child.type === "abstract_method_signature") {
+      if (
+        child.type === "method_definition" ||
+        child.type === "method" ||
+        child.type === "public_field_definition" ||
+        child.type === "abstract_method_signature"
+      ) {
         const m = parseMethodDeclaration(child, source, getNodeText(nameNode, source))
         if (m) children.push(m)
       }
@@ -582,11 +637,7 @@ function parseInterfaceDeclaration(node: TreeSitterNode, source: string): Extrac
   }
 }
 
-function parseMethodDeclaration(
-  node: TreeSitterNode,
-  source: string,
-  parentName?: string,
-): ExtractedSymbol | null {
+function parseMethodDeclaration(node: TreeSitterNode, source: string, parentName?: string): ExtractedSymbol | null {
   const nameNode = node.childForFieldName("name")
   if (!nameNode) return null
   const modifiers = extractModifierTexts(node, source)
@@ -749,7 +800,7 @@ function resolveTypeParameters(node: TreeSitterNode, source: string): string[] |
   return params.length > 0 ? params : undefined
 }
 
-let _tokenCache = new Map<string, number>()
+const _tokenCache = new Map<string, number>()
 
 function getTokenIndex(source: string, byteOffset: number, filePath: string): number {
   const key = `${filePath}:${byteOffset}`
@@ -806,12 +857,7 @@ function makeSymbolId(symbolType: SymbolType, name: string, parentId?: string): 
   return `symbol:${symbolType}:${name}`
 }
 
-function fallbackExtract(
-  filePath: string,
-  source: string,
-  mtime: number,
-  tokenizerName?: string,
-): ExtractResult {
+function fallbackExtract(filePath: string, source: string, mtime: number, tokenizerName?: string): ExtractResult {
   const startMs = Date.now()
   const symbols: CodeGraphNode[] = []
   const imports: Array<{ source: string; names: string[] }> = []
@@ -819,8 +865,7 @@ function fallbackExtract(
   const tName = tokenizerName ?? "simple"
 
   const importRe = /import\s+(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+['"]([^'"]+)['"]/g
-  let m: RegExpExecArray | null
-  while ((m = importRe.exec(source)) !== null) {
+  for (const m of source.matchAll(importRe)) {
     if (m[1]) imports.push({ source: m[1], names: [] })
   }
 
@@ -833,11 +878,11 @@ function fallbackExtract(
   }
 
   const funcRe = /^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm
-  while ((m = funcRe.exec(source)) !== null) {
+  for (const m of source.matchAll(funcRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
     const st = getTokenIndex(source, startB, filePath)
-    const et = getTokenIndex(source, startB + (m[0].length), filePath)
+    const et = getTokenIndex(source, startB + m[0].length, filePath)
     symbols.push({
       id: makeSymbolId("function", m[1]),
       type: "symbol",
@@ -847,7 +892,7 @@ function fallbackExtract(
       startLine: lineNum,
       endLine: lineNum,
       startByte: startB,
-      endByte: startB + (m[0].length),
+      endByte: startB + m[0].length,
       startToken: st,
       endToken: et,
       tokenizerName: tName,
@@ -857,7 +902,7 @@ function fallbackExtract(
   }
 
   const classRe = /^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/gm
-  while ((m = classRe.exec(source)) !== null) {
+  for (const m of source.matchAll(classRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
     symbols.push({
@@ -869,9 +914,9 @@ function fallbackExtract(
       startLine: lineNum,
       endLine: lineNum,
       startByte: startB,
-      endByte: startB + (m[0].length),
+      endByte: startB + m[0].length,
       startToken: getTokenIndex(source, startB, filePath),
-      endToken: getTokenIndex(source, startB + (m[0].length), filePath),
+      endToken: getTokenIndex(source, startB + m[0].length, filePath),
       tokenizerName: tName,
       metadata: { isExported: m[0].includes("export") },
       mtime,
@@ -879,7 +924,7 @@ function fallbackExtract(
   }
 
   const ifaceRe = /^\s*(?:export\s+)?interface\s+(\w+)/gm
-  while ((m = ifaceRe.exec(source)) !== null) {
+  for (const m of source.matchAll(ifaceRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
     symbols.push({
@@ -891,9 +936,9 @@ function fallbackExtract(
       startLine: lineNum,
       endLine: lineNum,
       startByte: startB,
-      endByte: startB + (m[0].length),
+      endByte: startB + m[0].length,
       startToken: getTokenIndex(source, startB, filePath),
-      endToken: getTokenIndex(source, startB + (m[0].length), filePath),
+      endToken: getTokenIndex(source, startB + m[0].length, filePath),
       tokenizerName: tName,
       metadata: { isExported: m[0].includes("export") },
       mtime,
@@ -901,7 +946,7 @@ function fallbackExtract(
   }
 
   const varRe = /^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*(?::|=)/gm
-  while ((m = varRe.exec(source)) !== null) {
+  for (const m of source.matchAll(varRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
     symbols.push({
@@ -913,9 +958,9 @@ function fallbackExtract(
       startLine: lineNum,
       endLine: lineNum,
       startByte: startB,
-      endByte: startB + (m[0].length),
+      endByte: startB + m[0].length,
       startToken: getTokenIndex(source, startB, filePath),
-      endToken: getTokenIndex(source, startB + (m[0].length), filePath),
+      endToken: getTokenIndex(source, startB + m[0].length, filePath),
       tokenizerName: tName,
       metadata: { isExported: m[0].includes("export") },
       mtime,
@@ -923,8 +968,11 @@ function fallbackExtract(
   }
 
   const exportRe = /export\s+\{([^}]+)\}/g
-  while ((m = exportRe.exec(source)) !== null) {
-    const names = m[1].split(",").map((s) => s.trim()).filter(Boolean)
+  for (const m of source.matchAll(exportRe)) {
+    const names = m[1]
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
     exports.push(...names)
   }
 

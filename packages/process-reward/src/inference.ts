@@ -3,8 +3,8 @@
  * @module process-reward/inference
  */
 
-import type { TaskType, StepSegmentKind, SegmentedPRMStep, VerificationResult, GenerateFn } from "./types"
-import { ProcessRewardModel } from "./model"
+import type { ProcessRewardModel } from "./model"
+import type { GenerateFn, SegmentedPRMStep, StepSegmentKind, TaskType, VerificationResult } from "./types"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Step Segmenter
@@ -15,6 +15,7 @@ import { ProcessRewardModel } from "./model"
  *
  * Used to prepare steps for domain-specific heuristic scoring.
  */
+// biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class StepSegmenter {
   /**
    * Classify a single step into its rhetorical kind.
@@ -44,8 +45,8 @@ export class StepSegmenter {
   static segment(text: string): SegmentedPRMStep[] {
     const rawSteps = text
       .split(/\n\n+|(?=\n(?:Step\s*\d+|\d+\.)\s*[A-Z])/i)
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
 
     return rawSteps.map((stepText, index) => ({
       text: stepText,
@@ -57,11 +58,14 @@ export class StepSegmenter {
   /** Map rhetorical kind to TaskType for heuristic dispatch. */
   static kindToTaskType(kind: StepSegmentKind): TaskType {
     switch (kind) {
-      case "equation": return "math"
+      case "equation":
+        return "math"
       case "assertion":
       case "implication":
-      case "conclusion": return "logic"
-      default: return "general"
+      case "conclusion":
+        return "logic"
+      default:
+        return "general"
     }
   }
 }
@@ -72,8 +76,15 @@ export class StepSegmenter {
 
 // Blocked code modules for security
 const BLOCKED_CODE_MODULES = new Set([
-  "os", "subprocess", "shutil", "ctypes", "socket",
-  "sys", "builtins", "__builtins__", "importlib",
+  "os",
+  "subprocess",
+  "shutil",
+  "ctypes",
+  "socket",
+  "sys",
+  "builtins",
+  "__builtins__",
+  "importlib",
 ])
 
 /**
@@ -84,6 +95,7 @@ const BLOCKED_CODE_MODULES = new Set([
  *   - CodeVerifier: secure Python execution with sandbox restrictions
  *   - LogicVerifier: contradiction detection + proposition validation
  */
+// biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class VerifierPool {
   /**
    * Verify a math answer against ground truth.
@@ -100,18 +112,21 @@ export class VerifierPool {
     }
 
     // Fraction equivalence: parse as floats and compare
-    const predFloat = parseFloat(normPred)
-    const refFloat = parseFloat(normRef)
+    const predFloat = Number.parseFloat(normPred)
+    const refFloat = Number.parseFloat(normRef)
     if (!Number.isNaN(predFloat) && !Number.isNaN(refFloat)) {
       const tolerance = Math.max(1e-6, Math.abs(refFloat) * 1e-4)
       if (Math.abs(predFloat - refFloat) < tolerance) {
-        return { correct: true, confidence: 0.95, verifier: "math_float",
-          details: `Matched within tolerance ${tolerance.toExponential(1)}` }
+        return {
+          correct: true,
+          confidence: 0.95,
+          verifier: "math_float",
+          details: `Matched within tolerance ${tolerance.toExponential(1)}`,
+        }
       }
     }
 
-    return { correct: false, confidence: 0.9, verifier: "math",
-      details: `Expected ${normRef}, got ${normPred}` }
+    return { correct: false, confidence: 0.9, verifier: "math", details: `Expected ${normRef}, got ${normPred}` }
   }
 
   /**
@@ -181,19 +196,17 @@ export class VerifierPool {
     const predHasContradiction = /\bcontradiction\b/.test(normPred)
     const refHasContradiction = /\bcontradiction\b/.test(normRef)
     if (predHasContradiction !== refHasContradiction) {
-      return { correct: false, confidence: 0.8, verifier: "logic_contradiction",
-        details: "Contradiction mismatch" }
+      return { correct: false, confidence: 0.8, verifier: "logic_contradiction", details: "Contradiction mismatch" }
     }
 
     // Substring match (partial credit)
     if (normPred.includes(normRef) || normRef.includes(normPred)) {
-      return { correct: true, confidence: 0.6, verifier: "logic_partial",
-        details: "Partial (substring) match" }
+      return { correct: true, confidence: 0.6, verifier: "logic_partial", details: "Partial (substring) match" }
     }
 
     // Jaccard similarity on word tokens
-    const predTokens = new Set(normPred.split(/\s+/).filter(t => t.length > 1))
-    const refTokens = new Set(normRef.split(/\s+/).filter(t => t.length > 1))
+    const predTokens = new Set(normPred.split(/\s+/).filter((t) => t.length > 1))
+    const refTokens = new Set(normRef.split(/\s+/).filter((t) => t.length > 1))
     let intersect = 0
     for (const t of predTokens) if (refTokens.has(t)) intersect++
     const union = new Set([...predTokens, ...refTokens])
@@ -208,15 +221,14 @@ export class VerifierPool {
   }
 
   /** Dispatch verification by task type. */
-  static verify(
-    predicted: string,
-    reference: string,
-    taskType: TaskType,
-  ): VerificationResult {
+  static verify(predicted: string, reference: string, taskType: TaskType): VerificationResult {
     switch (taskType) {
-      case "math": return VerifierPool.verifyMath(predicted, reference)
-      case "code": return VerifierPool.verifyCode(predicted, reference)
-      case "logic": return VerifierPool.verifyLogic(predicted, reference)
+      case "math":
+        return VerifierPool.verifyMath(predicted, reference)
+      case "code":
+        return VerifierPool.verifyCode(predicted, reference)
+      case "logic":
+        return VerifierPool.verifyLogic(predicted, reference)
       default: {
         const exact = predicted.trim() === reference.trim()
         return { correct: exact, confidence: exact ? 1.0 : 0.5, verifier: "general_exact" }
@@ -239,8 +251,8 @@ export class VerifierPool {
     // Normalize fraction: "3/4" → "0.75"
     const fracMatch = n.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/)
     if (fracMatch) {
-      const num = parseFloat(fracMatch[1]!)
-      const den = parseFloat(fracMatch[2]!)
+      const num = Number.parseFloat(fracMatch[1]!)
+      const den = Number.parseFloat(fracMatch[2]!)
       if (den !== 0) n = (num / den).toString()
     }
 
@@ -266,11 +278,7 @@ export class GuidedInferenceEngine {
   private generateFn: GenerateFn
   private candidatesPerStep: number
 
-  constructor(
-    prm: ProcessRewardModel,
-    generateFn: GenerateFn,
-    candidatesPerStep: number = 4,
-  ) {
+  constructor(prm: ProcessRewardModel, generateFn: GenerateFn, candidatesPerStep = 4) {
     this.prm = prm
     this.generateFn = generateFn
     this.candidatesPerStep = candidatesPerStep
@@ -282,7 +290,7 @@ export class GuidedInferenceEngine {
    */
   async generate(
     problem: string,
-    maxSteps: number = 10,
+    maxSteps = 10,
     taskType: TaskType = "general",
   ): Promise<{ path: string[]; scores: number[] }> {
     const path: string[] = []
@@ -307,7 +315,7 @@ export class GuidedInferenceEngine {
 
       path.push(best.candidate)
       scores.push(best.score)
-      currentState += "\n" + best.candidate
+      currentState += `\n${best.candidate}`
 
       // Check termination condition(s)
       if (/\b(Therefore|Final Answer|The answer is|Conclusion)\b/i.test(best.candidate)) {

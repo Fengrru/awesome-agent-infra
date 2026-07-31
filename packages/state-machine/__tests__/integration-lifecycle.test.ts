@@ -6,18 +6,19 @@
  * to changes across both packages.
  */
 
-import { describe, test, expect, beforeEach } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 
-import { AgentStateMachine, AgentState } from "../src/index"
+import { LifecycleManager } from "../../lifecycle-manager/src/index"
+import type { EngineContext, IStateMachine, ModuleLifecycle } from "../../lifecycle-manager/src/index"
+import { AgentState, AgentStateMachine } from "../src/index"
 import type { TransitionCallback } from "../src/index"
-import {
-  LifecycleManager,
-} from "../../lifecycle-manager/src/index"
-import type { ModuleLifecycle, EngineContext, IStateMachine } from "../../lifecycle-manager/src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function createLoggerModule(id: string, priority = 50): {
+function createLoggerModule(
+  id: string,
+  priority = 50,
+): {
   module: ModuleLifecycle
   enterLog: Array<{ state: string; prev: string }>
   exitLog: Array<{ state: string; prev: string }>
@@ -62,7 +63,6 @@ function createLoggerModule(id: string, priority = 50): {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("Integration: AgentStateMachine × LifecycleManager", () => {
-
   let sm: AgentStateMachine
   let lm: LifecycleManager
 
@@ -130,21 +130,27 @@ describe("Integration: AgentStateMachine × LifecycleManager", () => {
       id: "mod-a",
       priority: 30,
       onEnter: {
-        [AgentState.READY]: async () => { order.push("a") },
+        [AgentState.READY]: async () => {
+          order.push("a")
+        },
       },
     }
     const modB: ModuleLifecycle = {
       id: "mod-b",
       priority: 10,
       onEnter: {
-        [AgentState.READY]: async () => { order.push("b") },
+        [AgentState.READY]: async () => {
+          order.push("b")
+        },
       },
     }
     const modC: ModuleLifecycle = {
       id: "mod-c",
       priority: 20,
       onEnter: {
-        [AgentState.READY]: async () => { order.push("c") },
+        [AgentState.READY]: async () => {
+          order.push("c")
+        },
       },
     }
 
@@ -272,7 +278,9 @@ describe("Integration: AgentStateMachine × LifecycleManager", () => {
     const mod: ModuleLifecycle = {
       id: "hotplug",
       onEnter: {
-        [AgentState.READY]: async () => { enterLog.push("hotplug") },
+        [AgentState.READY]: async () => {
+          enterLog.push("hotplug")
+        },
       },
     }
 
@@ -302,14 +310,15 @@ describe("Integration: AgentStateMachine × LifecycleManager", () => {
 })
 
 describe("Integration: LifecycleManager observes StateMachine agnostically", () => {
-
   test("LifecycleManager works with any IStateMachine-compatible implementation", () => {
     // Minimal IStateMachine implementation
     const enterCallbacks = new Map<string, Array<(prev: string, next: string, reason?: string) => Promise<void>>>()
     let currentState = "IDLE"
 
     const customSM: IStateMachine = {
-      get state() { return currentState },
+      get state() {
+        return currentState
+      },
       onEnter(state: string, callback: (prev: string, next: string, reason?: string) => Promise<void>) {
         const cbs = enterCallbacks.get(state) ?? []
         cbs.push(callback)
@@ -339,7 +348,9 @@ describe("Integration: LifecycleManager observes StateMachine agnostically", () 
       {
         id: "custom-observer",
         onEnter: {
-          [AgentState.READY]: async () => { enterLog.push("custom-ready") },
+          [AgentState.READY]: async () => {
+            enterLog.push("custom-ready")
+          },
         },
       },
       {},

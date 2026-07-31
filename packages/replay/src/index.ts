@@ -51,12 +51,22 @@ export interface ReplayDifference {
 // ── Optional Import Helpers ─────────────────────────────────────────────────
 
 function tryLoadStateMachine(): {
-  AgentStateMachine: new () => { state: string; transition: (to: string) => Promise<void>; getSnapshot: () => Record<string, unknown>; restore: (s: Record<string, unknown>) => void }
+  AgentStateMachine: new () => {
+    state: string
+    transition: (to: string) => Promise<void>
+    getSnapshot: () => Record<string, unknown>
+    restore: (s: Record<string, unknown>) => void
+  }
 } | null {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("@fengru/state-machine") as {
-      AgentStateMachine: new () => { state: string; transition: (to: string) => Promise<void>; getSnapshot: () => Record<string, unknown>; restore: (s: Record<string, unknown>) => void }
+      AgentStateMachine: new () => {
+        state: string
+        transition: (to: string) => Promise<void>
+        getSnapshot: () => Record<string, unknown>
+        restore: (s: Record<string, unknown>) => void
+      }
     }
   } catch {
     return null
@@ -82,7 +92,9 @@ class MinimalStateMachine {
   private currentState = "IDLE"
   private states: string[] = []
 
-  get state(): string { return this.currentState }
+  get state(): string {
+    return this.currentState
+  }
 
   async transition(to: string): Promise<void> {
     this.states.push(to)
@@ -98,7 +110,7 @@ class MinimalStateMachine {
       this.currentState = snapshot.current_state
     }
     if (Array.isArray(snapshot.states)) {
-      this.states = [...snapshot.states as string[]]
+      this.states = [...(snapshot.states as string[])]
     }
   }
 }
@@ -111,29 +123,34 @@ function minimalValidateDAG(_dag: Record<string, unknown>): { valid: boolean; er
 
 export class SessionReplayer {
   private events: ReplayEvent[] = []
-  private stateMachine: { state: string; transition: (to: string) => Promise<void>; getSnapshot: () => Record<string, unknown>; restore: (s: Record<string, unknown>) => void }
+  private stateMachine: {
+    state: string
+    transition: (to: string) => Promise<void>
+    getSnapshot: () => Record<string, unknown>
+    restore: (s: Record<string, unknown>) => void
+  }
   private validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
 
   constructor() {
     const smModule = tryLoadStateMachine()
     this.stateMachine = smModule
-      ? new smModule.AgentStateMachine() as unknown as { state: string; transition: (to: string) => Promise<void>; getSnapshot: () => Record<string, unknown>; restore: (s: Record<string, unknown>) => void }
+      ? (new smModule.AgentStateMachine() as unknown as {
+          state: string
+          transition: (to: string) => Promise<void>
+          getSnapshot: () => Record<string, unknown>
+          restore: (s: Record<string, unknown>) => void
+        })
       : new MinimalStateMachine()
 
     const dagModule = tryLoadTaskDag()
-    this.validateDAG = dagModule
-      ? dagModule.validateDAG
-      : minimalValidateDAG
+    this.validateDAG = dagModule ? dagModule.validateDAG : minimalValidateDAG
   }
 
   loadEvents(events: ReplayEvent[]): void {
     this.events = [...events].sort((a, b) => a.timestamp - b.timestamp)
   }
 
-  async replay(
-    mode: ReplayMode,
-    executeHandler?: (event: ReplayEvent) => Promise<unknown>,
-  ): Promise<ReplayResult> {
+  async replay(mode: ReplayMode, executeHandler?: (event: ReplayEvent) => Promise<unknown>): Promise<ReplayResult> {
     const trajectory: StateTrajectoryStep[] = []
     const differences: ReplayDifference[] = []
     let processed = 0
@@ -227,4 +244,14 @@ export class SessionReplayer {
   getDifferences(): ReplayDifference[] {
     return []
   }
+}
+
+/**
+ * Create a {@link SessionReplayer} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link SessionReplayer}.
+ * @returns A new {@link SessionReplayer}.
+ */
+export function createSessionReplayer(...args: ConstructorParameters<typeof SessionReplayer>): SessionReplayer {
+  return new SessionReplayer(...args)
 }

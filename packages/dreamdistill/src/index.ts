@@ -8,8 +8,8 @@
  * @module dreamdistill
  */
 
-export { DreamJob } from "./dream-job"
-export { DistillJob } from "./distill-job"
+export { DreamJob, createDreamJob } from "./dream-job"
+export { DistillJob, createDistillJob } from "./distill-job"
 
 export {
   DEFAULT_DREAM_CONFIG,

@@ -83,12 +83,20 @@ export interface MemoryDatabase {
   getAgentSelfRules(): CoreRule[]
   upsertAgentSelfRule(rule: CoreRule): void
   getUserProfiles(userHash?: string): Array<{
-    profile_id: string; user_hash: string; category: string
-    content: string; token_count: number; importance: number
+    profile_id: string
+    user_hash: string
+    category: string
+    content: string
+    token_count: number
+    importance: number
   }>
   upsertUserProfile(profile: {
-    profile_id: string; user_hash: string; category: string
-    content: string; token_count: number; importance: number
+    profile_id: string
+    user_hash: string
+    category: string
+    content: string
+    token_count: number
+    importance: number
   }): void
 }
 
@@ -96,9 +104,13 @@ export interface MemoryDatabase {
 
 function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0
-  let dot = 0, normA = 0, normB = 0
+  let dot = 0
+  let normA = 0
+  let normB = 0
   for (let i = 0; i < a.length; i++) {
-    dot += a[i]! * b[i]!; normA += a[i]! * a[i]!; normB += b[i]! * b[i]!
+    dot += a[i]! * b[i]!
+    normA += a[i]! * a[i]!
+    normB += b[i]! * b[i]!
   }
   if (normA === 0 || normB === 0) return 0
   return dot / (Math.sqrt(normA) * Math.sqrt(normB))
@@ -129,7 +141,9 @@ export class MemorySystem {
   private cacheTimestamp = 0
   private readonly CACHE_TTL_MS = 5000
 
-  setMaxTokens(tokens: number): void { this.maxTokens = tokens }
+  setMaxTokens(tokens: number): void {
+    this.maxTokens = tokens
+  }
 
   setDatabase(db: MemoryDatabase): void {
     this.db = db
@@ -192,7 +206,9 @@ export class MemorySystem {
     this.invalidateCache()
   }
 
-  clearTransient(): void { this.transientMemories = [] }
+  clearTransient(): void {
+    this.transientMemories = []
+  }
 
   // ── Scoring ───────────────────────────────────────────────────────
 
@@ -209,7 +225,8 @@ export class MemorySystem {
   /** Ebbinghaus decay: R = exp(-t / S_eff) * beta, where S_eff = S * (1 + alpha * n) */
   calculateRetention(memory: LongTermMemory, now: number = Date.now()): number {
     const tHours = (now - memory.created_at) / 3600000
-    const S = 24; const alpha = 0.3
+    const S = 24
+    const alpha = 0.3
     const beta = 0.5 + memory.importance * 0.5
     const S_eff = S * (1 + alpha * memory.access_count)
     return Math.max(0.05, Math.min(1.0, Math.exp(-tHours / S_eff) * beta))
@@ -239,9 +256,18 @@ export class MemorySystem {
     }
 
     let remaining = this.maxTokens
-    const l4Budget = Math.min(this.coreRules.reduce((s, r) => s + r.token_count, 0), 600); remaining -= l4Budget
-    const l2Budget = Math.min(this.workingMemories.reduce((s, m) => s + m.token_count, 0), 1200); remaining -= l2Budget
-    const l1Budget = 500; remaining -= l1Budget
+    const l4Budget = Math.min(
+      this.coreRules.reduce((s, r) => s + r.token_count, 0),
+      600,
+    )
+    remaining -= l4Budget
+    const l2Budget = Math.min(
+      this.workingMemories.reduce((s, m) => s + m.token_count, 0),
+      1200,
+    )
+    remaining -= l2Budget
+    const l1Budget = 500
+    remaining -= l1Budget
     const l3Budget = remaining
 
     const scored = this.longTermMemories
@@ -252,8 +278,10 @@ export class MemorySystem {
     let usedL3 = 0
     for (const { memory } of scored) {
       if (usedL3 + memory.token_count > l3Budget) break
-      selectedL3.push(memory); usedL3 += memory.token_count
-      memory.access_count++; memory.last_accessed = Date.now()
+      selectedL3.push(memory)
+      usedL3 += memory.token_count
+      memory.access_count++
+      memory.last_accessed = Date.now()
     }
 
     const context: AssembledContext = {
@@ -264,17 +292,35 @@ export class MemorySystem {
       totalTokens: l4Budget + l2Budget + l1Budget + usedL3,
     }
 
-    this.cachedContext = context; this.cacheGoal = currentGoal; this.cacheVectorHash = vectorHash; this.cacheTimestamp = now
+    this.cachedContext = context
+    this.cacheGoal = currentGoal
+    this.cacheVectorHash = vectorHash
+    this.cacheTimestamp = now
     return context
   }
 
-  private invalidateCache(): void { this.cachedContext = null; this.cacheGoal = ""; this.cacheVectorHash = ""; this.cacheTimestamp = 0 }
+  private invalidateCache(): void {
+    this.cachedContext = null
+    this.cacheGoal = ""
+    this.cacheVectorHash = ""
+    this.cacheTimestamp = 0
+  }
 
-  getWorkingMemories(): WorkingMemory[] { return [...this.workingMemories] }
-  getLongTermMemories(): LongTermMemory[] { return [...this.longTermMemories] }
-  getCoreRules(): CoreRule[] { return [...this.coreRules] }
-  getTransientMemories(): TransientMemory[] { return [...this.transientMemories] }
-  getMaxTokens(): number { return this.maxTokens }
+  getWorkingMemories(): WorkingMemory[] {
+    return [...this.workingMemories]
+  }
+  getLongTermMemories(): LongTermMemory[] {
+    return [...this.longTermMemories]
+  }
+  getCoreRules(): CoreRule[] {
+    return [...this.coreRules]
+  }
+  getTransientMemories(): TransientMemory[] {
+    return [...this.transientMemories]
+  }
+  getMaxTokens(): number {
+    return this.maxTokens
+  }
 
   toJSON(): object {
     return {
@@ -300,4 +346,14 @@ export class MemorySystem {
     this.maxTokens = data.maxTokens
     this.invalidateCache()
   }
+}
+
+/**
+ * Create a {@link MemorySystem} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link MemorySystem}.
+ * @returns A new {@link MemorySystem}.
+ */
+export function createMemorySystem(...args: ConstructorParameters<typeof MemorySystem>): MemorySystem {
+  return new MemorySystem(...args)
 }

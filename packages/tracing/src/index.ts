@@ -41,9 +41,15 @@ export interface Tracer {
 // ── No-Op Implementations ───────────────────────────────────────────────────
 
 class NoOpSpan implements Span {
-  setAttribute(_key: string, _value: string | number | boolean): Span { return this }
-  addEvent(_name: string, _attributes?: Record<string, string | number | boolean>): Span { return this }
-  recordException(_exception: Error): Span { return this }
+  setAttribute(_key: string, _value: string | number | boolean): Span {
+    return this
+  }
+  addEvent(_name: string, _attributes?: Record<string, string | number | boolean>): Span {
+    return this
+  }
+  recordException(_exception: Error): Span {
+    return this
+  }
   end(): void {}
 }
 

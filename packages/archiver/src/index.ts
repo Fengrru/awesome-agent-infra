@@ -206,4 +206,14 @@ export class EventArchiver {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare var Bun: any
+declare let Bun: any
+
+/**
+ * Create a {@link EventArchiver} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link EventArchiver}.
+ * @returns A new {@link EventArchiver}.
+ */
+export function createEventArchiver(...args: ConstructorParameters<typeof EventArchiver>): EventArchiver {
+  return new EventArchiver(...args)
+}

@@ -1,6 +1,10 @@
 # @fengru/agent-metacog
 
-Metacognitive monitoring with knowledge boundary detection for AI agents.
+Metacognitive monitoring and confidence calibration for AI agents. Tracks knowledge boundaries and forgetting, and fuses 3 information streams (semantic features, attention entropy, and token likelihoods) through a lightweight transformer to produce calibrated confidence scores.
+
+> Scope note: this package covers metacognitive *training-time* monitoring and calibration.
+> For runtime output gating (accept/reject decisions on live LLM outputs), use
+> [`@fengru/confidence-gate`](../confidence-gate).
 
 ## Install
 
@@ -34,6 +38,33 @@ const alerts = metacog.detectForgetting()
 const reflection = metacog.selfReflect()
 ```
 
+### Confidence calibration
+
+```typescript
+import {
+  ConfidenceCalibrator,
+  FeatureExtractor,
+  CalibrationBaselines,
+  DEFAULT_BASE_HIDDEN_SIZE,
+} from "@fengru/agent-metacog"
+
+// Create calibrator (base model hidden size, optional config)
+const calibrator = new ConfidenceCalibrator(DEFAULT_BASE_HIDDEN_SIZE)
+
+// Extract 3-stream features from raw model outputs
+const extractor = new FeatureExtractor()
+const features = extractor.extract(hiddenStates, attentionWeights, logProbs)
+
+// Calibrate confidence
+const result = calibrator.calibrate(features)
+console.log(`Confidence: ${result.confidence.toFixed(3)}`)
+console.log(`ECE: ${result.ece.toFixed(4)}`)
+
+// Train and compare against baselines
+const history = calibrator.train(batches, 20, 0.001)
+const baselines = CalibrationBaselines.allBaselines(features, "response text")
+```
+
 ## Features
 
 - **Ebbinghaus retention**: forgetting curve modeling
@@ -41,6 +72,9 @@ const reflection = metacog.selfReflect()
 - **Forgetting detection**: alerts for stale domains
 - **Consolidation queue**: prioritized review tasks
 - **Self-reflection**: generates meaningful insights
+- **3-stream calibration**: semantic + attention entropy + token likelihood fusion
+- **Transformer-based**: 2-layer Pre-LN transformer with multi-head attention
+- **ECE & Brier score**: calibration quality metrics with temperature-scaling baselines
 
 ## License
 

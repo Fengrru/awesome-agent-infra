@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  MaxModeSampler,
-  DEFAULT_MAX_MODE_CONFIG,
-  type Capability,
-  type ProviderAdapter,
-} from "../src/index"
+import { type Capability, DEFAULT_MAX_MODE_CONFIG, MaxModeSampler, type ProviderAdapter } from "../src/index"
 
 function makeCapability(id: string): Capability {
   return { capability_id: id, description: `does ${id}` }
@@ -118,7 +113,10 @@ describe("sampleAndSelect with provider", () => {
         if (system.includes("evaluator")) {
           return {
             content: JSON.stringify({
-              selectedId: "candidate_0", rankings: ["candidate_0"], scores: { candidate_0: 80 }, reasoning: "ok",
+              selectedId: "candidate_0",
+              rankings: ["candidate_0"],
+              scores: { candidate_0: 80 },
+              reasoning: "ok",
             }),
           }
         }
@@ -136,14 +134,14 @@ describe("sampleAndSelect with provider", () => {
 
   test("all candidates failing throws a clear error", async () => {
     const provider: ProviderAdapter = {
-      async chat() { throw new Error("total outage") },
+      async chat() {
+        throw new Error("total outage")
+      },
     }
     const sampler = new MaxModeSampler({ candidateCount: 2 })
     sampler.setProvider(provider)
 
-    await expect(sampler.sampleAndSelect("goal", CAPS)).rejects.toThrow(
-      "failed to generate any candidates",
-    )
+    await expect(sampler.sampleAndSelect("goal", CAPS)).rejects.toThrow("failed to generate any candidates")
   })
 
   test("single successful candidate skips judging", async () => {
@@ -205,9 +203,10 @@ describe("heuristic judge scoring", () => {
         if (system.includes("evaluator")) return { content: "garbage" }
         call++
         return {
-          content: call === 1
-            ? candidateJSON() // complexity 5, 3 steps, has risks → high score
-            : candidateJSON({ complexity: 10, steps: [], risks: [], estimatedTurns: 99 }), // low score
+          content:
+            call === 1
+              ? candidateJSON() // complexity 5, 3 steps, has risks → high score
+              : candidateJSON({ complexity: 10, steps: [], risks: [], estimatedTurns: 99 }), // low score
         }
       },
     }
@@ -216,8 +215,6 @@ describe("heuristic judge scoring", () => {
 
     const result = await sampler.sampleAndSelect("goal", CAPS)
     expect(result.winner.id).toBe("candidate_0")
-    expect(result.judgeResult.scores["candidate_0"]!).toBeGreaterThan(
-      result.judgeResult.scores["candidate_1"]!,
-    )
+    expect(result.judgeResult.scores["candidate_0"]!).toBeGreaterThan(result.judgeResult.scores["candidate_1"]!)
   })
 })

@@ -48,13 +48,6 @@ interface MatchResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function safeSlice(s: string, start: number, end: number): string {
-  if (start < 0) start = 0
-  if (end > s.length) end = s.length
-  if (start >= end) return ""
-  return s.slice(start, end)
-}
-
 /** Simple Levenshtein distance with single-row optimization (O(n) space) */
 function levenshtein(a: string, b: string): number {
   const m = a.length
@@ -71,9 +64,9 @@ function levenshtein(a: string, b: string): number {
     for (let j = 1; j <= n; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1
       curr[j] = Math.min(
-        prev[j] + 1,       // deletion
-        curr[j - 1] + 1,   // insertion
-        prev[j - 1] + cost // substitution
+        prev[j] + 1, // deletion
+        curr[j - 1] + 1, // insertion
+        prev[j - 1] + cost, // substitution
       )
     }
     const tmp = prev
@@ -103,7 +96,7 @@ function buildTolerantRegex(s: string): RegExp {
   let pattern = ""
   for (const ch of s) {
     if (/[.*+?^${}()|[\]\\]/.test(ch)) {
-      pattern += "\\" + ch
+      pattern += `\\${ch}`
     } else if (ch === " ") {
       pattern += "\\s+"
     } else {
@@ -239,9 +232,10 @@ function strategyHeadTailAnchor(content: string, oldStr: string): MatchResult | 
   const tail = oldStr.slice(-tailLen)
 
   const candidates: number[] = []
-  let headIdx = -1
-  while ((headIdx = content.indexOf(head, headIdx + 1)) !== -1) {
+  let headIdx = content.indexOf(head)
+  while (headIdx !== -1) {
     candidates.push(headIdx)
+    headIdx = content.indexOf(head, headIdx + 1)
   }
 
   for (const start of candidates) {
@@ -291,8 +285,7 @@ function strategyTokenMatch(content: string, oldStr: string): MatchResult | null
 
   const tokenRegex = /[\w]+/g
   const tokenPositions: Array<{ token: string; start: number; end: number }> = []
-  let m: RegExpExecArray | null
-  while ((m = tokenRegex.exec(content)) !== null) {
+  for (const m of content.matchAll(tokenRegex)) {
     tokenPositions.push({ token: m[0].toLowerCase(), start: m.index, end: m.index + m[0].length })
   }
 
@@ -433,7 +426,5 @@ export function canPatch(content: string, oldString: string): boolean {
  * List all strategies that would find a match (for diagnostics).
  */
 export function availableStrategies(content: string, oldString: string): string[] {
-  return ALL_STRATEGIES
-    .filter((s) => s.fn(content, oldString) !== null)
-    .map((s) => s.name)
+  return ALL_STRATEGIES.filter((s) => s.fn(content, oldString) !== null).map((s) => s.name)
 }

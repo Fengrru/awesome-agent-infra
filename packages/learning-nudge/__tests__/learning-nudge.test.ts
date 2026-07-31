@@ -1,16 +1,14 @@
 import { describe, expect, test } from "bun:test"
-import {
-  LearningNudge,
-  type ProviderAdapter,
-  type IProjectMemory,
-  type ISkillManager,
-} from "../src/index"
+import { type IProjectMemory, type ISkillManager, LearningNudge, type ProviderAdapter } from "../src/index"
 
 class FakeMemory implements IProjectMemory {
   entries: Array<{ section: string; content: string; confidence: number }> = []
   failNext = false
   async upsertEntry(entry: { section: string; content: string; confidence: number } & Record<string, unknown>) {
-    if (this.failNext) { this.failNext = false; throw new Error("db down") }
+    if (this.failNext) {
+      this.failNext = false
+      throw new Error("db down")
+    }
     this.entries.push({ section: entry.section, content: entry.content, confidence: entry.confidence })
     return entry
   }
@@ -25,13 +23,23 @@ class FakeSkills implements ISkillManager {
 }
 
 function providerReturning(content: string): ProviderAdapter {
-  return { async chat() { return { content } } }
+  return {
+    async chat() {
+      return { content }
+    },
+  }
 }
 
 const INSIGHT_JSON = JSON.stringify({
   insights: [
     { type: "facts", content: "API rate limit is 100/min", confidence: 0.9 },
-    { type: "patterns", content: "retry with backoff works", confidence: 0.8, should_be_skill: true, skill_name: "retry-backoff" },
+    {
+      type: "patterns",
+      content: "retry with backoff works",
+      confidence: 0.8,
+      should_be_skill: true,
+      skill_name: "retry-backoff",
+    },
     { type: "facts", content: "low confidence guess", confidence: 0.3 },
   ],
   summary: "productive session",
@@ -120,7 +128,11 @@ describe("executeNudge", () => {
 
   test("provider failure is captured in errors", async () => {
     const nudge = new LearningNudge()
-    nudge.setProvider({ async chat() { throw new Error("llm offline") } })
+    nudge.setProvider({
+      async chat() {
+        throw new Error("llm offline")
+      },
+    })
     const result = await nudge.executeNudge("s1", ["x"])
     expect(result.errors[0]).toContain("llm offline")
   })

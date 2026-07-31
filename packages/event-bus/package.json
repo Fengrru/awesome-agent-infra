@@ -1,7 +1,7 @@
 {
   "name": "@fengru/event-bus",
   "version": "0.1.0",
-  "description": "Zero-dependency event bus for AI agents —?priority levels, batch flushing, waitForEvent, persistence",
+  "description": "Zero-dependency event bus for AI agents — priority levels, batch flushing, waitForEvent, persistence",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

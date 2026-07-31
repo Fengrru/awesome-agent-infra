@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test"
 import {
-  CheckpointManager,
   type Checkpoint,
   type CheckpointDatabase,
+  CheckpointManager,
   type L1Snapshot,
   type L2Snapshot,
   type L3Snapshot,
@@ -43,8 +43,12 @@ function makeL3(): L3Snapshot {
     l2_data: makeL2(),
     archive_reference: { archive_path: "/tmp/archive", event_count: 100, sequence_range: [0, 99] },
     session_metadata: {
-      title: "t", goal: "g", total_events: 100, total_tokens: 5000,
-      duration_ms: 60000, created_at: Date.now(),
+      title: "t",
+      goal: "g",
+      total_events: 100,
+      total_tokens: 5000,
+      duration_ms: 60000,
+      created_at: Date.now(),
     },
   }
 }
@@ -53,17 +57,19 @@ function makeL3(): L3Snapshot {
 class FakeDB implements CheckpointDatabase {
   inserted: Checkpoint[] = []
   connected = true
-  insertCheckpoint(cp: Checkpoint): void { this.inserted.push(cp) }
+  insertCheckpoint(cp: Checkpoint): void {
+    this.inserted.push(cp)
+  }
   getLatestCheckpoint(sessionId: string, level?: string): Checkpoint | null {
-    const matches = this.inserted.filter(
-      (cp) => cp.session_id === sessionId && (!level || cp.level === level),
-    )
+    const matches = this.inserted.filter((cp) => cp.session_id === sessionId && (!level || cp.level === level))
     return matches.at(-1) ?? null
   }
   getCheckpoints(sessionId: string): Checkpoint[] {
     return this.inserted.filter((cp) => cp.session_id === sessionId)
   }
-  isConnected(): boolean { return this.connected }
+  isConnected(): boolean {
+    return this.connected
+  }
 }
 
 describe("checkpoint creation", () => {
@@ -170,8 +176,13 @@ describe("getLatest", () => {
     const mgr = new CheckpointManager()
     const db = new FakeDB()
     db.inserted.push({
-      checkpoint_id: "cp-db", session_id: "s1", last_event_id: "e0",
-      level: "L1", execution_state: {}, context_hash: "from-db", created_at: 1,
+      checkpoint_id: "cp-db",
+      session_id: "s1",
+      last_event_id: "e0",
+      level: "L1",
+      execution_state: {},
+      context_hash: "from-db",
+      created_at: 1,
     })
     mgr.setDatabase(db)
     expect(mgr.getLatest("s1")!.context_hash).toBe("from-db")

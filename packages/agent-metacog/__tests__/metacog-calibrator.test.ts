@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import {
   CalibrationBaselines,
+  type CalibratorConfig,
   ConfidenceCalibrator,
   DEFAULT_BASE_HIDDEN_SIZE,
   DEFAULT_CALIBRATOR_CONFIG,
@@ -8,9 +9,8 @@ import {
   MetacognitiveTransformer,
   MultiHeadAttention,
   SinusoidalPE,
-  TransformerLayer,
-  type CalibratorConfig,
   type StreamFeatures,
+  TransformerLayer,
 } from "../src/index"
 
 function makeFakeStreamFeatures(seqLen: number = 5, hiddenSize: number = 64): StreamFeatures {
@@ -167,9 +167,7 @@ describe("MultiHeadAttention", () => {
     const seqLen = 4
     const dModel = 32
     const attn = new MultiHeadAttention(dModel, 4, 0)
-    const x: number[][] = Array.from({ length: seqLen }, () =>
-      Array.from({ length: dModel }, () => Math.random()),
-    )
+    const x: number[][] = Array.from({ length: seqLen }, () => Array.from({ length: dModel }, () => Math.random()))
     const mask: number[][] = Array.from({ length: seqLen }, (_, i) =>
       Array.from({ length: seqLen }, (_, j) => (j <= i ? 1 : 0)),
     )
@@ -243,9 +241,7 @@ describe("TransformerLayer", () => {
     const seqLen = 3
     const dModel = 32
     const layer = new TransformerLayer(dModel, 4, dModel * 4, 0.0)
-    const x: number[][] = Array.from({ length: seqLen }, () =>
-      Array.from({ length: dModel }, () => 1.0),
-    )
+    const x: number[][] = Array.from({ length: seqLen }, () => Array.from({ length: dModel }, () => 1.0))
     const output = layer.forward(x)
     expect(output.length).toBe(seqLen)
     // Should produce finite values
@@ -259,9 +255,7 @@ describe("TransformerLayer", () => {
   test("residual connection preserves information flow", () => {
     const dModel = 32
     const layer = new TransformerLayer(dModel, 4, dModel * 4, 0.0)
-    const x: number[][] = Array.from({ length: 2 }, () =>
-      Array.from({ length: dModel }, () => 0.5),
-    )
+    const x: number[][] = Array.from({ length: 2 }, () => Array.from({ length: dModel }, () => 0.5))
     const output = layer.forward(x)
     expect(output.length).toBe(2)
     expect(output[0]!.length).toBe(dModel)
@@ -353,9 +347,7 @@ describe("FeatureExtractor", () => {
     const extractor = new FeatureExtractor()
     const seqLen = 3
     const attentionWeights = makeFakeAttentionWeights(2, seqLen)
-    const hiddenStates = Array.from({ length: seqLen }, () =>
-      Array.from({ length: 16 }, () => Math.random()),
-    )
+    const hiddenStates = Array.from({ length: seqLen }, () => Array.from({ length: 16 }, () => Math.random()))
     const features = extractor.extract(hiddenStates, attentionWeights, [0, 0, 0])
     for (const e of features.attentionEntropy) {
       expect(e).toBeGreaterThanOrEqual(0)
@@ -608,9 +600,7 @@ describe("Edge cases", () => {
   test("empty features handle in calibrate", () => {
     const calibrator = new ConfidenceCalibrator(64, smallConfig)
     const features: StreamFeatures = {
-      hiddenStates: [
-        Array.from({ length: 64 }, () => Math.random()),
-      ],
+      hiddenStates: [Array.from({ length: 64 }, () => Math.random())],
       attentionEntropy: [0.1],
       tokenLogLikelihoods: [0.5],
     }
@@ -621,9 +611,7 @@ describe("Edge cases", () => {
 
   test("extreme token likelihood values", () => {
     const calibrator = new ConfidenceCalibrator(64, smallConfig)
-    const hiddenStates = Array.from({ length: 3 }, () =>
-      Array.from({ length: 64 }, () => Math.random()),
-    )
+    const hiddenStates = Array.from({ length: 3 }, () => Array.from({ length: 64 }, () => Math.random()))
     const features: StreamFeatures = {
       hiddenStates,
       attentionEntropy: [1.0, 1.0, 1.0],
@@ -636,9 +624,7 @@ describe("Edge cases", () => {
 
   test("zero attention entropy", () => {
     const features: StreamFeatures = {
-      hiddenStates: Array.from({ length: 3 }, () =>
-        Array.from({ length: 64 }, () => Math.random()),
-      ),
+      hiddenStates: Array.from({ length: 3 }, () => Array.from({ length: 64 }, () => Math.random())),
       attentionEntropy: [0, 0, 0],
       tokenLogLikelihoods: [1, 2, 3],
     }
@@ -650,9 +636,7 @@ describe("Edge cases", () => {
 
   test("uniform hidden states", () => {
     const features: StreamFeatures = {
-      hiddenStates: Array.from({ length: 4 }, () =>
-        Array.from({ length: 64 }, () => 1.0),
-      ),
+      hiddenStates: Array.from({ length: 4 }, () => Array.from({ length: 64 }, () => 1.0)),
       attentionEntropy: [2.0, 2.0, 2.0, 2.0],
       tokenLogLikelihoods: [0, 0, 0, 0],
     }
@@ -727,13 +711,9 @@ describe("Edge cases", () => {
     const extractor = new FeatureExtractor()
     const seqLen = 4
     const uniformWeights: number[][][] = Array.from({ length: 2 }, () =>
-      Array.from({ length: seqLen }, () =>
-        Array.from({ length: seqLen }, () => 1 / seqLen),
-      ),
+      Array.from({ length: seqLen }, () => Array.from({ length: seqLen }, () => 1 / seqLen)),
     )
-    const hidden = Array.from({ length: seqLen }, () =>
-      Array.from({ length: 32 }, () => Math.random()),
-    )
+    const hidden = Array.from({ length: seqLen }, () => Array.from({ length: 32 }, () => Math.random()))
     const features = extractor.extract(hidden, uniformWeights, [0, 0, 0, 0])
     for (let i = 0; i < seqLen; i++) {
       expect(features.attentionEntropy[i]).toBeGreaterThan(0)
@@ -743,9 +723,7 @@ describe("Edge cases", () => {
   test("calibrate with all-zero log likelihoods", () => {
     const calibrator = new ConfidenceCalibrator(64, smallConfig)
     const features: StreamFeatures = {
-      hiddenStates: Array.from({ length: 3 }, () =>
-        Array.from({ length: 64 }, () => Math.random() * 2 - 1),
-      ),
+      hiddenStates: Array.from({ length: 3 }, () => Array.from({ length: 64 }, () => Math.random() * 2 - 1)),
       attentionEntropy: [1.5, 1.5, 1.5],
       tokenLogLikelihoods: [0, 0, 0],
     }

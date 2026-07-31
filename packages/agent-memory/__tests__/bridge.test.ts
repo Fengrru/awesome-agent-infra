@@ -9,11 +9,11 @@
  * - Token-budget context assembly
  */
 
-import { describe, test, expect, beforeEach } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 
-import { UnifiedMemoryBridge } from "../src/bridge"
-import type { CoreRule, WorkingMemory, LongTermMemory } from "../src/bridge"
 import { MemoryType } from "@fengru/memory-engine-v2"
+import { UnifiedMemoryBridge } from "../src/bridge"
+import type { CoreRule, LongTermMemory, WorkingMemory } from "../src/bridge"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -45,7 +45,6 @@ function createLTM(overrides?: Partial<LongTermMemory>): LongTermMemory {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("UnifiedMemoryBridge", () => {
-
   // ── Construction & Engine ───────────────────────────────────────────────
 
   test("constructs with default config", () => {
@@ -61,7 +60,12 @@ describe("UnifiedMemoryBridge", () => {
 
   test("constructs with engine config overrides", () => {
     const bridge = new UnifiedMemoryBridge({
-      memory: { workingMemoryCapacity: 10, shortTermMemoryDurationMs: 1800000, shortTermMemoryCapacity: 50, enableSemanticMemory: false },
+      memory: {
+        workingMemoryCapacity: 10,
+        shortTermMemoryDurationMs: 1800000,
+        shortTermMemoryCapacity: 50,
+        enableSemanticMemory: false,
+      },
     })
     const stats = bridge.getStatistics()
     expect(stats.workingMemory).toBeDefined()
@@ -193,8 +197,8 @@ describe("UnifiedMemoryBridge", () => {
 
   test("calculateRetention - higher importance = slower decay", () => {
     const bridge = new UnifiedMemoryBridge()
-    const low = createLTM({ created_at: Date.now() - 86400000 * 7, importance: 0.2, access_count: 0 })
-    const high = createLTM({ created_at: Date.now() - 86400000 * 7, importance: 0.9, access_count: 0 })
+    const low = createLTM({ created_at: Date.now() - 86400000, importance: 0.2, access_count: 0 })
+    const high = createLTM({ created_at: Date.now() - 86400000, importance: 0.9, access_count: 0 })
     expect(bridge.calculateRetention(high)).toBeGreaterThan(bridge.calculateRetention(low))
   })
 
@@ -426,7 +430,16 @@ describe("UnifiedMemoryBridge", () => {
 
   test("autoConsolidate processes after filling items", () => {
     const bridge = new UnifiedMemoryBridge({
-      sleep: { autoConsolidateInterval: 2, consolidationThreshold: 0.1, forgettingThreshold: 0.01, enableReplay: true, enableForgetting: true, enableAssociation: false, replayImportanceBoost: 0.15, maxConsolidationCycles: 10 },
+      sleep: {
+        autoConsolidateInterval: 2,
+        consolidationThreshold: 0.1,
+        forgettingThreshold: 0.01,
+        enableReplay: true,
+        enableForgetting: true,
+        enableAssociation: false,
+        replayImportanceBoost: 0.15,
+        maxConsolidationCycles: 10,
+      },
     })
 
     // Fill enough items to trigger consolidation

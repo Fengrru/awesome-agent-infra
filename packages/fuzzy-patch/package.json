@@ -13,21 +13,29 @@
   },
   "files": ["dist", "README.md"],
   "keywords": [
-    "fuzzy-match", "fuzzy-patch", "ai-agent", "file-patch", "string-matching",
-    "levenshtein", "diff", "code-editing", "llm-agent", "agent-tool"
+    "fuzzy-match",
+    "fuzzy-patch",
+    "ai-agent",
+    "file-patch",
+    "string-matching",
+    "levenshtein",
+    "diff",
+    "code-editing",
+    "llm-agent",
+    "agent-tool"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fengru/fuzzy-patch"
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/fuzzy-patch"
   },
   "scripts": {
     "build": "tsc",
     "test": "bun test",
-    "prepublishOnly": "bun run build"
-  ,
-
-    "typecheck": "tsc --noEmit"},
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "typescript": "^5.0.0"
   }

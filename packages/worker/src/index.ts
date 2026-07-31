@@ -105,6 +105,7 @@ class ConcurrencySemaphore {
 
 export {
   TrueWorkerPool,
+  createTrueWorkerPool,
   type TrueWorkerTask,
   type TrueWorkerResult,
   type TrueWorkerPoolMetrics,
@@ -125,7 +126,7 @@ export class StatelessWorkerPool {
   private shutdownFlag = false
   private activeControllers = new Set<AbortController>()
 
-  constructor(maxParallel: number = 3, defaultTimeoutMs: number = 60000) {
+  constructor(maxParallel = 3, defaultTimeoutMs = 60000) {
     this.maxParallel = maxParallel
     this.defaultTimeoutMs = defaultTimeoutMs
   }
@@ -218,7 +219,9 @@ export class StatelessWorkerPool {
         success: false,
         error: isTimeout
           ? `Task timed out after ${effectiveTimeout}ms`
-          : err instanceof Error ? err.message : String(err),
+          : err instanceof Error
+            ? err.message
+            : String(err),
         durationMs: duration,
         tokenCost: 0,
       }
@@ -243,9 +246,13 @@ export class StatelessWorkerPool {
       const result = await Promise.race([
         handler(task),
         new Promise<never>((_, reject) => {
-          signal.addEventListener("abort", () => {
-            reject(signal.reason ?? new TimeoutError(timeoutMs))
-          }, { once: true })
+          signal.addEventListener(
+            "abort",
+            () => {
+              reject(signal.reason ?? new TimeoutError(timeoutMs))
+            },
+            { once: true },
+          )
         }),
       ])
 
@@ -258,10 +265,7 @@ export class StatelessWorkerPool {
     }
   }
 
-  async executeTasksInParallel(
-    tasks: WorkerTask[],
-    options?: ExecuteParallelOptions,
-  ): Promise<WorkerResult[]> {
+  async executeTasksInParallel(tasks: WorkerTask[], options?: ExecuteParallelOptions): Promise<WorkerResult[]> {
     const timeoutMs = options?.timeoutMs
     const results: WorkerResult[] = new Array(tasks.length)
 
@@ -304,9 +308,7 @@ export class StatelessWorkerPool {
       completedTasks: this.completedTasks,
       failedTasks: this.failedTasks,
       timedOutTasks: this.timedOutTasks,
-      avgDurationMs: this.completedTasks > 0
-        ? Math.round(this.totalDurationMs / this.completedTasks)
-        : 0,
+      avgDurationMs: this.completedTasks > 0 ? Math.round(this.totalDurationMs / this.completedTasks) : 0,
       peakConcurrency: this.peakActive,
       currentConcurrency: this.activeCount,
     }
@@ -323,7 +325,7 @@ export class StatelessWorkerPool {
     this.shutdownFlag = false
   }
 
-  async shutdown(gracePeriodMs: number = 5000): Promise<void> {
+  async shutdown(gracePeriodMs = 5000): Promise<void> {
     this.shutdownFlag = true
 
     const start = Date.now()
@@ -336,4 +338,16 @@ export class StatelessWorkerPool {
     }
     this.activeControllers.clear()
   }
+}
+
+/**
+ * Create a {@link StatelessWorkerPool} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link StatelessWorkerPool}.
+ * @returns A new {@link StatelessWorkerPool}.
+ */
+export function createStatelessWorkerPool(
+  ...args: ConstructorParameters<typeof StatelessWorkerPool>
+): StatelessWorkerPool {
+  return new StatelessWorkerPool(...args)
 }

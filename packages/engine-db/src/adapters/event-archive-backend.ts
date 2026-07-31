@@ -27,12 +27,17 @@ export interface ArchiveDatabase {
 
 /** Interface matching @fengru/dreamdistill's IEventArchiver (structural typing) */
 export interface IEventArchiver {
-  queryEvents(sessionId: string, limit?: number): Promise<Array<{
-    event_type: string
-    timestamp: number
-    session_id: string
-    payload: Record<string, unknown>
-  }>>
+  queryEvents(
+    sessionId: string,
+    limit?: number,
+  ): Promise<
+    Array<{
+      event_type: string
+      timestamp: number
+      session_id: string
+      payload: Record<string, unknown>
+    }>
+  >
   getSessionIds(limit?: number): Promise<string[]>
 }
 
@@ -110,20 +115,26 @@ export class EventArchiveBackend implements ArchiveDatabase, IEventArchiver {
 
   // ─── IEventArchiver (dreamdistill) ────────────────────────────────────
 
-  async queryEvents(sessionId: string, limit?: number): Promise<Array<{
-    event_type: string
-    timestamp: number
-    session_id: string
-    payload: Record<string, unknown>
-  }>> {
+  async queryEvents(
+    sessionId: string,
+    limit?: number,
+  ): Promise<
+    Array<{
+      event_type: string
+      timestamp: number
+      session_id: string
+      payload: Record<string, unknown>
+    }>
+  > {
     const events = this.engine.queryEvents(sessionId, undefined, limit ?? 200)
     return events.map((e: PersistentEvent) => ({
       event_type: e.event_type,
       timestamp: e.timestamp,
       session_id: e.session_id,
-      payload: typeof e.payload === "string"
-        ? (JSON.parse(e.payload) as Record<string, unknown>)
-        : (e.payload as unknown as Record<string, unknown>),
+      payload:
+        typeof e.payload === "string"
+          ? (JSON.parse(e.payload) as Record<string, unknown>)
+          : (e.payload as unknown as Record<string, unknown>),
     }))
   }
 

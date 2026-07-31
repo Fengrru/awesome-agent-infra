@@ -3,9 +3,9 @@
  * @module process-reward/labeler
  */
 
-import type { TaskType, StepScore, TrainingSample, PRMConfig } from "./types"
-import { DEFAULT_PRM_CONFIG } from "./types"
 import { heuristicScore } from "./scoring"
+import type { PRMConfig, StepScore, TaskType, TrainingSample } from "./types"
+import { DEFAULT_PRM_CONFIG } from "./types"
 
 export class PRMLabeler {
   config: PRMConfig
@@ -15,7 +15,9 @@ export class PRMLabeler {
   }
 
   labelSteps(
-    steps: string[], outcome: number, taskType: TaskType,
+    steps: string[],
+    outcome: number,
+    taskType: TaskType,
     options?: {
       verifierFn?: (fullText: string, reference: string) => boolean
       generateFn?: (state: string) => string
@@ -24,8 +26,11 @@ export class PRMLabeler {
   ): { labels: number[]; confidences: number[]; strategy: string } {
     if (steps.length === 0) return { labels: [], confidences: [], strategy: "weak_supervision" }
     const strategy = this.config.labelingStrategy
-    const hasMC = (strategy === "mc_rollout" || strategy === "hybrid") &&
-      options?.verifierFn && options?.generateFn && options?.referenceAnswer
+    const hasMC =
+      (strategy === "mc_rollout" || strategy === "hybrid") &&
+      options?.verifierFn &&
+      options?.generateFn &&
+      options?.referenceAnswer
     if (hasMC) {
       const result = this.mcRolloutLabel(steps, options!.verifierFn!, options!.generateFn!, options!.referenceAnswer!)
       return { ...result, strategy: "mc_rollout" }
@@ -39,8 +44,10 @@ export class PRMLabeler {
   }
 
   private mcRolloutLabel(
-    steps: string[], verifierFn: (full: string, ref: string) => boolean,
-    generateFn: (state: string) => string, reference: string,
+    steps: string[],
+    verifierFn: (full: string, ref: string) => boolean,
+    generateFn: (state: string) => string,
+    reference: string,
   ): { labels: number[]; confidences: number[] } {
     const n = steps.length
     const numRollouts = this.config.numRollouts
@@ -51,7 +58,7 @@ export class PRMLabeler {
       let successCount = 0
       for (let r = 0; r < numRollouts; r++) {
         const completion = generateFn(prefix)
-        if (verifierFn(prefix + "\n" + completion, reference)) successCount++
+        if (verifierFn(`${prefix}\n${completion}`, reference)) successCount++
       }
       labels[i] = successCount / numRollouts
       confidences[i] = 1 - 1 / Math.sqrt(numRollouts + 1)
@@ -60,7 +67,9 @@ export class PRMLabeler {
   }
 
   private heuristicLabel(
-    steps: string[], outcome: number, taskType: TaskType,
+    steps: string[],
+    outcome: number,
+    taskType: TaskType,
   ): { labels: number[]; confidences: number[] } {
     const n = steps.length
     const labels: number[] = []
@@ -76,7 +85,9 @@ export class PRMLabeler {
   }
 
   private weakSupervisionLabel(
-    steps: string[], outcome: number, taskType: TaskType,
+    steps: string[],
+    outcome: number,
+    taskType: TaskType,
   ): { labels: number[]; confidences: number[] } {
     const n = steps.length
     const base = outcome >= 0.5 ? 0.9 : 0.15
@@ -104,7 +115,9 @@ export class PRMLabeler {
   }
 
   prepareTrainingData(
-    paths: string[][], outcomes: number[], taskType: TaskType,
+    paths: string[][],
+    outcomes: number[],
+    taskType: TaskType,
     verifierFn?: (full: string, ref: string) => boolean,
     generateFn?: (state: string) => string,
     referenceAnswers?: string[],
@@ -114,11 +127,21 @@ export class PRMLabeler {
       const steps = paths[p]!
       const outcome = outcomes[p] ?? 0
       const reference = referenceAnswers?.[p]
-      const { labels, confidences } = this.labelSteps(steps, outcome, taskType,
+      const { labels, confidences } = this.labelSteps(
+        steps,
+        outcome,
+        taskType,
         reference !== undefined && verifierFn && generateFn
-          ? { verifierFn, generateFn, referenceAnswer: reference } : undefined)
+          ? { verifierFn, generateFn, referenceAnswer: reference }
+          : undefined,
+      )
       for (let i = 1; i < steps.length; i++) {
-        samples.push({ state: steps.slice(0, i).join("\n"), action: steps[i]!, label: labels[i]!, confidence: confidences[i]! })
+        samples.push({
+          state: steps.slice(0, i).join("\n"),
+          action: steps[i]!,
+          label: labels[i]!,
+          confidence: confidences[i]!,
+        })
       }
     }
     return samples

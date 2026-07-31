@@ -7,16 +7,12 @@
  * context assembly.
  */
 
-import { describe, test, expect, beforeEach } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 
-import { MemorySystem } from "../src/index"
-import type { LongTermMemory, CoreRule, WorkingMemory } from "../src/index"
+import { DEFAULT_MEMORY_CONFIG, MemoryEngine, MemoryType } from "@fengru/memory-engine-v2"
 import { UnifiedMemoryBridge } from "../src/bridge"
-import {
-  MemoryEngine,
-  MemoryType,
-  DEFAULT_MEMORY_CONFIG,
-} from "@fengru/memory-engine-v2"
+import { MemorySystem } from "../src/index"
+import type { CoreRule, LongTermMemory, WorkingMemory } from "../src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -37,7 +33,6 @@ function createLTM(overrides?: Partial<LongTermMemory>): LongTermMemory {
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engine-v2)", () => {
-
   // ── Cross-package construction & internal wiring ─────────────────────
 
   test("MemorySystem + UnifiedMemoryBridge share memory-engine-v2 engine", () => {
@@ -55,10 +50,12 @@ describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engin
     const bridge = new UnifiedMemoryBridge()
 
     // System L3: inserts into internal array
-    system.addLongTermMemory(createLTM({
-      memory_id: "sys-ltm-1",
-      content: "System-managed long-term memory about deployment",
-    }))
+    system.addLongTermMemory(
+      createLTM({
+        memory_id: "sys-ltm-1",
+        content: "System-managed long-term memory about deployment",
+      }),
+    )
 
     // Bridge: inserts into engine 5-tier stores
     bridge.addMemory("Bridge-managed knowledge about deployment", 0.7)
@@ -75,11 +72,13 @@ describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engin
     const system = new MemorySystem()
     const bridge = new UnifiedMemoryBridge()
 
-    system.addLongTermMemory(createLTM({
-      memory_id: "isolated-1",
-      content: "Python is great for data science",
-      tags: ["python", "data-science"],
-    }))
+    system.addLongTermMemory(
+      createLTM({
+        memory_id: "isolated-1",
+        content: "Python is great for data science",
+        tags: ["python", "data-science"],
+      }),
+    )
 
     bridge.addMemory("Rust is great for systems programming", 0.6)
 
@@ -90,9 +89,7 @@ describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engin
 
     // Bridge recall should not find system items
     const bridgeRecall = bridge.recall("Python", 5)
-    const hasPythonInBridge = bridgeRecall.some(([item]) =>
-      String(item.content).includes("Python"),
-    )
+    const hasPythonInBridge = bridgeRecall.some(([item]) => String(item.content).includes("Python"))
     // Bridge won't have system items since they're separate stores
     expect(hasPythonInBridge).toBe(false)
   })
@@ -198,13 +195,15 @@ describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engin
     })
 
     // L3 via system
-    system.addLongTermMemory(createLTM({
-      memory_id: "sys-l3-ctx",
-      content: "The database schema uses PostgreSQL with JSONB columns",
-      token_count: 10,
-      importance: 0.7,
-      tags: ["database", "postgresql"],
-    }))
+    system.addLongTermMemory(
+      createLTM({
+        memory_id: "sys-l3-ctx",
+        content: "The database schema uses PostgreSQL with JSONB columns",
+        token_count: 10,
+        importance: 0.7,
+        tags: ["database", "postgresql"],
+      }),
+    )
 
     // L3 via bridge engine
     bridge.addMemory("PostgreSQL JSONB queries need GIN indexes for performance", 0.7)
@@ -232,7 +231,6 @@ describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engin
 })
 
 describe("Integration: UnifiedMemoryBridge wraps MemoryEngine stores", () => {
-
   // ── Bridge-to-engine data flow ──────────────────────────────────────
 
   test("addMemory through bridge populates engine layers", () => {

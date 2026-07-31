@@ -11,14 +11,14 @@
  * @module codegraph/incremental
  */
 
-import { readFile } from "node:fs/promises"
 import { existsSync, statSync } from "node:fs"
+import { readFile } from "node:fs/promises"
 import { relative } from "node:path"
-import { CodeGraph } from "./graph"
-import { CallSiteStore, createCallSite } from "./callsite"
-import type { StaleMarker, IncrementalParseResult, CodeGraphNode, CallSite } from "./types"
-import { extractFromFile, type ExtractResult } from "./extractor"
+import { type CallSiteStore, createCallSite } from "./callsite"
+import { extractFromFile } from "./extractor"
+import type { CodeGraph } from "./graph"
 import { hashString, hashesEqual, signatureChanged } from "./hashing"
+import type { CallSite, CodeGraphNode, IncrementalParseResult, StaleMarker } from "./types"
 
 export interface IncrementalEdit {
   filePath: string
@@ -62,10 +62,7 @@ export class IncrementalParser {
     return this.handleModify(relPath, edit)
   }
 
-  private async handleDelete(
-    relPath: string,
-    edit: IncrementalEdit,
-  ): Promise<IncrementalParseResult> {
+  private async handleDelete(relPath: string, _edit: IncrementalEdit): Promise<IncrementalParseResult> {
     const editRange: [number, number] = [0, 0]
 
     const removedEntityIds = this.graph.removeFileNodes(relPath)
@@ -99,10 +96,7 @@ export class IncrementalParser {
     }
   }
 
-  private async handleModify(
-    relPath: string,
-    edit: IncrementalEdit,
-  ): Promise<IncrementalParseResult> {
+  private async handleModify(relPath: string, edit: IncrementalEdit): Promise<IncrementalParseResult> {
     const filePath = edit.filePath
 
     if (!existsSync(filePath)) {
@@ -226,9 +220,7 @@ export class IncrementalParser {
       if (resolved) {
         this.graph.addEdge({ sourceId: fileId, targetId: `file:${resolved}`, relation: "imports" })
         for (const name of imp.names) {
-          const symbols = this.graph.findNodes(
-            (n) => n.type === "symbol" && n.name === name && n.filePath === resolved,
-          )
+          const symbols = this.graph.findNodes((n) => n.type === "symbol" && n.name === name && n.filePath === resolved)
           for (const sym of symbols) {
             this.graph.addEdge({ sourceId: fileId, targetId: sym.id, relation: "references" })
           }
@@ -252,7 +244,9 @@ export class IncrementalParser {
       if (!caller) continue
 
       const candidates = this.graph.findNodes(
-        (n) => n.type === "symbol" && n.name === call.calleeName &&
+        (n) =>
+          n.type === "symbol" &&
+          n.name === call.calleeName &&
           (n.symbolType === "function" || n.symbolType === "method" || n.symbolType === "class"),
       )
 
@@ -361,16 +355,14 @@ export class IncrementalParser {
 
   private resolveImportSimple(importSource: string, currentFile: string): string | null {
     if (!importSource.startsWith(".") && !importSource.startsWith("/")) return null
-    const dir = currentFile.includes("/")
-      ? currentFile.substring(0, currentFile.lastIndexOf("/"))
-      : ""
+    const dir = currentFile.includes("/") ? currentFile.substring(0, currentFile.lastIndexOf("/")) : ""
     const extensions = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs"]
     for (const ext of extensions) {
-      const candidate = `${dir ? dir + "/" : ""}${importSource}${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${importSource}${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
     for (const ext of [".ts", ".js", ".tsx", ".jsx"]) {
-      const candidate = `${dir ? dir + "/" : ""}${importSource}/index${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${importSource}/index${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
     return null

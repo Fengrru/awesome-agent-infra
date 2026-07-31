@@ -93,17 +93,9 @@ export class StateTransitionError extends Error {
   }
 }
 
-export type TransitionCallback = (
-  prev: AgentState,
-  next: AgentState,
-  reason?: string,
-) => Promise<void>
+export type TransitionCallback = (prev: AgentState, next: AgentState, reason?: string) => Promise<void>
 
-export type TransitionGuard = (
-  from: AgentState,
-  to: AgentState,
-  reason?: string,
-) => boolean | Promise<boolean>
+export type TransitionGuard = (from: AgentState, to: AgentState, reason?: string) => boolean | Promise<boolean>
 
 export interface StateMachineSnapshot {
   current_state: AgentState
@@ -175,7 +167,10 @@ export class AgentStateMachine {
     }
 
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Transition ${from}->${to} timed out after ${this.transitionTimeout}ms`)), this.transitionTimeout),
+      setTimeout(
+        () => reject(new Error(`Transition ${from}->${to} timed out after ${this.transitionTimeout}ms`)),
+        this.transitionTimeout,
+      ),
     )
 
     const transitionPromise = (async () => {
@@ -298,7 +293,7 @@ export class AgentStateMachine {
     return result as Record<AgentState, StateMetrics>
   }
 
-  toPrometheusMetrics(name: string = "agent_state_machine"): string {
+  toPrometheusMetrics(name = "agent_state_machine"): string {
     const metrics = this.getStateMetrics()
     const lines = [`# StateMachine: ${name}`]
     for (const [state, data] of Object.entries(metrics)) {
@@ -339,4 +334,14 @@ export class AgentStateMachine {
       }
     }
   }
+}
+
+/**
+ * Create a {@link AgentStateMachine} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link AgentStateMachine}.
+ * @returns A new {@link AgentStateMachine}.
+ */
+export function createAgentStateMachine(...args: ConstructorParameters<typeof AgentStateMachine>): AgentStateMachine {
+  return new AgentStateMachine(...args)
 }

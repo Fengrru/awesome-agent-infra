@@ -65,10 +65,7 @@ export function hashesEqual(a: string | undefined, b: string | undefined): boole
  * Check if a signature has changed by comparing hashes.
  * Returns true if the signature has changed.
  */
-export function signatureChanged(
-  oldHash: string | undefined,
-  newHash: string | undefined,
-): boolean {
+export function signatureChanged(oldHash: string | undefined, newHash: string | undefined): boolean {
   return !hashesEqual(oldHash, newHash)
 }
 
@@ -81,9 +78,7 @@ export function buildSignatureSource(
   parameters: Array<{ name: string; type: string; optional?: boolean }>,
   returnType?: string,
 ): string {
-  const params = parameters
-    .map((p) => `${p.name}:${p.type}${p.optional ? "?" : ""}`)
-    .join(",")
+  const params = parameters.map((p) => `${p.name}:${p.type}${p.optional ? "?" : ""}`).join(",")
   const ret = returnType ? `:${returnType}` : ""
   return `${name}(${params})${ret}`
 }
@@ -91,9 +86,6 @@ export function buildSignatureSource(
 /**
  * Build a content source string from entity body text.
  */
-export function buildContentSource(
-  name: string,
-  bodyText: string,
-): string {
+export function buildContentSource(_name: string, bodyText: string): string {
   return bodyText
 }

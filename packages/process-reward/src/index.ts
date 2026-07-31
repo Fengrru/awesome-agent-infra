@@ -60,10 +60,10 @@ export {
 export { PRMLabeler } from "./labeler"
 
 // ─── Trainer ──────────────────────────────────────────────────────────
-export { HeuristicStepScorer, PRMTrainer } from "./trainer"
+export { HeuristicStepScorer, PRMTrainer, createPRMTrainer } from "./trainer"
 
 // ─── Model ────────────────────────────────────────────────────────────
-export { ProcessRewardModel, savePRMModel, loadPRMModel } from "./model"
+export { ProcessRewardModel, createProcessRewardModel, savePRMModel, loadPRMModel } from "./model"
 
 // ─── Inference ────────────────────────────────────────────────────────
 export { StepSegmenter, VerifierPool, GuidedInferenceEngine } from "./inference"

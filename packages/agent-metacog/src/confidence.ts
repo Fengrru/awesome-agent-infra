@@ -10,9 +10,8 @@ import type { MemoryStatistics } from "./types"
  * using multiple weighted factors (MetaMemory approach).
  */
 export function estimateConfidence(query: string, stats: MemoryStatistics): number {
-  const availabilityFactor = stats.totalMemories > 0
-    ? Math.min(1, stats.domainMemories / Math.max(stats.totalMemories, 1))
-    : 0.3
+  const availabilityFactor =
+    stats.totalMemories > 0 ? Math.min(1, stats.domainMemories / Math.max(stats.totalMemories, 1)) : 0.3
   const successFactor = stats.successRate
   const complexity = estimateQueryComplexity(query)
   const complexityFactor = 1.0 - complexity
@@ -21,11 +20,11 @@ export function estimateConfidence(query: string, stats: MemoryStatistics): numb
   const coverageFactor = coverage
 
   let confidence = 0.5
-  confidence += availabilityFactor * 0.20
+  confidence += availabilityFactor * 0.2
   confidence += successFactor * 0.25
-  confidence += complexityFactor * 0.20
+  confidence += complexityFactor * 0.2
   confidence += freshnessFactor * 0.15
-  confidence += coverageFactor * 0.20
+  confidence += coverageFactor * 0.2
 
   return Math.max(0, Math.min(1, confidence))
 }
@@ -52,7 +51,7 @@ export function estimateQueryComplexity(query: string): number {
     /\b(compare|contrast|differentiate)\b/i,
     /\b(implement|design|create|build|develop)\b/i,
   ]
-  const reasoningHits = reasoningPatterns.filter(p => p.test(q)).length
+  const reasoningHits = reasoningPatterns.filter((p) => p.test(q)).length
   score += Math.min(0.2, reasoningHits * 0.07)
 
   if (/\bwhy\b/i.test(q)) score += 0.08
@@ -67,15 +66,18 @@ export function estimateQueryComplexity(query: string): number {
     /\b(cryptography|encryption|hashing|security|authentication)\b/i,
     /\b(optimization|constraint|heuristic|pipeline)\b/i,
   ]
-  const techHits = technicalTerms.filter(p => p.test(q)).length
+  const techHits = technicalTerms.filter((p) => p.test(q)).length
   score += Math.min(0.15, techHits * 0.05)
 
   const logicPatterns = [
-    /\bif\s+.*\s+then\b/i, /\bunless\b/i, /\balthough\b/i,
-    /\b(either|neither)\b/i, /\b(otherwise|alternatively)\b/i,
+    /\bif\s+.*\s+then\b/i,
+    /\bunless\b/i,
+    /\balthough\b/i,
+    /\b(either|neither)\b/i,
+    /\b(otherwise|alternatively)\b/i,
     /\bprovided\s+that\b/i,
   ]
-  const logicHits = logicPatterns.filter(p => p.test(q)).length
+  const logicHits = logicPatterns.filter((p) => p.test(q)).length
   score += Math.min(0.1, logicHits * 0.04)
 
   const comparativePatterns = [
@@ -85,7 +87,7 @@ export function estimateQueryComplexity(query: string): number {
     /\b(compared\s+to|in\s+comparison)\b/i,
     /\b(trade[\s-]off|pros?\s+and\s+cons?)\b/i,
   ]
-  const compHits = comparativePatterns.filter(p => p.test(q)).length
+  const compHits = comparativePatterns.filter((p) => p.test(q)).length
   score += Math.min(0.07, compHits * 0.035)
 
   return Math.max(0.1, Math.min(1, score))
@@ -102,7 +104,7 @@ export function isComputationQuery(query: string): boolean {
     /\b(what\s+is\s+\d+\s*[+\-*/×÷])/i,
     /\b(convert|translate\s+(?:to|from))\b/i,
   ]
-  if (explicitPatterns.some(p => p.test(q))) return true
+  if (explicitPatterns.some((p) => p.test(q))) return true
   if (/\d+\s*[+\-*/×÷]\s*\d+/.test(q)) return true
   if (/=\s*\?/.test(q)) return true
   if (/\b\d+(?:\.\d+)?\s*[%]\b/.test(q)) return true
@@ -125,13 +127,67 @@ export function estimateCoverage(query: string, stats: MemoryStatistics): number
 
 function extractKeywords(query: string): string[] {
   const stopWords = new Set([
-    "a", "an", "the", "is", "are", "was", "were", "be", "been",
-    "of", "in", "to", "for", "with", "on", "at", "by", "from",
-    "it", "its", "this", "that", "these", "those", "i", "you",
-    "he", "she", "we", "they", "and", "or", "but", "not", "so",
-    "can", "will", "would", "could", "should", "do", "does", "did",
-    "what", "how", "why", "when", "where", "which", "who",
-    "please", "just", "very", "really", "only", "also", "then",
+    "a",
+    "an",
+    "the",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "of",
+    "in",
+    "to",
+    "for",
+    "with",
+    "on",
+    "at",
+    "by",
+    "from",
+    "it",
+    "its",
+    "this",
+    "that",
+    "these",
+    "those",
+    "i",
+    "you",
+    "he",
+    "she",
+    "we",
+    "they",
+    "and",
+    "or",
+    "but",
+    "not",
+    "so",
+    "can",
+    "will",
+    "would",
+    "could",
+    "should",
+    "do",
+    "does",
+    "did",
+    "what",
+    "how",
+    "why",
+    "when",
+    "where",
+    "which",
+    "who",
+    "please",
+    "just",
+    "very",
+    "really",
+    "only",
+    "also",
+    "then",
   ])
-  return query.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w))
+  return query
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !stopWords.has(w))
 }

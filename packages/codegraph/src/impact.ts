@@ -16,15 +16,9 @@
  * @module codegraph/impact
  */
 
-import { CodeGraph } from "./graph"
 import type { CallSiteStore } from "./callsite"
-import type {
-  CodeGraphNode,
-  ImpactResult,
-  ImpactChain,
-  SignatureBreak,
-  SymbolMetadata,
-} from "./types"
+import type { CodeGraph } from "./graph"
+import type { CodeGraphNode, ImpactChain, ImpactResult, SignatureBreak } from "./types"
 
 export interface ImpactAnalysisConfig {
   maxDepth: number
@@ -55,11 +49,7 @@ export class ImpactAnalyzer {
   private callSites: CallSiteStore | null
   private config: ImpactAnalysisConfig
 
-  constructor(
-    graph: CodeGraph,
-    callSites?: CallSiteStore,
-    config?: Partial<ImpactAnalysisConfig>,
-  ) {
+  constructor(graph: CodeGraph, callSites?: CallSiteStore, config?: Partial<ImpactAnalysisConfig>) {
     this.graph = graph
     this.callSites = callSites ?? null
     this.config = { ...DEFAULT_IMPACT_CONFIG, ...config }
@@ -95,14 +85,7 @@ export class ImpactAnalyzer {
 
     const affectedFiles = this.graph.getAffectedFiles(entityId, this.config.maxDepth)
 
-    const overriddenBy = this.graph.getOverriddenBy(entityId)
-    const typeUsers = this.graph.getTypeUsersOf(entityId)
-
-    const signatureBreaks = this.computeSignatureBreaks(
-      entityId,
-      editType,
-      newSignature,
-    )
+    const signatureBreaks = this.computeSignatureBreaks(entityId, editType, newSignature)
 
     const affectedTests = this.graph.getTestsFor(entityId)
     if (affectedTests.length === 0) {
@@ -252,10 +235,7 @@ export class ImpactAnalyzer {
    * Heuristically find test functions that are likely related to
    * the primary entity or its callers.
    */
-  private findTestsHeuristically(
-    entityId: string,
-    callers: CodeGraphNode[],
-  ): CodeGraphNode[] {
+  private findTestsHeuristically(entityId: string, _callers: CodeGraphNode[]): CodeGraphNode[] {
     const entity = this.graph.getNode(entityId)
     if (!entity) return []
 
@@ -263,9 +243,7 @@ export class ImpactAnalyzer {
     const entityName = entity.name.toLowerCase()
 
     const allFuncs = this.graph.findNodes(
-      (n) =>
-        n.type === "symbol" &&
-        (n.symbolType === "function" || n.symbolType === "method"),
+      (n) => n.type === "symbol" && (n.symbolType === "function" || n.symbolType === "method"),
     )
 
     for (const func of allFuncs) {

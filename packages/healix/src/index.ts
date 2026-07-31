@@ -71,7 +71,10 @@ export class ErrorClassifier {
     ["syntax", ["syntax", "invalid syntax", "parse error", "unexpected token", "esyntax"]],
     ["resource", ["oom", "out of memory", "disk full", "enospc"]],
     ["network", ["network", "connection refused", "econnrefused", "enotfound", "fetch failed", "dns"]],
-    ["research_failed", ["research failed", "tutorial parse failed", "no results found", "cache expired", "stale content"]],
+    [
+      "research_failed",
+      ["research failed", "tutorial parse failed", "no results found", "cache expired", "stale content"],
+    ],
   ]
 
   classify(error: string): ErrorCategory {
@@ -101,8 +104,7 @@ export class ErrorClassifier {
 
     const symbolRegex = /(?:at\s+)?([A-Za-z_][\w.]*(?:\.[\w]+)+)(?:\s|\(|$)/g
     const core_symbols: string[] = []
-    let match
-    while ((match = symbolRegex.exec(error)) !== null) {
+    for (const match of error.matchAll(symbolRegex)) {
       if (!core_symbols.includes(match[1]!)) {
         core_symbols.push(match[1]!)
       }
@@ -238,7 +240,11 @@ export class RepairMemoryEngine {
 
     this.rules.set(key, rule)
     if (this.db) {
-      try { this.db.upsertRepairRule(rule) } catch { /* persistence optional */ }
+      try {
+        this.db.upsertRepairRule(rule)
+      } catch {
+        /* persistence optional */
+      }
     }
     return rule
   }
@@ -260,10 +266,7 @@ export class RepairMemoryEngine {
 
     // Tier 1: exact hash match for same tool
     for (const rule of candidates) {
-      if (
-        rule.tool === tool &&
-        this.computeExactHash(error) === this.computeExactHash(rule.recovery_action)
-      ) {
+      if (rule.tool === tool && this.computeExactHash(error) === this.computeExactHash(rule.recovery_action)) {
         if (rule.success_rate > 0.8) return rule
       }
     }
@@ -308,15 +311,18 @@ export class RepairMemoryEngine {
       if (rule.repair_id === ruleId) {
         rule.hit_count++
         rule.last_hit = Date.now()
-        rule.success_rate =
-          (rule.success_rate * (rule.hit_count - 1) + (success ? 1 : 0)) / rule.hit_count
+        rule.success_rate = (rule.success_rate * (rule.hit_count - 1) + (success ? 1 : 0)) / rule.hit_count
 
         if (rule.success_rate > 0.8 && rule.hit_count > 5) {
           rule.specificity += 5
         }
 
         if (this.db) {
-          try { this.db.upsertRepairRule(rule) } catch { /* persistence optional */ }
+          try {
+            this.db.upsertRepairRule(rule)
+          } catch {
+            /* persistence optional */
+          }
         }
         return
       }
@@ -349,7 +355,8 @@ export class RepairMemoryEngine {
       {
         tool: "tutorial_parser",
         error: "tutorial parse failed: no structured content extracted",
-        recoveryAction: "FALLBACK_RAW: Use the raw webfetch output directly without parsing, include original HTML content",
+        recoveryAction:
+          "FALLBACK_RAW: Use the raw webfetch output directly without parsing, include original HTML content",
       },
       {
         tool: "websearch",
@@ -359,7 +366,8 @@ export class RepairMemoryEngine {
       {
         tool: "shell",
         error: "command not found",
-        recoveryAction: "SKIP_AND_REPORT: Mark the dependency as missing in the research report, continue with remaining steps",
+        recoveryAction:
+          "SKIP_AND_REPORT: Mark the dependency as missing in the research report, continue with remaining steps",
       },
       {
         tool: "research",
@@ -392,4 +400,26 @@ export class RepairMemoryEngine {
     if (error_type !== "UnknownError") parts.push(error_type)
     return parts.join(" AND ") || "always"
   }
+}
+
+/**
+ * Create a {@link ErrorClassifier} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link ErrorClassifier}.
+ * @returns A new {@link ErrorClassifier}.
+ */
+export function createErrorClassifier(...args: ConstructorParameters<typeof ErrorClassifier>): ErrorClassifier {
+  return new ErrorClassifier(...args)
+}
+
+/**
+ * Create a {@link RepairMemoryEngine} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link RepairMemoryEngine}.
+ * @returns A new {@link RepairMemoryEngine}.
+ */
+export function createRepairMemoryEngine(
+  ...args: ConstructorParameters<typeof RepairMemoryEngine>
+): RepairMemoryEngine {
+  return new RepairMemoryEngine(...args)
 }

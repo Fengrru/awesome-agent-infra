@@ -1,10 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  SessionReplayer,
-  type ReplayEvent,
-  type ReplayMode,
-  type ReplayResult,
-} from "../src/index"
+import { type ReplayEvent, type ReplayMode, type ReplayResult, SessionReplayer } from "../src/index"
 
 function makeEvent(overrides?: Partial<ReplayEvent>): ReplayEvent {
   return {
@@ -22,10 +17,7 @@ function makeEvents(count: number, baseTimestamp = 1000): ReplayEvent[] {
     type: i % 2 === 0 ? "plan" : "execute",
     timestamp: baseTimestamp + i * 100,
     payload: { index: i },
-    stateTransition:
-      i % 2 === 0
-        ? { from: "IDLE", to: "PLANNING" }
-        : { from: "PLANNING", to: "EXECUTING" },
+    stateTransition: i % 2 === 0 ? { from: "IDLE", to: "PLANNING" } : { from: "PLANNING", to: "EXECUTING" },
   }))
 }
 
@@ -131,9 +123,7 @@ describe("SessionReplayer", () => {
 
   test("full mode records handler errors as differences", async () => {
     const replayer = new SessionReplayer()
-    replayer.loadEvents([
-      { eventId: "1", type: "plan", timestamp: 100, payload: {} },
-    ])
+    replayer.loadEvents([{ eventId: "1", type: "plan", timestamp: 100, payload: {} }])
 
     const result = await replayer.replay("full", async (_event) => {
       throw new Error("handler failure")

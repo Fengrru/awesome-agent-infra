@@ -1,5 +1,5 @@
-import { Worker } from "node:worker_threads"
 import { cpus } from "node:os"
+import { Worker } from "node:worker_threads"
 
 export interface TrueWorkerTask {
   taskId: string
@@ -63,10 +63,7 @@ export class TrueWorkerPool {
     this.maxWorkers = options.maxWorkers ?? Math.max(1, cpus().length)
   }
 
-  async execute(
-    tasks: TrueWorkerTask[],
-    options?: { timeoutMs?: number },
-  ): Promise<TrueWorkerResult[]> {
+  async execute(tasks: TrueWorkerTask[], options?: { timeoutMs?: number }): Promise<TrueWorkerResult[]> {
     if (this.shuttingDown) {
       return tasks.map((t) => ({
         taskId: t.taskId,
@@ -88,11 +85,9 @@ export class TrueWorkerPool {
 
         if (options?.timeoutMs && options.timeoutMs > 0) {
           timer = setTimeout(() => {
-            const qIdx = this.queue.findIndex(
-              (q) => q.task.taskId === task.taskId,
-            )
+            const qIdx = this.queue.findIndex((q) => q.task.taskId === task.taskId)
             if (qIdx >= 0) {
-              const [removed] = this.queue.splice(qIdx, 1)
+              this.queue.splice(qIdx, 1)
               results[i] = {
                 taskId: task.taskId,
                 success: false,
@@ -143,10 +138,7 @@ export class TrueWorkerPool {
     })
   }
 
-  async executeSequential(
-    tasks: TrueWorkerTask[],
-    options?: { timeoutMs?: number },
-  ): Promise<TrueWorkerResult[]> {
+  async executeSequential(tasks: TrueWorkerTask[], options?: { timeoutMs?: number }): Promise<TrueWorkerResult[]> {
     const results: TrueWorkerResult[] = []
 
     for (const task of tasks) {
@@ -165,17 +157,11 @@ export class TrueWorkerPool {
       const result = await new Promise<TrueWorkerResult>((resolve, reject) => {
         if (options?.timeoutMs && options.timeoutMs > 0) {
           timer = setTimeout(() => {
-            const qIdx = this.queue.findIndex(
-              (q) => q.task.taskId === task.taskId,
-            )
+            const qIdx = this.queue.findIndex((q) => q.task.taskId === task.taskId)
             if (qIdx >= 0) {
               this.queue.splice(qIdx, 1)
             }
-            reject(
-              new Error(
-                `Task ${task.taskId} timed out after ${options.timeoutMs}ms`,
-              ),
-            )
+            reject(new Error(`Task ${task.taskId} timed out after ${options.timeoutMs}ms`))
           }, options.timeoutMs)
         }
 
@@ -214,10 +200,7 @@ export class TrueWorkerPool {
       totalTasks: this.totalTasks,
       completed: this.completed,
       failed: this.failed,
-      avgDuration:
-        this.totalTasks > 0
-          ? Math.round(this.totalDuration / this.totalTasks)
-          : 0,
+      avgDuration: this.totalTasks > 0 ? Math.round(this.totalDuration / this.totalTasks) : 0,
       peakWorkers: this.peakWorkers,
     }
   }
@@ -289,10 +272,7 @@ export class TrueWorkerPool {
     return slot
   }
 
-  private finishSlotTask(
-    slot: WorkerSlot,
-    result: TrueWorkerResult,
-  ): void {
+  private finishSlotTask(slot: WorkerSlot, result: TrueWorkerResult): void {
     const resolver = this.activeResolvers.get(slot)
     if (!resolver) return
     if (resolver.taskId !== result.taskId) return
@@ -350,4 +330,14 @@ export class TrueWorkerPool {
       data: queued.task.data,
     })
   }
+}
+
+/**
+ * Create a {@link TrueWorkerPool} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link TrueWorkerPool}.
+ * @returns A new {@link TrueWorkerPool}.
+ */
+export function createTrueWorkerPool(...args: ConstructorParameters<typeof TrueWorkerPool>): TrueWorkerPool {
+  return new TrueWorkerPool(...args)
 }

@@ -12,26 +12,18 @@
  */
 
 import { describe, test } from "bun:test"
-import {
-  ParticleFilter,
-  QMDPSolver,
-  ActionRegistry,
-  createState,
-  defaultRewardFn,
-  StateHasher,
-} from "../src/index"
-import type {
-  POMDPState,
-  Action,
-  Observation,
-  BeliefState,
-} from "../src/index"
+import { ActionRegistry, ParticleFilter, QMDPSolver, StateHasher, createState, defaultRewardFn } from "../src/index"
+import type { Action, BeliefState, Observation, POMDPState } from "../src/index"
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function measure(label: string, fn: () => void, iterations = 100): { opsPerSec: number; avgMs: number; totalMs: number } {
+function measure(
+  label: string,
+  fn: () => void,
+  iterations = 100,
+): { opsPerSec: number; avgMs: number; totalMs: number } {
   const start = performance.now()
   for (let i = 0; i < iterations; i++) fn()
   const totalMs = performance.now() - start
@@ -43,12 +35,18 @@ function measure(label: string, fn: () => void, iterations = 100): { opsPerSec: 
 }
 
 function makeInitialState(): POMDPState {
-  return createState({
-    position: 0,
-    velocity: 0,
-    targetFound: false,
-    energy: 100,
-  }, 0, undefined, 0, "robot")
+  return createState(
+    {
+      position: 0,
+      velocity: 0,
+      targetFound: false,
+      energy: 100,
+    },
+    0,
+    undefined,
+    0,
+    "robot",
+  )
 }
 
 function makeActions(): Action[] {
@@ -181,7 +179,11 @@ describe("benchmark: particle filter update (predict + weight + resample)", () =
       const action = makeActions()[0]!
       const observation = makeObservation()
 
-      const result = measure("", () => filter.update(belief, action, observation, stateTransition), numParticles >= 500 ? 10 : 30)
+      const result = measure(
+        "",
+        () => filter.update(belief, action, observation, stateTransition),
+        numParticles >= 500 ? 10 : 30,
+      )
       console.log(`  ${numParticles} particles: ${result.avgMs.toFixed(3)}ms avg`)
     })
   }
@@ -217,10 +219,14 @@ describe("benchmark: effective sample size & entropy", () => {
     const total = belief.particles.reduce((s, p) => s + p.weight, 0)
     for (const p of belief.particles) p.weight /= total
 
-    const result = measure("", () => {
-      filter.effectiveSampleSize(belief)
-      filter.computeEntropy(belief)
-    }, 500)
+    const result = measure(
+      "",
+      () => {
+        filter.effectiveSampleSize(belief)
+        filter.computeEntropy(belief)
+      },
+      500,
+    )
     console.log(`  ESS + entropy (1000 particles): ${result.avgMs.toFixed(4)}ms avg`)
   })
 })
@@ -235,9 +241,13 @@ describe("benchmark: QMDP value computation", () => {
       const belief = filter.initialize(initialState)
       const actions = makeActions()
 
-      const result = measure("", () => solver.computeQValues(belief, actions, stateTransition, rewardFn), numParticles >= 500 ? 5 : 15)
+      const result = measure(
+        "",
+        () => solver.computeQValues(belief, actions, stateTransition, rewardFn),
+        numParticles >= 500 ? 5 : 15,
+      )
       console.log(`  ${numParticles} particles × ${actions.length} actions: ${result.avgMs.toFixed(3)}ms avg`)
-    })
+    }, 30000)
   }
 })
 
@@ -252,7 +262,11 @@ describe("benchmark: QMDP per-action estimate", () => {
     const actions = makeActions()
 
     // Access private qmdpEstimate via any cast
-    const result = measure("", () => (solver as any).qmdpEstimate(belief, action, actions, stateTransition, rewardFn), 5)
+    const result = measure(
+      "",
+      () => (solver as any).qmdpEstimate(belief, action, actions, stateTransition, rewardFn),
+      5,
+    )
     console.log(`  100 particles × 10 rollouts: ${result.avgMs.toFixed(3)}ms avg`)
   })
 })
@@ -260,18 +274,25 @@ describe("benchmark: QMDP per-action estimate", () => {
 describe("benchmark: state hashing", () => {
   test("hash 1000 state objects", () => {
     const states = Array.from({ length: 1000 }, (_, i) =>
-      createState({
-        x: i,
-        y: i * 2,
-        name: `state_${i}`,
-        active: i % 2 === 0,
-        tags: ["a", "b", "c"],
-      }, 0)
+      createState(
+        {
+          x: i,
+          y: i * 2,
+          name: `state_${i}`,
+          active: i % 2 === 0,
+          tags: ["a", "b", "c"],
+        },
+        0,
+      ),
     )
 
-    const result = measure("", () => {
-      for (const s of states) StateHasher.hash(s)
-    }, 10)
+    const result = measure(
+      "",
+      () => {
+        for (const s of states) StateHasher.hash(s)
+      },
+      10,
+    )
     console.log(`  1000 hashes: ${result.avgMs.toFixed(3)}ms avg`)
   })
 })
@@ -291,7 +312,9 @@ describe("benchmark: ActionRegistry", () => {
     const state = makeInitialState()
 
     const result = measure("", () => registry.getApplicable(state), 2000)
-    console.log(`  getApplicable (50 actions): ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`)
+    console.log(
+      `  getApplicable (50 actions): ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`,
+    )
   })
 })
 
@@ -308,16 +331,22 @@ describe("benchmark: belief state sampling", () => {
       const total = belief.particles.reduce((s, p) => s + p.weight, 0)
       for (const p of belief.particles) p.weight /= total
 
-      const result = measure("", () => {
-        // Weighted random sampling: select particle by cumulative weight
-        const r = Math.random()
-        let cum = 0
-        for (const p of belief.particles) {
-          cum += p.weight
-          if (r <= cum) break
-        }
-      }, numParticles >= 500 ? 1000 : 5000)
-      console.log(`  ${numParticles} particles: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`)
+      const result = measure(
+        "",
+        () => {
+          // Weighted random sampling: select particle by cumulative weight
+          const r = Math.random()
+          let cum = 0
+          for (const p of belief.particles) {
+            cum += p.weight
+            if (r <= cum) break
+          }
+        },
+        numParticles >= 500 ? 1000 : 5000,
+      )
+      console.log(
+        `  ${numParticles} particles: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`,
+      )
     })
   }
 })

@@ -58,4 +58,4 @@ export { SleepConsolidation } from "./consolidation"
 export { MetaMemory, AttentionRetrieval } from "./retrieval"
 
 // ─── Engine ─────────────────────────────────────────────────────────────
-export { MemoryEngine } from "./engine"
+export { MemoryEngine, createMemoryEngine } from "./engine"

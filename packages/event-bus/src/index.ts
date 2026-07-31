@@ -74,13 +74,9 @@ export interface PersistentEvent {
 
 export type EventHandler = (event: BusEvent) => void
 
-export interface EventBusPersistFn {
-  (event: BusEvent): void | Promise<void>
-}
+export type EventBusPersistFn = (event: BusEvent) => void | Promise<void>
 
-export interface EventBusPersistBatchFn {
-  (events: PersistentEvent[]): void | Promise<void>
-}
+export type EventBusPersistBatchFn = (events: PersistentEvent[]) => void | Promise<void>
 
 export interface EventBus {
   readonly publish: (event: BusEvent) => Promise<void>
@@ -128,10 +124,7 @@ export class EventBusService {
 const BATCH_SIZE = 500
 const FLUSH_INTERVAL_MS = 50
 
-function toPersistentEvents(
-  events: BusEvent[],
-  sequenceCounters: Map<string, number>,
-): PersistentEvent[] {
+function toPersistentEvents(events: BusEvent[], sequenceCounters: Map<string, number>): PersistentEvent[] {
   return events.map((event) => {
     const seq = sequenceCounters.get(event.session_id) ?? 0
     return {
@@ -140,7 +133,7 @@ function toPersistentEvents(
       parent_event_id: event.parent_event_id ?? null,
       event_type: event.type,
       payload: JSON.stringify(event.data),
-      status: (event.data as Record<string, unknown>).status as string ?? "success",
+      status: ((event.data as Record<string, unknown>).status as string) ?? "success",
       token_cost: ((event.data as Record<string, unknown>).token_cost as number) ?? 0,
       duration_ms: ((event.data as Record<string, unknown>).duration_ms as number) ?? 0,
       sequence_index: seq,
@@ -149,10 +142,7 @@ function toPersistentEvents(
   })
 }
 
-function incrementSequenceCounters(
-  events: BusEvent[],
-  sequenceCounters: Map<string, number>,
-): void {
+function incrementSequenceCounters(events: BusEvent[], sequenceCounters: Map<string, number>): void {
   for (const event of events) {
     if (event.require_persistence) {
       const current = sequenceCounters.get(event.session_id) ?? 0
@@ -180,7 +170,11 @@ function createHandlerRegistry() {
       const subs = handlers.get(event.type)
       if (subs) {
         for (const handler of subs) {
-          try { handler(event) } catch { /* swallow */ }
+          try {
+            handler(event)
+          } catch {
+            /* swallow */
+          }
         }
       }
     },
@@ -213,12 +207,9 @@ function createWaitForEvent(reg: ReturnType<typeof createHandlerRegistry>) {
   }
 }
 
-export function createSimpleEventBus(
-  persistFn?: EventBusPersistFn,
-  persistBatch?: EventBusPersistBatchFn,
-): EventBus {
+export function createSimpleEventBus(persistFn?: EventBusPersistFn, persistBatch?: EventBusPersistBatchFn): EventBus {
   let _persistFn = persistFn
-  let _persistBatch = persistBatch
+  const _persistBatch = persistBatch
   const reg = createHandlerRegistry()
   const sequenceCounters = new Map<string, number>()
 
@@ -235,10 +226,18 @@ export function createSimpleEventBus(
     const persistable = toFlush.filter((e) => e.require_persistence)
     if (persistable.length > 0 && _persistBatch) {
       const persistentEvents = toPersistentEvents(persistable, sequenceCounters)
-      try { await _persistBatch(persistentEvents) } catch { /* swallow */ }
+      try {
+        await _persistBatch(persistentEvents)
+      } catch {
+        /* swallow */
+      }
     } else if (persistable.length > 0 && _persistFn) {
       for (const event of persistable) {
-        try { await _persistFn(event) } catch { /* swallow */ }
+        try {
+          await _persistFn(event)
+        } catch {
+          /* swallow */
+        }
       }
     }
   }
@@ -306,10 +305,18 @@ export function createSimpleEventBus(
     const persistable = events.filter((e) => e.require_persistence)
     if (persistable.length > 0 && _persistBatch) {
       const persistentEvents = toPersistentEvents(persistable, sequenceCounters)
-      try { await _persistBatch(persistentEvents) } catch { /* swallow */ }
+      try {
+        await _persistBatch(persistentEvents)
+      } catch {
+        /* swallow */
+      }
     } else if (persistable.length > 0 && _persistFn) {
       for (const event of persistable) {
-        try { await _persistFn(event) } catch { /* swallow */ }
+        try {
+          await _persistFn(event)
+        } catch {
+          /* swallow */
+        }
       }
     }
   }
@@ -324,4 +331,14 @@ export function calculateSpecificity(condition: string, tool: string): number {
   if (condition.includes("tool=") && tool !== "any") score += 3
   if (condition !== "always") score += 1
   return score
+}
+
+/**
+ * Create a {@link EventBusService} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link EventBusService}.
+ * @returns A new {@link EventBusService}.
+ */
+export function createEventBusService(...args: ConstructorParameters<typeof EventBusService>): EventBusService {
+  return new EventBusService(...args)
 }

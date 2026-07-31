@@ -14,25 +14,23 @@
  */
 
 import { describe, test } from "bun:test"
-import {
-  createNode,
-  selectBestChild,
-  uctValue,
-  softmaxRewards,
-  adaptiveFloor,
-} from "../src/index"
+import { adaptiveFloor, createNode, selectBestChild, softmaxRewards, uctValue } from "../src/index"
 import { resetNodeCounter } from "../src/utils"
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function measure(label: string, fn: () => void, iterations = 100): { opsPerSec: number; avgMs: number; totalMs: number } {
+function measure(
+  label: string,
+  fn: () => void,
+  iterations = 100,
+): { opsPerSec: number; avgMs: number; totalMs: number } {
   const start = performance.now()
   for (let i = 0; i < iterations; i++) fn()
   const totalMs = performance.now() - start
   return {
-    opsPerSec: Math.round((iterations / (totalMs / 1000))),
+    opsPerSec: Math.round(iterations / (totalMs / 1000)),
     avgMs: totalMs / iterations,
     totalMs,
   }
@@ -48,11 +46,7 @@ function makeDeepTree(nodeCount: number) {
     const remaining = nodeCount - nodes.length
     const branchFactor = Math.min(3, Math.max(1, Math.ceil(remaining / 2)))
     for (let i = 0; i < branchFactor && nodes.length < nodeCount; i++) {
-      const child = createNode(
-        `state at depth ${parent.depth + 1} branch ${i}`,
-        `step-${parent.depth}-${i}`,
-        parent,
-      )
+      const child = createNode(`state at depth ${parent.depth + 1} branch ${i}`, `step-${parent.depth}-${i}`, parent)
       parent.children.push(child)
       nodes.push(child)
     }
@@ -70,11 +64,7 @@ function makeWideTree(nodeCount: number, branchFactor = 4) {
   while (allNodes.length < nodeCount && queue.length > 0) {
     const parent = queue.shift()!
     for (let i = 0; i < branchFactor && allNodes.length < nodeCount; i++) {
-      const child = createNode(
-        `state d${parent.depth + 1}_b${i}`,
-        `step-${parent.depth}-${i}`,
-        parent,
-      )
+      const child = createNode(`state d${parent.depth + 1}_b${i}`, `step-${parent.depth}-${i}`, parent)
       parent.children.push(child)
       allNodes.push(child)
       queue.push(child)
@@ -91,12 +81,16 @@ describe("benchmark: tree construction", () => {
   for (const nodeCount of [100, 500, 1000]) {
     test(`deep chain: ${nodeCount} nodes`, () => {
       const result = measure("", () => makeDeepTree(nodeCount), 20)
-      console.log(`  deep ${nodeCount} nodes: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`)
+      console.log(
+        `  deep ${nodeCount} nodes: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`,
+      )
     })
 
     test(`wide tree (bf=4): ${nodeCount} nodes`, () => {
       const result = measure("", () => makeWideTree(nodeCount, 4), 20)
-      console.log(`  wide ${nodeCount} nodes: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`)
+      console.log(
+        `  wide ${nodeCount} nodes: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`,
+      )
     })
   }
 })
@@ -115,7 +109,9 @@ describe("benchmark: best-child selection (UCT)", () => {
       }
 
       const result = measure("", () => selectBestChild(root, Math.SQRT2), 5000)
-      console.log(`  branchFactor=${branchFactor}: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`)
+      console.log(
+        `  branchFactor=${branchFactor}: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`,
+      )
     })
   }
 })
@@ -128,9 +124,13 @@ describe("benchmark: UCT value computation", () => {
   const parentVisits = 100
 
   test("UCT value (micro-benchmark)", () => {
-    const result = measure("", () => {
-      uctValue(node, parentVisits, Math.SQRT2)
-    }, 50000)
+    const result = measure(
+      "",
+      () => {
+        uctValue(node, parentVisits, Math.SQRT2)
+      },
+      50000,
+    )
     console.log(`  UCT: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${(result.avgMs * 1000).toFixed(3)}us`)
   })
 })
@@ -147,16 +147,20 @@ describe("benchmark: backpropagation", () => {
         current = child
       }
 
-      const result = measure("", () => {
-        let node: typeof root | null = current
-        let reward = 1.0
-        while (node !== null) {
-          node.visits++
-          node.value += reward
-          reward *= 0.95
-          node = node.parent
-        }
-      }, 2000)
+      const result = measure(
+        "",
+        () => {
+          let node: typeof root | null = current
+          let reward = 1.0
+          while (node !== null) {
+            node.visits++
+            node.value += reward
+            reward *= 0.95
+            node = node.parent
+          }
+        },
+        2000,
+      )
       console.log(`  depth=${depth}: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(3)}ms`)
     })
   }
@@ -168,16 +172,22 @@ describe("benchmark: softmax rewards", () => {
       const scores = Array.from({ length: numScores }, () => Math.random())
 
       const result = measure("", () => softmaxRewards(scores, 2.0), 500)
-      console.log(`  ${numScores} scores: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(4)}ms`)
+      console.log(
+        `  ${numScores} scores: ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(4)}ms`,
+      )
     })
   }
 })
 
 describe("benchmark: adaptive floor", () => {
   test("adaptiveFloor micro-benchmark", () => {
-    const result = measure("", () => {
-      for (let d = 0; d < 100; d++) adaptiveFloor(d, 0.95)
-    }, 1000)
+    const result = measure(
+      "",
+      () => {
+        for (let d = 0; d < 100; d++) adaptiveFloor(d, 0.95)
+      },
+      1000,
+    )
     console.log(`  floor (100 depths): ${result.opsPerSec.toLocaleString()} ops/sec, avg ${result.avgMs.toFixed(4)}ms`)
   })
 })
@@ -214,9 +224,10 @@ describe("benchmark: full MCTS simulation (mock)", () => {
           if (node.children.length > 0) {
             // Simulation
             const unvisited = node.children.filter((c) => c.visits === 0)
-            const selected = unvisited.length > 0
-              ? unvisited[Math.floor(Math.random() * unvisited.length)]!
-              : node.children[Math.floor(Math.random() * node.children.length)]!
+            const selected =
+              unvisited.length > 0
+                ? unvisited[Math.floor(Math.random() * unvisited.length)]!
+                : node.children[Math.floor(Math.random() * node.children.length)]!
 
             const reward = mockScore(selected.state, selected.action ?? "")
             // Backpropagation
@@ -231,7 +242,9 @@ describe("benchmark: full MCTS simulation (mock)", () => {
       }
 
       const totalMs = performance.now() - start
-      console.log(`  ${iterations} iter: ${totalMs.toFixed(1)}ms total, avg ${(totalMs / iterations).toFixed(2)}ms/iter`)
+      console.log(
+        `  ${iterations} iter: ${totalMs.toFixed(1)}ms total, avg ${(totalMs / iterations).toFixed(2)}ms/iter`,
+      )
     })
   }
 })

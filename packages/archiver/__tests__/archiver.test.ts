@@ -1,14 +1,14 @@
-import { describe, expect, test, afterAll } from "bun:test"
+import { afterAll, describe, expect, test } from "bun:test"
+import * as fs from "node:fs/promises"
+import { rm } from "node:fs/promises"
+import * as path from "node:path"
 import {
-  EventArchiver,
-  DEFAULT_ARCHIVE_CONFIG,
   type ArchiveConfig,
   type ArchiveDatabase,
   type ArchiveResult,
+  DEFAULT_ARCHIVE_CONFIG,
+  EventArchiver,
 } from "../src/index"
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
-import { rm } from "node:fs/promises"
 
 const TEST_DIR = path.join(import.meta.dirname ?? ".", "test-archives")
 
@@ -29,9 +29,7 @@ function makeDB(events?: Record<string, unknown>[]): ArchiveDatabase & {
     },
     async deleteEventsByIds(ids: string[]) {
       this.deletedIds.push(...ids)
-      this.events = this.events.filter(
-        (e) => !ids.includes(String(e.eventId ?? e.id ?? "")),
-      )
+      this.events = this.events.filter((e) => !ids.includes(String(e.eventId ?? e.id ?? "")))
       return ids.length
     },
     async getArchivedEvents(_archiveId: string) {
@@ -41,7 +39,11 @@ function makeDB(events?: Record<string, unknown>[]): ArchiveDatabase & {
 }
 
 afterAll(async () => {
-  try { await rm(TEST_DIR, { recursive: true, force: true }) } catch { /* ignore */ }
+  try {
+    await rm(TEST_DIR, { recursive: true, force: true })
+  } catch {
+    /* ignore */
+  }
 })
 
 describe("EventArchiver", () => {

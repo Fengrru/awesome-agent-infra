@@ -11,9 +11,7 @@ import {
   type StructuredCheckpoint,
 } from "../src/index"
 
-async function withTempWriter(
-  fn: (writer: CheckpointWriter, outputDir: string) => Promise<void>,
-): Promise<void> {
+async function withTempWriter(fn: (writer: CheckpointWriter, outputDir: string) => Promise<void>): Promise<void> {
   const outputDir = await mkdtemp(join(tmpdir(), "ckwriter-test-"))
   const writer = new CheckpointWriter({ outputDir })
   try {
@@ -29,14 +27,27 @@ function llmFields(overrides?: Record<string, unknown>): Record<string, unknown>
     next_action: "run the test suite",
     working_constraints: ["no new deps"],
     task_tree: [
-      { id: "t1", description: "root", status: "in_progress", children: [{ id: "t2", description: "child", status: "pending", children: [] }] },
+      {
+        id: "t1",
+        description: "root",
+        status: "in_progress",
+        children: [{ id: "t2", description: "child", status: "pending", children: [] }],
+      },
     ],
     current_work: [{ turn_number: 3, action: "edited file", result_summary: "ok", files_changed: ["src/auth.ts"] }],
     involved_files: [{ path: "src/auth.ts", role: "modified", summary: "token refresh" }],
     cross_task_discoveries: [],
     errors_and_fixes: [{ error_summary: "TS2345", root_cause: "bad type", fix_applied: "cast", verified: true }],
     runtime_state: { current_branch: "main", active_ports: [3000] },
-    design_decisions: [{ id: "d1", decision: "use JWT", rationale: "stateless", alternatives_considered: ["sessions"], timestamp: "2026-01-01" }],
+    design_decisions: [
+      {
+        id: "d1",
+        decision: "use JWT",
+        rationale: "stateless",
+        alternatives_considered: ["sessions"],
+        timestamp: "2026-01-01",
+      },
+    ],
     miscellaneous_notes: ["remember to bump version"],
     ...overrides,
   }
@@ -108,7 +119,7 @@ describe("write with provider", () => {
       expect(md).toContain("- ● root")
       expect(md).toContain("  - ○ child")
       expect(md).toContain("**TS2345** → cast ✓")
-      expect(md).toContain("- current_branch: \"main\"")
+      expect(md).toContain('- current_branch: "main"')
       expect(md).toContain("## Miscellaneous Notes")
     })
   })
@@ -138,7 +149,9 @@ describe("write with provider", () => {
   test("provider error falls back to regex extraction", async () => {
     await withTempWriter(async (writer) => {
       const provider: ProviderAdapter = {
-        async chat() { throw new Error("outage") },
+        async chat() {
+          throw new Error("outage")
+        },
       }
       writer.setProvider(provider)
       const path = await writer.write("sess1", HISTORY, false, 0)
@@ -256,9 +269,12 @@ describe("management", () => {
     await withTempWriter(async (writer, outputDir) => {
       writer.setProvider(makeProvider(JSON.stringify(llmFields()))) // valid output
       const seed = {
-        version: 41, cycle_index: 9, session_id: "old", created_at: "2026-01-01",
+        version: 41,
+        cycle_index: 9,
+        session_id: "old",
+        created_at: "2026-01-01",
         is_incremental: false,
-        fields: (JSON.parse(JSON.stringify(llmFields())) as StructuredCheckpoint["fields"]),
+        fields: JSON.parse(JSON.stringify(llmFields())) as StructuredCheckpoint["fields"],
       } as StructuredCheckpoint
       writer.setPreviousCheckpoint(seed)
 

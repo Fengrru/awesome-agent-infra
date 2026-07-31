@@ -9,10 +9,10 @@
  * @module codegraph/persist
  */
 
-import { writeFile, readFile, mkdir, unlink, rename, readdir } from "node:fs/promises"
 import { existsSync, mkdirSync } from "node:fs"
+import { readFile, readdir, rename, unlink, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import type { CodeGraphNode, CodeGraphEdge, CallSite } from "./types"
+import type { CallSite, CodeGraphEdge, CodeGraphNode } from "./types"
 
 export interface PersistedGraph {
   version: number
@@ -73,13 +73,19 @@ export class GraphPersistence {
 
     try {
       await rename(nodesWalFile, this.nodesFile)
-    } catch { /* Windows may need unlink first */ }
+    } catch {
+      /* Windows may need unlink first */
+    }
     try {
       await rename(edgesWalFile, this.edgesFile)
-    } catch { /* Windows may need unlink first */ }
+    } catch {
+      /* Windows may need unlink first */
+    }
     try {
       await rename(callSitesWalFile, this.callSitesFile)
-    } catch { /* Windows may need unlink first */ }
+    } catch {
+      /* Windows may need unlink first */
+    }
 
     await this.cleanupWal()
   }
@@ -92,7 +98,9 @@ export class GraphPersistence {
     const timestamp = Date.now()
     const walFile = join(this.walDir, `nodes_${timestamp}.json`)
     await writeFile(walFile, JSON.stringify(nodes), "utf-8")
-    try { await rename(walFile, this.nodesFile) } catch {}
+    try {
+      await rename(walFile, this.nodesFile)
+    } catch {}
   }
 
   /**
@@ -103,7 +111,9 @@ export class GraphPersistence {
     const timestamp = Date.now()
     const walFile = join(this.walDir, `edges_${timestamp}.json`)
     await writeFile(walFile, JSON.stringify(edges), "utf-8")
-    try { await rename(walFile, this.edgesFile) } catch {}
+    try {
+      await rename(walFile, this.edgesFile)
+    } catch {}
   }
 
   /**
@@ -114,7 +124,9 @@ export class GraphPersistence {
     const timestamp = Date.now()
     const walFile = join(this.walDir, `callsites_${timestamp}.json`)
     await writeFile(walFile, JSON.stringify(callSites), "utf-8")
-    try { await rename(walFile, this.callSitesFile) } catch {}
+    try {
+      await rename(walFile, this.callSitesFile)
+    } catch {}
   }
 
   /**
@@ -155,7 +167,11 @@ export class GraphPersistence {
     this.ensureDir()
     const raw = await this.safeRead(this.nodesFile)
     if (!raw) return null
-    try { return JSON.parse(raw) } catch { return null }
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -165,7 +181,11 @@ export class GraphPersistence {
     this.ensureDir()
     const raw = await this.safeRead(this.edgesFile)
     if (!raw) return null
-    try { return JSON.parse(raw) } catch { return null }
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -175,7 +195,11 @@ export class GraphPersistence {
     this.ensureDir()
     const raw = await this.safeRead(this.callSitesFile)
     if (!raw) return null
-    try { return JSON.parse(raw) } catch { return null }
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
   }
 
   /** Check if persisted data exists */
@@ -201,11 +225,15 @@ export class GraphPersistence {
         const fullPath = join(this.walDir, entry)
         try {
           const stat = await import("node:fs/promises").then((m) => m.stat(fullPath))
-          if ((now - stat.mtimeMs) > 60_000) {
+          if (now - stat.mtimeMs > 60_000) {
             await unlink(fullPath)
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
 }

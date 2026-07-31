@@ -3,8 +3,8 @@
  * @module memory-engine-v2/stores
  */
 
+import { computeIDF, computeTFIDFVector, cosineSimilarity, tokenize } from "./tfidf"
 import type { MemoryItem } from "./types"
-import { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "./tfidf"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // WorkingMemory
@@ -51,9 +51,7 @@ export class WorkingMemory {
 
   getStatistics(): { count: number; capacity: number; averageImportance: number } {
     const count = this.items.length
-    const avgImportance = count > 0
-      ? this.items.reduce((sum, i) => sum + i.importance, 0) / count
-      : 0
+    const avgImportance = count > 0 ? this.items.reduce((sum, i) => sum + i.importance, 0) / count : 0
     return { count, capacity: this.capacity, averageImportance: avgImportance }
   }
 }
@@ -101,9 +99,7 @@ export class ShortTermMemory {
 
   getActive(): MemoryItem[] {
     const now = Date.now()
-    return this.items
-      .filter((i) => now - i.timestamp <= this.halfLifeMs)
-      .sort((a, b) => b.importance - a.importance)
+    return this.items.filter((i) => now - i.timestamp <= this.halfLifeMs).sort((a, b) => b.importance - a.importance)
   }
 
   decayExpiredItems(): MemoryItem[] {
@@ -133,8 +129,6 @@ export class ShortTermMemory {
 
 export class LongTermMemory {
   private items: MemoryItem[] = []
-
-  constructor(_storagePath?: string) {}
 
   store(item: MemoryItem): boolean {
     const stored = { ...item, lastAccessed: Date.now(), accessCount: item.accessCount + 1 }
@@ -194,8 +188,6 @@ export class LongTermMemory {
 export class EpisodicMemory {
   private items: MemoryItem[] = []
 
-  constructor() {}
-
   store(item: MemoryItem): boolean {
     const stored = { ...item, lastAccessed: Date.now(), accessCount: item.accessCount + 1 }
     this.items.push(stored)
@@ -240,8 +232,6 @@ export class EpisodicMemory {
 export class SemanticMemory {
   private entities = new Map<string, MemoryItem>()
   private edges: { source: string; relation: string; target: string }[] = []
-
-  constructor() {}
 
   store(entity: MemoryItem): boolean {
     if (this.entities.has(entity.id)) return false

@@ -1,10 +1,6 @@
-import { describe, expect, test, beforeEach, afterEach } from "bun:test"
 import { Database } from "bun:sqlite"
-import {
-  EngineDatabase,
-  type ISQLiteDatabase,
-  type ISQLiteStatement,
-} from "../src/index"
+import { afterEach, beforeEach, describe, expect, test } from "bun:test"
+import { EngineDatabase, type ISQLiteDatabase, type ISQLiteStatement } from "../src/index"
 
 // bun:sqlite → ISQLiteDatabase adapter
 function bunAdapter(db: Database): ISQLiteDatabase {
@@ -16,7 +12,7 @@ function bunAdapter(db: Database): ISQLiteDatabase {
       return db.prepare(sql) as unknown as ISQLiteStatement
     },
     run(sql: string, ...params: unknown[]): void {
-      (db.run as any)(sql, ...params)
+      ;(db.run as any)(sql, ...params)
     },
     transaction<T>(fn: () => T): () => T {
       return db.transaction(fn) as unknown as () => T

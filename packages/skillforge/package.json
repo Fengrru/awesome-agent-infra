@@ -15,7 +15,8 @@
   "license": "MIT",
   "keywords": ["skill", "agent", "ai", "skill-management", "skilled", "agent-skills"],
   "scripts": {
-    "test": "bun test", "build": "tsc",
+    "test": "bun test",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
@@ -24,6 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fengru/skillforge"
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/skillforge"
   }
 }

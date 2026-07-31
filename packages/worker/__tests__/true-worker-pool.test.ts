@@ -1,20 +1,12 @@
 import { describe, expect, test } from "bun:test"
-import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
-import {
-  TrueWorkerPool,
-  type TrueWorkerTask,
-} from "../src/index"
+import { fileURLToPath } from "node:url"
+import { TrueWorkerPool, type TrueWorkerTask } from "../src/index"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WORKER_SCRIPT = join(__dirname, "test-worker.js")
 
-function makeTask(
-  taskId: string,
-  action: string,
-  value?: unknown,
-  delay?: number,
-): TrueWorkerTask {
+function makeTask(taskId: string, action: string, value?: unknown, delay?: number): TrueWorkerTask {
   return {
     taskId,
     data: { action, value, delay },
@@ -28,9 +20,7 @@ describe("TrueWorkerPool", () => {
       maxWorkers: 2,
     })
 
-    const results = await pool.execute([
-      makeTask("t1", "double", 21),
-    ])
+    const results = await pool.execute([makeTask("t1", "double", 21)])
 
     expect(results).toHaveLength(1)
     expect(results[0].success).toBe(true)
@@ -91,9 +81,7 @@ describe("TrueWorkerPool", () => {
       maxWorkers: 2,
     })
 
-    const tasks = Array.from({ length: 8 }, (_, i) =>
-      makeTask(`t${i}`, "double", i, 50),
-    )
+    const tasks = Array.from({ length: 8 }, (_, i) => makeTask(`t${i}`, "double", i, 50))
 
     const results = await pool.execute(tasks)
 
@@ -167,9 +155,7 @@ describe("TrueWorkerPool", () => {
 
     await pool.shutdown()
 
-    const results = await pool.execute([
-      makeTask("t1", "double", 5),
-    ])
+    const results = await pool.execute([makeTask("t1", "double", 5)])
 
     expect(results).toHaveLength(1)
     expect(results[0].success).toBe(false)
@@ -184,9 +170,7 @@ describe("TrueWorkerPool", () => {
 
     await pool.shutdown()
 
-    const results = await pool.executeSequential([
-      makeTask("t1", "double", 5),
-    ])
+    const results = await pool.executeSequential([makeTask("t1", "double", 5)])
 
     expect(results).toHaveLength(1)
     expect(results[0].success).toBe(false)
@@ -321,16 +305,9 @@ describe("TrueWorkerPool", () => {
     })
 
     // Submit a slow task first to occupy the worker, then submit more with short timeout
-    const slowPromise = pool.execute([
-      makeTask("slow", "double", 1, 500),
-    ])
+    const slowPromise = pool.execute([makeTask("slow", "double", 1, 500)])
 
-    const timedResults = await pool.execute(
-      [
-        makeTask("fast-timeout", "double", 2),
-      ],
-      { timeoutMs: 10 },
-    )
+    const timedResults = await pool.execute([makeTask("fast-timeout", "double", 2)], { timeoutMs: 10 })
 
     // The timed task may or may not time out depending on timing.
     // But the pool should not hang.
@@ -346,15 +323,9 @@ describe("TrueWorkerPool", () => {
       maxWorkers: 2,
     })
 
-    const batch1 = await pool.execute([
-      makeTask("b1t1", "double", 1),
-      makeTask("b1t2", "double", 2),
-    ])
+    const batch1 = await pool.execute([makeTask("b1t1", "double", 1), makeTask("b1t2", "double", 2)])
 
-    const batch2 = await pool.execute([
-      makeTask("b2t1", "double", 3),
-      makeTask("b2t2", "double", 4),
-    ])
+    const batch2 = await pool.execute([makeTask("b2t1", "double", 3), makeTask("b2t2", "double", 4)])
 
     expect(batch1).toHaveLength(2)
     expect(batch2).toHaveLength(2)

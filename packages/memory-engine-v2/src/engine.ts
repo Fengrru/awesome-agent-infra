@@ -3,11 +3,18 @@
  * @module memory-engine-v2/engine
  */
 
-import type { MemoryItem, MemoryConfig, SleepConfig, MetaMemoryConfig, AttentionConfig, ConsolidationResult } from "./types"
-import { MemoryType, DEFAULT_MEMORY_CONFIG, clamp, createMemoryItem } from "./types"
-import { WorkingMemory, ShortTermMemory, LongTermMemory, EpisodicMemory, SemanticMemory } from "./stores"
 import { SleepConsolidation } from "./consolidation"
-import { MetaMemory, AttentionRetrieval } from "./retrieval"
+import { AttentionRetrieval, MetaMemory } from "./retrieval"
+import { EpisodicMemory, LongTermMemory, SemanticMemory, ShortTermMemory, WorkingMemory } from "./stores"
+import type {
+  AttentionConfig,
+  ConsolidationResult,
+  MemoryConfig,
+  MemoryItem,
+  MetaMemoryConfig,
+  SleepConfig,
+} from "./types"
+import { DEFAULT_MEMORY_CONFIG, MemoryType, clamp, createMemoryItem } from "./types"
 
 export class MemoryEngine {
   workingMemory: WorkingMemory
@@ -92,7 +99,7 @@ export class MemoryEngine {
     results.sort((a, b) => b[1] - a[1])
     const top = results.slice(0, topK)
 
-    for (const [item] of top) {
+    for (let i = 0; i < top.length; i++) {
       this.metaMemory.recordResult(true)
     }
 
@@ -101,12 +108,7 @@ export class MemoryEngine {
 
   forget(id: string): boolean {
     let forgotten = false
-    for (const layer of [
-      this.workingMemory,
-      this.shortTermMemory,
-      this.longTermMemory,
-      this.episodicMemory,
-    ]) {
+    for (const layer of [this.workingMemory, this.shortTermMemory, this.longTermMemory, this.episodicMemory]) {
       if (layer.forget(id)) forgotten = true
     }
     if (this.semanticMemory?.forget(id)) forgotten = true
@@ -148,12 +150,7 @@ export class MemoryEngine {
       metadata?: Record<string, unknown>
     },
   ): MemoryItem | null {
-    for (const layer of [
-      this.workingMemory,
-      this.shortTermMemory,
-      this.longTermMemory,
-      this.episodicMemory,
-    ]) {
+    for (const layer of [this.workingMemory, this.shortTermMemory, this.longTermMemory, this.episodicMemory]) {
       const items = layer.getAll()
       const idx = items.findIndex((i) => i.id === id)
       if (idx !== -1) {
@@ -204,12 +201,7 @@ export class MemoryEngine {
       (item) => this.longTermMemory.store(item),
       (id) => this.forget(id),
       (id, updates) => {
-        const layers = [
-          this.workingMemory,
-          this.shortTermMemory,
-          this.longTermMemory,
-          this.episodicMemory,
-        ]
+        const layers = [this.workingMemory, this.shortTermMemory, this.longTermMemory, this.episodicMemory]
         let targetIndex = -1
         let targetItems: MemoryItem[] | null = null
         for (const layer of layers) {
@@ -353,12 +345,7 @@ export class MemoryEngine {
   }
 
   private findItem(id: string): MemoryItem | undefined {
-    for (const layer of [
-      this.workingMemory,
-      this.shortTermMemory,
-      this.longTermMemory,
-      this.episodicMemory,
-    ]) {
+    for (const layer of [this.workingMemory, this.shortTermMemory, this.longTermMemory, this.episodicMemory]) {
       const found = layer.get(id)
       if (found) return found
     }
@@ -392,4 +379,14 @@ export class MemoryEngine {
         return []
     }
   }
+}
+
+/**
+ * Create a {@link MemoryEngine} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link MemoryEngine}.
+ * @returns A new {@link MemoryEngine}.
+ */
+export function createMemoryEngine(...args: ConstructorParameters<typeof MemoryEngine>): MemoryEngine {
+  return new MemoryEngine(...args)
 }

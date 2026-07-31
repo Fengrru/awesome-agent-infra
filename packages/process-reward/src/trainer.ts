@@ -3,7 +3,7 @@
  * @module process-reward/trainer
  */
 
-import type { TaskType, TrainingSample, TrainingConfig } from "./types"
+import type { TaskType, TrainingConfig, TrainingSample } from "./types"
 import { DEFAULT_TRAINING_CONFIG } from "./types"
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -98,8 +98,9 @@ export class HeuristicStepScorer {
     const arrowFunc = /(?:const|let|var)\s+\w+\s*=\s*(?:\([^)]*\)\s*=>|function)/.test(step)
     if (classDef || funcDef || arrowFunc) score += 0.15
 
-    const hasStructureKeywords =
-      /\b(?:for|while|do|if|else|switch|case|try|catch|finally|return|yield|await)\b/.test(step)
+    const hasStructureKeywords = /\b(?:for|while|do|if|else|switch|case|try|catch|finally|return|yield|await)\b/.test(
+      step,
+    )
     if (hasStructureKeywords) score += 0.1
 
     const hasImport = /\bimport\s+\{?\s*\w+|\brequire\s*\(?\s*["']/.test(step)
@@ -138,8 +139,7 @@ export class HeuristicStepScorer {
     let score = 0.5
 
     const premiseKeywords = /\b(?:premise|assume|given|suppose|let|axiom|postulate)\b/i
-    const conclusionKeywords =
-      /\b(?:therefore|hence|thus|consequently|accordingly|so|implies|entails)\b/i
+    const conclusionKeywords = /\b(?:therefore|hence|thus|consequently|accordingly|so|implies|entails)\b/i
     if (premiseKeywords.test(step)) score += 0.15
     if (conclusionKeywords.test(step)) score += 0.15
 
@@ -163,8 +163,7 @@ export class HeuristicStepScorer {
       }
     }
 
-    const logicalConnectors =
-      /\b(?:and|or|not|all|some|none|every|exists|forall|∃|∀|∧|∨|¬|→|↔)\b/i
+    const logicalConnectors = /\b(?:and|or|not|all|some|none|every|exists|forall|∃|∀|∧|∨|¬|→|↔)\b/i
     if (logicalConnectors.test(step)) score += 0.05
 
     const formalNotation = /\b(?:P|Q|R)\s*\(/.test(step)
@@ -182,8 +181,7 @@ export class HeuristicStepScorer {
     const eqRegex = /([^=]+)=\s*([^=;,\n]+)/g
     let matches = 0
     let plausible = 0
-    let eqMatch: RegExpExecArray | null
-    while ((eqMatch = eqRegex.exec(step)) !== null) {
+    for (const eqMatch of step.matchAll(eqRegex)) {
       matches++
       const left = eqMatch[1]!.trim()
       const right = eqMatch[2]!.trim()
@@ -213,7 +211,7 @@ export class HeuristicStepScorer {
     if (sanitized.length === 0) return null
     try {
       const result = new Function(`return (${sanitized})`)()
-      if (typeof result === "number" && isFinite(result)) return result
+      if (typeof result === "number" && Number.isFinite(result)) return result
     } catch {
       return null
     }
@@ -223,18 +221,51 @@ export class HeuristicStepScorer {
   private extractVariables(text: string): Set<string> {
     const matches = text.match(/\b[a-zA-Z_]\w*\b/g) || []
     const keywords = new Set([
-      "NaN", "Infinity", "true", "false", "null", "undefined", "if", "else",
-      "for", "while", "do", "return", "function", "class", "import", "export",
-      "const", "let", "var", "typeof", "instanceof", "new", "this", "super",
-      "then", "function", "let", "suppose", "premise", "given", "assume",
-      "therefore", "hence", "thus", "implies", "entails", "from", "to",
+      "NaN",
+      "Infinity",
+      "true",
+      "false",
+      "null",
+      "undefined",
+      "if",
+      "else",
+      "for",
+      "while",
+      "do",
+      "return",
+      "function",
+      "class",
+      "import",
+      "export",
+      "const",
+      "let",
+      "var",
+      "typeof",
+      "instanceof",
+      "new",
+      "this",
+      "super",
+      "then",
+      "function",
+      "let",
+      "suppose",
+      "premise",
+      "given",
+      "assume",
+      "therefore",
+      "hence",
+      "thus",
+      "implies",
+      "entails",
+      "from",
+      "to",
     ])
     return new Set(matches.filter((m) => !keywords.has(m) && m.length >= 1 && /[a-zA-Z]/.test(m)))
   }
 
   private extractNumbers(text: string): Set<number> {
     const matches = text.match(/-?\d+(?:\.\d+)?/g) || []
-    return new Set(matches.map(Number).filter((n) => isFinite(n)))
+    return new Set(matches.map(Number).filter((n) => Number.isFinite(n)))
   }
 
   private checkEquationChain(step: string, prev: string | null): number {
@@ -263,8 +294,8 @@ export class HeuristicStepScorer {
   }
 
   private checkNumericPlausibility(prevNums: Set<number>, stepNums: Set<number>): number {
-    const prevArr = [...prevNums].filter((n) => isFinite(n) && n !== 0)
-    const stepArr = [...stepNums].filter((n) => isFinite(n) && n !== 0)
+    const prevArr = [...prevNums].filter((n) => Number.isFinite(n) && n !== 0)
+    const stepArr = [...stepNums].filter((n) => Number.isFinite(n) && n !== 0)
     if (prevArr.length === 0 || stepArr.length === 0) return 0.5
     for (const pn of prevArr) {
       for (const sn of stepArr) {
@@ -302,7 +333,9 @@ export class HeuristicStepScorer {
   }
 
   private countBracketBalance(text: string): number {
-    let brace = 0, paren = 0, bracket = 0
+    let brace = 0
+    let paren = 0
+    let bracket = 0
     for (const ch of text) {
       if (ch === "{") brace++
       if (ch === "}") brace--
@@ -374,15 +407,12 @@ export class PRMTrainer {
     samples: TrainingSample[],
     onEpoch?: (epoch: number, loss: number) => void,
   ): { history: number[]; finalLoss: number } {
-    const {
-      numEpochs, batchSize, learningRate,
-      earlyStopPatience, warmupSteps, lrSchedule,
-    } = this.config
+    const { numEpochs, batchSize, learningRate, earlyStopPatience, warmupSteps, lrSchedule } = this.config
 
     const totalSteps = numEpochs * Math.ceil(samples.length / batchSize)
     const history: number[] = []
-    let predictions: number[] = samples.map((s) => s.label * 0.5 + 0.25)
-    let bestLoss = Infinity
+    const predictions: number[] = samples.map((s) => s.label * 0.5 + 0.25)
+    let bestLoss = Number.POSITIVE_INFINITY
     let patienceCounter = 0
     let globalStep = 0
 
@@ -478,4 +508,14 @@ export class PRMTrainer {
     }
     return arr
   }
+}
+
+/**
+ * Create a {@link PRMTrainer} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link PRMTrainer}.
+ * @returns A new {@link PRMTrainer}.
+ */
+export function createPRMTrainer(...args: ConstructorParameters<typeof PRMTrainer>): PRMTrainer {
+  return new PRMTrainer(...args)
 }

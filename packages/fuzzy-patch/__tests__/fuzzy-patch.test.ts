@@ -1,9 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  fuzzyFindAndReplace,
-  canPatch,
-  availableStrategies,
-} from "../src/index"
+import { availableStrategies, canPatch, fuzzyFindAndReplace } from "../src/index"
 
 describe("FuzzyPatch", () => {
   // ── Strategy 1: Exact Match ───────────────────────────────────────────
@@ -105,13 +101,9 @@ describe("FuzzyPatch", () => {
   // ── Strategy 6: Context Block Anchoring ───────────────────────────────
 
   test("context anchor matches by first and last line", () => {
-    const content = [
-      "## Skills",
-      "This is skill A",
-      "It does things",
-      "It excites users",
-      "## End of Skills",
-    ].join("\n")
+    const content = ["## Skills", "This is skill A", "It does things", "It excites users", "## End of Skills"].join(
+      "\n",
+    )
     const oldStr = [
       "## Skills",
       "This is skill A",

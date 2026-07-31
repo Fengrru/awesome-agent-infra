@@ -1,13 +1,6 @@
-import { describe, it, expect, beforeEach } from "bun:test"
-import {
-  EnhancedTFIDF,
-  CodeEmbeddingIndexer,
-  HybridSearch,
-} from "../src/index"
-import type {
-  CodeEmbeddingItem,
-  CodeGraph,
-} from "../src/types"
+import { beforeEach, describe, expect, it } from "bun:test"
+import { CodeEmbeddingIndexer, EnhancedTFIDF, HybridSearch } from "../src/index"
+import type { CodeEmbeddingItem, CodeGraph } from "../src/types"
 
 describe("EnhancedTFIDF", () => {
   let tfidf: EnhancedTFIDF
@@ -246,10 +239,7 @@ describe("HybridSearch", () => {
       getNodeCentrality(id: string): number {
         return id === "node1" ? 0.8 : 0.2
       },
-      async searchNeighbors(
-        itemId: string,
-        _opts: { maxDepth: number; maxNeighbors: number },
-      ) {
+      async searchNeighbors(itemId: string, _opts: { maxDepth: number; maxNeighbors: number }) {
         if (itemId === "node1") {
           return [{ id: "node2", score: 0.7 }]
         }

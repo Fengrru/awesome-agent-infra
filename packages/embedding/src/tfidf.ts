@@ -1,9 +1,4 @@
-import {
-  TFIDFConfig,
-  TFIDFDocument,
-  TFIDFResult,
-  DEFAULT_TFIDF_CONFIG,
-} from "./types"
+import { DEFAULT_TFIDF_CONFIG, type TFIDFConfig, type TFIDFDocument, type TFIDFResult } from "./types"
 
 function splitCamelCase(word: string): string[] {
   const parts: string[] = []
@@ -21,7 +16,10 @@ function splitCamelCase(word: string): string[] {
 }
 
 function splitSnakeCase(word: string): string[] {
-  return word.toLowerCase().split("_").filter((p) => p.length > 0)
+  return word
+    .toLowerCase()
+    .split("_")
+    .filter((p) => p.length > 0)
 }
 
 function generateNGrams(token: string, minN: number, maxN: number): string[] {
@@ -179,7 +177,7 @@ export class EnhancedTFIDF {
     return dot / (Math.sqrt(mag1) * Math.sqrt(mag2))
   }
 
-  search(query: string, topK: number = 10): TFIDFResult[] {
+  search(query: string, topK = 10): TFIDFResult[] {
     const queryTokens = tokenize(query, this.config)
     const queryVec = new Map<string, number>()
     for (const token of queryTokens) {
@@ -209,4 +207,14 @@ export class EnhancedTFIDF {
     this.tfidfVectors.clear()
     this.docCount = 0
   }
+}
+
+/**
+ * Create a {@link EnhancedTFIDF} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link EnhancedTFIDF}.
+ * @returns A new {@link EnhancedTFIDF}.
+ */
+export function createEnhancedTFIDF(...args: ConstructorParameters<typeof EnhancedTFIDF>): EnhancedTFIDF {
+  return new EnhancedTFIDF(...args)
 }

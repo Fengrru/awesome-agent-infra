@@ -1,9 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  StatelessWorkerPool,
-  TimeoutError,
-  type L1Snapshot,
-} from "../src/index"
+import { type L1Snapshot, StatelessWorkerPool, TimeoutError } from "../src/index"
 
 function makeSnapshot(overrides?: Partial<L1Snapshot>): L1Snapshot {
   return {
@@ -52,10 +48,12 @@ describe("StatelessWorkerPool", () => {
       }
     })
 
-    const result = await pool.executeTask(makeTask({
-      capabilityId: "uppercase",
-      inputs: { text: "hello" },
-    }))
+    const result = await pool.executeTask(
+      makeTask({
+        capabilityId: "uppercase",
+        inputs: { text: "hello" },
+      }),
+    )
 
     expect(result.success).toBe(true)
     expect(result.output).toBe("HELLO")
@@ -87,9 +85,11 @@ describe("StatelessWorkerPool", () => {
   test("executeTask fails for unregistered capability", async () => {
     const pool = new StatelessWorkerPool()
 
-    const result = await pool.executeTask(makeTask({
-      capabilityId: "nonexistent",
-    }))
+    const result = await pool.executeTask(
+      makeTask({
+        capabilityId: "nonexistent",
+      }),
+    )
 
     expect(result.success).toBe(false)
     expect(result.error).toContain("No handler registered")
@@ -228,9 +228,7 @@ describe("StatelessWorkerPool", () => {
     })
 
     await pool.executeTasksInParallel(
-      Array.from({ length: 10 }, (_, i) =>
-        makeTask({ taskId: `t${i}`, nodeId: `n${i}`, capabilityId: "concurrent" }),
-      ),
+      Array.from({ length: 10 }, (_, i) => makeTask({ taskId: `t${i}`, nodeId: `n${i}`, capabilityId: "concurrent" })),
       { concurrency: 3 },
     )
 

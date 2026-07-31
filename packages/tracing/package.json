@@ -1,7 +1,7 @@
 {
   "name": "@fengru/tracing",
   "version": "0.1.0",
-  "description": "Lightweight OpenTelemetry tracing abstraction with zero runtime dependencies —?lazy OTel init with no-op fallback",
+  "description": "Lightweight OpenTelemetry tracing abstraction with zero runtime dependencies — lazy OTel init with no-op fallback",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

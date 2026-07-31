@@ -1,9 +1,5 @@
-import { describe, expect, test, beforeEach } from "bun:test"
-import {
-  GitTransactionManager,
-  threeWayMerge,
-  type FileTransaction,
-} from "../src/index"
+import { beforeEach, describe, expect, test } from "bun:test"
+import { type FileTransaction, GitTransactionManager, threeWayMerge } from "../src/index"
 
 describe("GitTransactionManager (in-memory)", () => {
   let txm: GitTransactionManager
@@ -93,11 +89,7 @@ describe("GitTransactionManager (in-memory)", () => {
   })
 
   test("conflict: both sides modify same lines", () => {
-    const result = threeWayMerge(
-      "line1\nline2\nline3\n",
-      "line1\nours-line2\nline3\n",
-      "line1\ntheirs-line2\nline3\n",
-    )
+    const result = threeWayMerge("line1\nline2\nline3\n", "line1\nours-line2\nline3\n", "line1\ntheirs-line2\nline3\n")
     expect(result.hasConflicts).toBe(true)
     expect(result.markers.length).toBeGreaterThan(0)
     expect(result.content).toContain("<<<<<<< OUR")

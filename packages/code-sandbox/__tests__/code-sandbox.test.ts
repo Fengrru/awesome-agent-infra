@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import {
-  MathVerifier,
-  SecureExecutor,
   CodeVerifier,
-  LogicVerifier,
-  VerifierPool,
   DEFAULT_MATH_VERIFIER_TOLERANCE,
   DEFAULT_SANDBOX_CONFIG,
+  LogicVerifier,
+  MathVerifier,
+  SecureExecutor,
+  VerifierPool,
 } from "../src/index"
 
 describe("MathVerifier", () => {

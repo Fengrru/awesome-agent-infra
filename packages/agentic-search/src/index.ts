@@ -168,10 +168,7 @@ export class SearchToolRegistry {
 
 // ─── Tool Factory ───────────────────────────────────────────────────────────
 
-export function createSearchTools(
-  symbolSearcher: ISymbolSearcher,
-  semanticSearcher: ISemanticSearcher,
-): SearchTool[] {
+export function createSearchTools(symbolSearcher: ISymbolSearcher, semanticSearcher: ISemanticSearcher): SearchTool[] {
   return [
     createCodeSymbolTool(symbolSearcher),
     createCodeGraphTool(symbolSearcher),
@@ -220,16 +217,10 @@ function createCodeGraphTool(searcher: ISymbolSearcher): SearchTool {
       let text: string
       if (nodeId) {
         const sg = searcher.getEgoGraph(nodeId, k)
-        text =
-          sg.nodes.length > 0
-            ? formatSubGraph(sg)
-            : `No graph data found for node: ${nodeId}`
+        text = sg.nodes.length > 0 ? formatSubGraph(sg) : `No graph data found for node: ${nodeId}`
       } else if (filePath) {
         const sg = searcher.getFileContext(filePath)
-        text =
-          sg.nodes.length > 0
-            ? formatSubGraph(sg)
-            : `No graph data found for file: ${filePath}`
+        text = sg.nodes.length > 0 ? formatSubGraph(sg) : `No graph data found for file: ${filePath}`
       } else {
         text = "Specify either nodeId or filePath"
       }
@@ -278,9 +269,7 @@ function createSemanticSearchTool(hybridSearch: ISemanticSearcher): SearchTool {
       for (let i = 0; i < Math.min(results.length, topK); i++) {
         const r = results[i]!
         const meta = r.metadata
-        lines.push(
-          `${i + 1}. ${r.text}  (score=${r.compositeScore.toFixed(3)})  [${meta.type ?? meta.filePath ?? ""}]`,
-        )
+        lines.push(`${i + 1}. ${r.text}  (score=${r.compositeScore.toFixed(3)})  [${meta.type ?? meta.filePath ?? ""}]`)
       }
 
       const text = lines.join("\n")
@@ -386,7 +375,7 @@ export class AgenticSearchOrchestrator {
           intent,
           tools: [
             { tool: "code_symbol", params: { query: target, maxResults: 5, kHop: 0 }, priority: 0 },
-            { tool: "code_graph", params: { nodeId: ``, k: 2 }, priority: 1, dependsOn: ["code_symbol"] },
+            { tool: "code_graph", params: { nodeId: "", k: 2 }, priority: 1, dependsOn: ["code_symbol"] },
           ],
           parallel: false,
           maxTokens: this.config.maxTokens,
@@ -432,8 +421,6 @@ export class AgenticSearchOrchestrator {
           parallel: false,
           maxTokens: this.config.maxTokens,
         }
-
-      case "general_query":
       default:
         return {
           intent,
@@ -500,10 +487,7 @@ export class AgenticSearchOrchestrator {
     return results
   }
 
-  private async executeWithTimeout(
-    tool: SearchTool,
-    params: Record<string, unknown>,
-  ): Promise<ToolResult> {
+  private async executeWithTimeout(tool: SearchTool, params: Record<string, unknown>): Promise<ToolResult> {
     const timeout = this.config.toolTimeoutMs
     const startTime = Date.now()
 
@@ -511,10 +495,7 @@ export class AgenticSearchOrchestrator {
       const result = await Promise.race([
         tool.execute(params),
         new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`Tool ${tool.name} timed out after ${timeout}ms`)),
-            timeout,
-          ),
+          setTimeout(() => reject(new Error(`Tool ${tool.name} timed out after ${timeout}ms`)), timeout),
         ),
       ])
 
@@ -545,10 +526,7 @@ export class AgenticSearchOrchestrator {
         .map((r) => r.error)
         .filter(Boolean)
       return {
-        text:
-          errors.length > 0
-            ? `Search completed with errors:\n${errors.join("\n")}`
-            : "No results found.",
+        text: errors.length > 0 ? `Search completed with errors:\n${errors.join("\n")}` : "No results found.",
         estimatedTokens: 50,
         contributions: results,
         confidence: 0,
@@ -639,18 +617,18 @@ export class SearchContextBuilder {
     this.orchestrator = orchestrator
   }
 
-  async buildContextSection(query: string, maxTokens: number = 3000): Promise<string> {
+  async buildContextSection(query: string, maxTokens = 3000): Promise<string> {
     const result = await this.orchestrator.search(query)
     return this.formatContextSection(result, maxTokens)
   }
 
-  async buildFileContext(filePath: string, maxTokens: number = 2000): Promise<string> {
+  async buildFileContext(filePath: string, maxTokens = 2000): Promise<string> {
     const query = `what's in ${filePath}`
     const result = await this.orchestrator.search(query)
     return this.formatContextSection(result, maxTokens)
   }
 
-  async buildSymbolContext(symbolName: string, maxTokens: number = 2000): Promise<string> {
+  async buildSymbolContext(symbolName: string, maxTokens = 2000): Promise<string> {
     const query = `find ${symbolName}`
     const result = await this.orchestrator.search(query)
     return this.formatContextSection(result, maxTokens)
@@ -672,9 +650,21 @@ export class SearchContextBuilder {
 
     const bodyTokens = Math.ceil(body.length / 4)
     if (bodyTokens > maxTokens) {
-      body = body.slice(0, maxTokens * 4) + "\n... [truncated]"
+      body = `${body.slice(0, maxTokens * 4)}\n... [truncated]`
     }
 
     return `${header}\n\n${body}`
   }
+}
+
+/**
+ * Create a {@link AgenticSearchOrchestrator} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link AgenticSearchOrchestrator}.
+ * @returns A new {@link AgenticSearchOrchestrator}.
+ */
+export function createAgenticSearchOrchestrator(
+  ...args: ConstructorParameters<typeof AgenticSearchOrchestrator>
+): AgenticSearchOrchestrator {
+  return new AgenticSearchOrchestrator(...args)
 }

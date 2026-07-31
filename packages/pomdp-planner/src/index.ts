@@ -80,6 +80,7 @@ export interface PlanningMetadata {
   [key: string]: unknown
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class StateHasher {
   static hash(state: POMDPState): string {
     return StateHasher.hashVariables(state.variables)
@@ -386,8 +387,8 @@ export class QMDPSolver {
     }
 
     if (qValues.length > 0) {
-      const maxQ = qValues.reduce((m, qv) => Math.max(m, qv.qValue), -Infinity)
-      const minQ = qValues.reduce((m, qv) => Math.min(m, qv.qValue), Infinity)
+      const maxQ = qValues.reduce((m, qv) => Math.max(m, qv.qValue), Number.NEGATIVE_INFINITY)
+      const minQ = qValues.reduce((m, qv) => Math.min(m, qv.qValue), Number.POSITIVE_INFINITY)
       const range = maxQ - minQ || 1
       for (const qv of qValues) {
         qv.uncertainty = 1 - Math.exp(-((qv.qValue - minQ) / range) / this.config.temperature)
@@ -442,7 +443,7 @@ export class QMDPSolver {
       selectedAction = applicableActions[Math.floor(Math.random() * applicableActions.length)]!
     } else {
       let bestAction = applicableActions[0]!
-      let bestReward = -Infinity
+      let bestReward = Number.NEGATIVE_INFINITY
       for (const a of applicableActions) {
         const ns = stateTransition(nextState, a)
         const r = rewardFn(nextState, a, ns)
@@ -454,9 +455,7 @@ export class QMDPSolver {
       selectedAction = bestAction
     }
 
-    const futureReward = this.mcRollout(
-      nextState, selectedAction, depth + 1, actions, stateTransition, rewardFn,
-    )
+    const futureReward = this.mcRollout(nextState, selectedAction, depth + 1, actions, stateTransition, rewardFn)
 
     return immediateReward + this.config.discountFactor * futureReward
   }
@@ -473,10 +472,7 @@ export class POMDPPlanner {
   private registry: ActionRegistry
   private metadata: PlanningMetadata
 
-  constructor(
-    actions: Action[],
-    config?: Partial<POMDPConfig>,
-  ) {
+  constructor(actions: Action[], config?: Partial<POMDPConfig>) {
     this.config = { ...DEFAULT_POMDP_CONFIG, ...config }
     this.filter = new ParticleFilter(this.config)
     this.solver = new QMDPSolver(this.config)
@@ -527,9 +523,7 @@ export class POMDPPlanner {
       const applicableActions = this.registry.getApplicable(currentState)
       if (applicableActions.length === 0) break
 
-      const qValues = this.solver.computeQValues(
-        belief, applicableActions, stateTransition, rewardFn,
-      )
+      const qValues = this.solver.computeQValues(belief, applicableActions, stateTransition, rewardFn)
       this.metadata.rolloutsPerformed += applicableActions.length * this.config.numRollouts
 
       qValues.sort((a, b) => b.qValue - a.qValue)
@@ -679,18 +673,21 @@ export function createState(
   }
 }
 
-export function defaultRewardFn(
-  state: POMDPState,
-  action: Action,
-  nextState: POMDPState,
-): number {
+export function defaultRewardFn(state: POMDPState, action: Action, nextState: POMDPState): number {
   const scoreDiff = nextState.score - state.score
   return scoreDiff - action.cost
 }
 
-export function defaultGoalFn(
-  targetVar: string,
-  targetValue: unknown,
-): (state: POMDPState) => boolean {
+export function defaultGoalFn(targetVar: string, targetValue: unknown): (state: POMDPState) => boolean {
   return (state: POMDPState) => state.variables[targetVar] === targetValue
+}
+
+/**
+ * Create a {@link POMDPPlanner} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link POMDPPlanner}.
+ * @returns A new {@link POMDPPlanner}.
+ */
+export function createPOMDPPlanner(...args: ConstructorParameters<typeof POMDPPlanner>): POMDPPlanner {
+  return new POMDPPlanner(...args)
 }

@@ -6,18 +6,25 @@
  * their interfaces, verifying correct cross-package behavior.
  */
 
-import { describe, test, expect, beforeAll, afterAll } from "bun:test"
-import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises"
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 // dreamdistill
-import { DreamJob, DistillJob } from "../src/index"
-import type { IEventArchiver, IProjectMemory, MemoryEntry, EventRow, MemorySection, ProviderAdapter } from "../src/types"
+import { DistillJob, DreamJob } from "../src/index"
+import type {
+  EventRow,
+  IEventArchiver,
+  IProjectMemory,
+  MemoryEntry,
+  MemorySection,
+  ProviderAdapter,
+} from "../src/types"
 
 // project-memory (cross-package import)
 import { ProjectMemoryManager } from "../../project-memory/src/index"
-import type { MemorySection as PMMemorySection, MemoryEntry as PMMemoryEntry } from "../../project-memory/src/index"
+import type { MemoryEntry as PMMemoryEntry, MemorySection as PMMemorySection } from "../../project-memory/src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -166,7 +173,7 @@ describe("Integration: DreamJob × ProjectMemoryManager", () => {
       "",
       "- [mem_1] database uses PostgreSQL 15",
       "  [conf:0.85]",
-      "- [mem_2] database uses PSQL 15 with extensions",
+      "- [mem_2] database uses PostgreSQL 15 with extensions",
       "  [conf:0.75]",
       "- [mem_3] API runs on port 3000",
       "  [conf:0.90]",
@@ -201,7 +208,9 @@ describe("Integration: DreamJob × ProjectMemoryManager", () => {
     expect(entries.length).toBeLessThanOrEqual(2)
 
     // The merged entry should have combined verification count
-    const dbEntry = entries.find((e) => e.content.toLowerCase().includes("postgresql") || e.content.toLowerCase().includes("psql"))
+    const dbEntry = entries.find(
+      (e) => e.content.toLowerCase().includes("postgresql") || e.content.toLowerCase().includes("psql"),
+    )
     expect(dbEntry).toBeDefined()
   })
 
@@ -278,13 +287,15 @@ describe("Integration: DistillJob × EventArchiver", () => {
     const outputDir = join(tempDir, "distill-output-llm")
 
     const patterns = JSON.stringify({
-      patterns: [{
-        name: "CI Pipeline",
-        description: "Build-test-ship pipeline",
-        frequency: 10,
-        taskSequence: ["checkout", "build", "test", "package", "ship"],
-        commonCapabilities: ["build", "test", "deploy"],
-      }],
+      patterns: [
+        {
+          name: "CI Pipeline",
+          description: "Build-test-ship pipeline",
+          frequency: 10,
+          taskSequence: ["checkout", "build", "test", "package", "ship"],
+          commonCapabilities: ["build", "test", "deploy"],
+        },
+      ],
     })
 
     const job = new DistillJob({

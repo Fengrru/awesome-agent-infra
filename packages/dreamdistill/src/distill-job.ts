@@ -7,19 +7,19 @@
  * @module dreamdistill/distill-job
  */
 
-import { writeFile, mkdir } from "node:fs/promises"
+import { mkdir, writeFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
 import type {
-  ProviderAdapter,
-  IProjectMemory,
-  IEventArchiver,
-  ISkillRegistrar,
-  EventRow,
   DistillConfig,
-  SessionPattern,
-  DistilledArtifact,
-  DistillResult,
   DistillMetrics,
+  DistillResult,
+  DistilledArtifact,
+  EventRow,
+  IEventArchiver,
+  IProjectMemory,
+  ISkillRegistrar,
+  ProviderAdapter,
+  SessionPattern,
 } from "./types"
 import { DEFAULT_DISTILL_CONFIG } from "./types"
 
@@ -98,11 +98,7 @@ export class DistillJob {
       for (const artifact of artifacts) {
         if (artifact.type === "skill" && !this.skillRegistrar.hasSkill(artifact.name)) {
           try {
-            await this.skillRegistrar.registerSkill(
-              artifact.name,
-              artifact.content,
-              "distilled",
-            )
+            await this.skillRegistrar.registerSkill(artifact.name, artifact.content, "distilled")
           } catch {
             // Registration is best-effort
           }
@@ -135,9 +131,7 @@ export class DistillJob {
     for (const sid of sessionIds) {
       const counts = new Map<string, number>()
       // Query events per session from archiver (limited for performance)
-      const events: EventRow[] = this.eventArchiver
-        ? await this.eventArchiver.queryEvents(sid, 200)
-        : []
+      const events: EventRow[] = this.eventArchiver ? await this.eventArchiver.queryEvents(sid, 200) : []
       for (const event of events) {
         counts.set(event.event_type, (counts.get(event.event_type) ?? 0) + 1)
       }
@@ -226,9 +220,7 @@ export class DistillJob {
               description: String(p.description ?? ""),
               frequency: Number(p.frequency) || sessionIds.length,
               matchedSessions: sessionIds,
-              taskSequence: Array.isArray(p.taskSequence)
-                ? (p.taskSequence as unknown[]).map(String)
-                : [],
+              taskSequence: Array.isArray(p.taskSequence) ? (p.taskSequence as unknown[]).map(String) : [],
               typicalDuration: { min: 60000, max: 3600000, avg: 600000 },
               commonCapabilities: Array.isArray(p.commonCapabilities)
                 ? (p.commonCapabilities as unknown[]).map(String)
@@ -279,26 +271,26 @@ export class DistillJob {
 
     const content = [
       `# ${pattern.name}`,
-      ``,
+      "",
       `> Auto-generated skill from DistillJob — ${new Date().toISOString()}`,
-      ``,
-      `## Description`,
+      "",
+      "## Description",
       pattern.description,
-      ``,
-      `## Frequency`,
+      "",
+      "## Frequency",
       `Observed in ${pattern.frequency} sessions.`,
-      ``,
-      `## Task Sequence`,
+      "",
+      "## Task Sequence",
       ...pattern.taskSequence.map((s, i) => `${i + 1}. ${s}`),
-      ``,
-      `## Common Capabilities`,
+      "",
+      "## Common Capabilities",
       ...pattern.commonCapabilities.map((c) => `- ${c}`),
-      ``,
-      `## Usage`,
-      `This skill automates the following workflow:`,
-      `\`\`\``,
+      "",
+      "## Usage",
+      "This skill automates the following workflow:",
+      "```",
       pattern.taskSequence.join(" → "),
-      `\`\`\``,
+      "```",
     ].join("\n")
 
     return {
@@ -314,30 +306,30 @@ export class DistillJob {
     const name = pattern.name.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase()
 
     const content = [
-      `#!/usr/bin/env bun`,
-      `/**`,
+      "#!/usr/bin/env bun",
+      "/**",
       ` * CLI Command: ${pattern.name}`,
       ` * Auto-generated from DistillJob — ${new Date().toISOString()}`,
-      ` *`,
+      " *",
       ` * ${pattern.description}`,
       ` * Frequency: ${pattern.frequency} sessions`,
-      ` */`,
-      ``,
+      " */",
+      "",
       `const steps = ${JSON.stringify(pattern.taskSequence, null, 2)};`,
-      ``,
-      `async function main() {`,
+      "",
+      "async function main() {",
       `  console.log("Running: ${pattern.name}");`,
       `  console.log("Steps:", steps.join(" → "));`,
-      `  `,
-      `  for (let i = 0; i < steps.length; i++) {`,
-      `    console.log(\`Step \${i + 1}/\${steps.length}: \${steps[i]}\`);`,
-      `    // TODO: Implement step logic`,
-      `  }`,
-      `  `,
+      "  ",
+      "  for (let i = 0; i < steps.length; i++) {",
+      "    console.log(`Step ${i + 1}/${steps.length}: ${steps[i]}`);",
+      "    // TODO: Implement step logic",
+      "  }",
+      "  ",
       `  console.log("Done.");`,
-      `}`,
-      ``,
-      `main().catch(console.error);`,
+      "}",
+      "",
+      "main().catch(console.error);",
     ].join("\n")
 
     return {
@@ -354,20 +346,20 @@ export class DistillJob {
 
     const content = [
       `# Agent: ${pattern.name}`,
-      ``,
-      `> Auto-generated agent definition from DistillJob`,
-      ``,
-      `## Role`,
+      "",
+      "> Auto-generated agent definition from DistillJob",
+      "",
+      "## Role",
       `Specialized agent for: ${pattern.description}`,
-      ``,
-      `## Capabilities`,
+      "",
+      "## Capabilities",
       ...pattern.commonCapabilities.map((c) => `- ${c}`),
-      ``,
-      `## Workflow`,
+      "",
+      "## Workflow",
       ...pattern.taskSequence.map((s, i) => `${i + 1}. ${s}`),
-      ``,
-      `## Configuration`,
-      `\`\`\`json`,
+      "",
+      "## Configuration",
+      "```json",
       JSON.stringify(
         {
           name: pattern.name,
@@ -378,7 +370,7 @@ export class DistillJob {
         null,
         2,
       ),
-      `\`\`\``,
+      "```",
     ].join("\n")
 
     return {
@@ -395,26 +387,26 @@ export class DistillJob {
 
     const content = [
       `# Standard Operating Procedure: ${pattern.name}`,
-      ``,
+      "",
       `> Auto-generated SOP from DistillJob — ${new Date().toISOString()}`,
-      ``,
-      `## Purpose`,
+      "",
+      "## Purpose",
       pattern.description,
-      ``,
-      `## Prerequisites`,
+      "",
+      "## Prerequisites",
       ...pattern.commonCapabilities.map((c) => `- ${c}`),
-      ``,
-      `## Procedure`,
+      "",
+      "## Procedure",
       ...pattern.taskSequence.map((s, i) => {
         const next = pattern.taskSequence[i + 1]
         return `### Step ${i + 1}: ${s}\n\n**Expected Outcome**: Complete successfully.\n${next ? `**Next**: ${next}` : "**Next**: Done."}\n`
       }),
-      ``,
-      `## Verification`,
-      `After completing all steps, verify:`,
+      "",
+      "## Verification",
+      "After completing all steps, verify:",
       ...pattern.taskSequence.map((s) => `- [ ] ${s} completed successfully`),
-      ``,
-      `## Frequency`,
+      "",
+      "## Frequency",
       `This procedure was observed in ${pattern.frequency} historical sessions.`,
     ].join("\n")
 
@@ -441,15 +433,18 @@ export class DistillJob {
 
   startTimer(sessionCounter: () => number): void {
     if (this.timer) return
-    this.timer = setInterval(async () => {
-      try {
-        if (await this.shouldDistill(sessionCounter())) {
-          await this.distill([])
+    this.timer = setInterval(
+      async () => {
+        try {
+          if (await this.shouldDistill(sessionCounter())) {
+            await this.distill([])
+          }
+        } catch (err) {
+          console.error("[DistillJob] Distill cycle failed:", err)
         }
-      } catch (err) {
-        console.error("[DistillJob] Distill cycle failed:", err)
-      }
-    }, 6 * 60 * 60 * 1000) // Check every 6 hours
+      },
+      6 * 60 * 60 * 1000,
+    ) // Check every 6 hours
   }
 
   stopTimer(): void {
@@ -462,4 +457,14 @@ export class DistillJob {
   getMetrics(): DistillMetrics {
     return { ...this.metrics }
   }
+}
+
+/**
+ * Create a {@link DistillJob} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link DistillJob}.
+ * @returns A new {@link DistillJob}.
+ */
+export function createDistillJob(...args: ConstructorParameters<typeof DistillJob>): DistillJob {
+  return new DistillJob(...args)
 }

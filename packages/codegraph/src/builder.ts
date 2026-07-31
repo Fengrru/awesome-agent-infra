@@ -1,21 +1,20 @@
+import { existsSync, readdirSync, statSync } from "node:fs"
 import { readFile } from "node:fs/promises"
-import { existsSync, statSync, readdirSync } from "node:fs"
-import { join, relative, extname } from "node:path"
-import { CodeGraph } from "./graph"
+import { extname, join, relative } from "node:path"
 import { CallSiteStore, createCallSite } from "./callsite"
+import { type ExtractResult, extractFromFile } from "./extractor"
+import { CodeGraph } from "./graph"
 import { GraphPersistence } from "./persist"
 import type {
-  CodeGraphNode,
-  CodeGraphEdge,
-  CodeGraphConfig,
-  CallSite,
   BuildEvent,
   BuildObserver,
+  CodeGraphConfig,
+  CodeGraphEdge,
+  CodeGraphNode,
   FileMetadata,
   SymbolMetadata,
 } from "./types"
 import { DEFAULT_CODEGRAPH_CONFIG } from "./types"
-import { extractFromFile, type ExtractResult } from "./extractor"
 
 export type DiscoverFilesFn = (config: CodeGraphConfig) => Promise<string[]>
 
@@ -25,7 +24,10 @@ function defaultDiscoverFiles(config: CodeGraphConfig): Promise<string[]> {
   const includeExts = new Set<string>()
   const excludeSet = new Set(exclude.map((p) => p.replace(/^\*\*/, "").replace(/\/\*$/, "")))
   for (const pattern of include) {
-    const ext = pattern.replace(/^\*\*\//, "").replace(/^\*\//, "").replace(/^\*\./, ".")
+    const ext = pattern
+      .replace(/^\*\*\//, "")
+      .replace(/^\*\//, "")
+      .replace(/^\*\./, ".")
     includeExts.add(ext)
   }
   const files: string[] = []
@@ -47,7 +49,9 @@ function defaultDiscoverFiles(config: CodeGraphConfig): Promise<string[]> {
           }
         }
       }
-    } catch { /* skip inaccessible directories */ }
+    } catch {
+      /* skip inaccessible directories */
+    }
   }
   walk(rootDir)
   return Promise.resolve(files)
@@ -85,7 +89,11 @@ export class CodeGraphBuilder {
 
   private notify(event: BuildEvent): void {
     for (const obs of this.observers) {
-      try { obs(event) } catch (e) { console.warn("[CodeGraph] observer notification failed:", e) }
+      try {
+        obs(event)
+      } catch (e) {
+        console.warn("[CodeGraph] observer notification failed:", e)
+      }
     }
   }
 
@@ -120,7 +128,10 @@ export class CodeGraphBuilder {
       })
       const batchResults = await Promise.all(batchPromises)
       for (const { filePath, result } of batchResults) {
-        if (result) { results.set(filePath, result); processed++ }
+        if (result) {
+          results.set(filePath, result)
+          processed++
+        }
       }
       this.notify({
         type: "extract",
@@ -145,7 +156,6 @@ export class CodeGraphBuilder {
    */
   private relateSymbols(extractionResults: Map<string, ExtractResult>): void {
     const allSymbolsByName = new Map<string, CodeGraphNode[]>()
-    const allSourceCache = new Map<string, string>()
 
     for (const [filePath, result] of extractionResults) {
       const relPath = relative(this.config.rootDir, filePath).replace(/\\/g, "/")
@@ -182,7 +192,7 @@ export class CodeGraphBuilder {
           this.graph.addEdge({ sourceId: fileId, targetId: sym.id, relation: "exports" })
         }
 
-        const key = (sym.symbolType ?? "unknown") + ":" + sym.name
+        const key = `${sym.symbolType ?? "unknown"}:${sym.name}`
         if (!allSymbolsByName.has(key)) allSymbolsByName.set(key, [])
         allSymbolsByName.get(key)!.push(sym)
       }
@@ -258,15 +268,15 @@ export class CodeGraphBuilder {
         if (!caller) continue
 
         const candidates: CodeGraphNode[] = []
-        const funcKey = "function:" + call.calleeName
+        const funcKey = `function:${call.calleeName}`
         const funcMatch = symbolsByName.get(funcKey)
         if (funcMatch) candidates.push(...funcMatch)
 
-        const methodKey = "method:" + call.calleeName
+        const methodKey = `method:${call.calleeName}`
         const methodMatch = symbolsByName.get(methodKey)
         if (methodMatch) candidates.push(...methodMatch)
 
-        const classKey = "class:" + call.calleeName
+        const classKey = `class:${call.calleeName}`
         const classMatch = symbolsByName.get(classKey)
         if (classMatch) candidates.push(...classMatch)
 
@@ -287,23 +297,25 @@ export class CodeGraphBuilder {
           }
           this.graph.addEdge(edge)
 
-          this.callSites.add(createCallSite({
-            callerId: caller.id,
-            calleeName: callee.name,
-            calleeId: callee.id,
-            filePath: relPath,
-            startByte: call.startByte,
-            endByte: call.endByte,
-            startToken: 0,
-            endToken: 0,
-            startLine: call.startLine,
-            endLine: call.endLine,
-            argCount: call.argCount,
-            keywordArgs: call.keywordArgNames,
-            hasStarArgs: call.hasSpread,
-            hasKwargs: call.hasSpread,
-            tokenizerName: tName,
-          }))
+          this.callSites.add(
+            createCallSite({
+              callerId: caller.id,
+              calleeName: callee.name,
+              calleeId: callee.id,
+              filePath: relPath,
+              startByte: call.startByte,
+              endByte: call.endByte,
+              startToken: 0,
+              endToken: 0,
+              startLine: call.startLine,
+              endLine: call.endLine,
+              argCount: call.argCount,
+              keywordArgs: call.keywordArgNames,
+              hasStarArgs: call.hasSpread,
+              hasKwargs: call.hasSpread,
+              tokenizerName: tName,
+            }),
+          )
         }
       }
     }
@@ -320,18 +332,14 @@ export class CodeGraphBuilder {
 
     for (const cls of classes) {
       const methods = allSymbols.filter(
-        (s) =>
-          (s.symbolType === "method") &&
-          (s.metadata as SymbolMetadata).parentId === cls.id,
+        (s) => s.symbolType === "method" && (s.metadata as SymbolMetadata).parentId === cls.id,
       )
 
       const possibleParents = classByName.get(cls.name) ?? []
       for (const parent of possibleParents) {
         if (parent.id === cls.id) continue
         const parentMethods = allSymbols.filter(
-          (s) =>
-            (s.symbolType === "method") &&
-            (s.metadata as SymbolMetadata).parentId === parent.id,
+          (s) => s.symbolType === "method" && (s.metadata as SymbolMetadata).parentId === parent.id,
         )
 
         for (const method of methods) {
@@ -347,7 +355,8 @@ export class CodeGraphBuilder {
 
   private buildTypeUsageEdges(allSymbols: CodeGraphNode[]): void {
     const types = allSymbols.filter(
-      (s) => s.symbolType === "class" || s.symbolType === "interface" || s.symbolType === "type" || s.symbolType === "enum",
+      (s) =>
+        s.symbolType === "class" || s.symbolType === "interface" || s.symbolType === "type" || s.symbolType === "enum",
     )
     const typeNames = new Set(types.map((t) => t.name))
 
@@ -399,13 +408,13 @@ export class CodeGraphBuilder {
   }
 
   private buildTestCoverEdges(allSymbols: CodeGraphNode[]): void {
-    const testFiles = this.graph.findNodes((n) =>
-      n.type === "file" && (
-        n.name.toLowerCase().includes("test") ||
-        n.name.toLowerCase().includes(".spec.") ||
-        n.name.toLowerCase().includes(".test.") ||
-        n.name.toLowerCase().includes("__tests__")
-      ),
+    const testFiles = this.graph.findNodes(
+      (n) =>
+        n.type === "file" &&
+        (n.name.toLowerCase().includes("test") ||
+          n.name.toLowerCase().includes(".spec.") ||
+          n.name.toLowerCase().includes(".test.") ||
+          n.name.toLowerCase().includes("__tests__")),
     )
     const testFuncs = allSymbols.filter(
       (s) =>
@@ -418,10 +427,7 @@ export class CodeGraphBuilder {
 
     for (const testFunc of testFuncs) {
       if (!testDirSet.has(testFunc.filePath.replace(/\/[^/]+$/, ""))) {
-        const srcPath = testFunc.filePath
-          .replace("__tests__/", "")
-          .replace(".test.", ".")
-          .replace(".spec.", ".")
+        const srcPath = testFunc.filePath.replace("__tests__/", "").replace(".test.", ".").replace(".spec.", ".")
         const srcSymbols = allFuncs.filter(
           (s) => s.filePath === srcPath || s.filePath === srcPath.replace(/\.test\./, "."),
         )
@@ -486,12 +492,10 @@ export class CodeGraphBuilder {
 
     if (this.persistence) {
       try {
-        await this.persistence.save(
-          this.graph.toJSON().nodes,
-          this.graph.toJSON().edges,
-          this.callSites.toJSON(),
-        )
-      } catch { /* non-critical */ }
+        await this.persistence.save(this.graph.toJSON().nodes, this.graph.toJSON().edges, this.callSites.toJSON())
+      } catch {
+        /* non-critical */
+      }
     }
 
     this.notify({
@@ -509,12 +513,10 @@ export class CodeGraphBuilder {
   async persistState(): Promise<void> {
     if (!this.persistence) return
     try {
-      await this.persistence.save(
-        this.graph.toJSON().nodes,
-        this.graph.toJSON().edges,
-        this.callSites.toJSON(),
-      )
-    } catch { /* non-critical */ }
+      await this.persistence.save(this.graph.toJSON().nodes, this.graph.toJSON().edges, this.callSites.toJSON())
+    } catch {
+      /* non-critical */
+    }
   }
 
   private resolveImportPath(sourceFile: string, importSource: string): string | null {
@@ -548,4 +550,14 @@ function extractBaseType(typeStr: string): string {
     .replace(/\|.+$/, "")
     .trim()
   return cleaned
+}
+
+/**
+ * Create a {@link CodeGraphBuilder} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link CodeGraphBuilder}.
+ * @returns A new {@link CodeGraphBuilder}.
+ */
+export function createCodeGraphBuilder(...args: ConstructorParameters<typeof CodeGraphBuilder>): CodeGraphBuilder {
+  return new CodeGraphBuilder(...args)
 }

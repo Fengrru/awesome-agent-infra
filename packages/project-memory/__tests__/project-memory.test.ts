@@ -2,11 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import {
-  ProjectMemoryManager,
-  DEFAULT_CONFIG,
-  type Discovery,
-} from "../src/index"
+import { DEFAULT_CONFIG, type Discovery, ProjectMemoryManager } from "../src/index"
 
 async function withTempFile(fn: (filePath: string) => Promise<void>): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), "project-memory-test-"))
@@ -164,11 +160,15 @@ describe("promoteDiscovery", () => {
     await withTempFile(async (filePath) => {
       const mgr = new ProjectMemoryManager({ filePath })
       await mgr.promoteDiscovery("s1", discovery, 3)
-      const merged = await mgr.promoteDiscovery("s2", {
-        ...discovery,
-        description: "the build pipeline caches turbo outputs aggressively today",
-        confidence: 0.9,
-      }, 3)
+      const merged = await mgr.promoteDiscovery(
+        "s2",
+        {
+          ...discovery,
+          description: "the build pipeline caches turbo outputs aggressively today",
+          confidence: 0.9,
+        },
+        3,
+      )
 
       expect((await mgr.getSection("facts")).length).toBe(1)
       expect(merged.verification_count).toBe(4)

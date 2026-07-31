@@ -12,13 +12,13 @@
  */
 
 import type {
-  CodeGraphNode,
+  BuildEvent,
+  BuildObserver,
   CodeGraphEdge,
+  CodeGraphNode,
   EdgeRelation,
   SubGraph,
   SymbolMetadata,
-  BuildEvent,
-  BuildObserver,
 } from "./types"
 import { REVERSE_RELATIONS } from "./types"
 
@@ -63,7 +63,11 @@ export class CodeGraph {
 
   private notify(event: BuildEvent): void {
     for (const obs of this._observers) {
-      try { obs(event) } catch { /* swallow */ }
+      try {
+        obs(event)
+      } catch {
+        /* swallow */
+      }
     }
   }
 
@@ -248,9 +252,7 @@ export class CodeGraph {
 
   searchSymbols(query: string): CodeGraphNode[] {
     const q = query.toLowerCase()
-    return this.findNodes(
-      (n) => n.type === "symbol" && n.name.toLowerCase().includes(q),
-    )
+    return this.findNodes((n) => n.type === "symbol" && n.name.toLowerCase().includes(q))
   }
 
   getFiles(): CodeGraphNode[] {
@@ -324,7 +326,7 @@ export class CodeGraph {
    * Get callers at a given depth (transitive).
    * depth=1 returns direct callers, depth=2 returns callers of callers, etc.
    */
-  getTransitiveCallers(entityId: string, maxDepth: number = 3): Map<number, CodeGraphNode[]> {
+  getTransitiveCallers(entityId: string, maxDepth = 3): Map<number, CodeGraphNode[]> {
     const result = new Map<number, CodeGraphNode[]>()
     const visited = new Set<string>([entityId])
     const frontier = [entityId]
@@ -357,7 +359,7 @@ export class CodeGraph {
    * Get all affected files for an entity, considering direct and
    * transitive callers.
    */
-  getAffectedFiles(entityId: string, maxDepth: number = 3): string[] {
+  getAffectedFiles(entityId: string, maxDepth = 3): string[] {
     const files = new Set<string>()
     const entity = this._nodes.get(entityId)
     if (entity) files.add(entity.filePath)
@@ -408,7 +410,7 @@ export class CodeGraph {
   }
 
   /** K-hop ego subgraph extraction via BFS */
-  getEgoGraph(centerId: string, k: number = 1): SubGraph {
+  getEgoGraph(centerId: string, k = 1): SubGraph {
     const visited = new Set<string>()
     const nodes: CodeGraphNode[] = []
     const edges: CodeGraphEdge[] = []
@@ -478,9 +480,15 @@ export class CodeGraph {
 
   // ── Stats ─────────────────────────────────────────────────────────────
 
-  get nodeCount(): number { return this._nodes.size }
-  get edgeCount(): number { return this._edges.size }
-  get fileCount(): number { return this._fileIndex.size }
+  get nodeCount(): number {
+    return this._nodes.size
+  }
+  get edgeCount(): number {
+    return this._edges.size
+  }
+  get fileCount(): number {
+    return this._fileIndex.size
+  }
 
   getStats(): { nodes: number; edges: number; files: number; symbols: number } {
     return {

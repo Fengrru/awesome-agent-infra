@@ -138,7 +138,10 @@ export function getTransitiveDependents(dag: DAG, nodeId: string): Set<string> {
 /** Estimate total token and time cost of a DAG */
 export function estimateDAGCost(dag: DAG): { total_tokens: number; total_duration_ms: number } {
   return dag.nodes.reduce(
-    (acc, n) => ({ total_tokens: acc.total_tokens + n.estimated_tokens, total_duration_ms: acc.total_duration_ms + n.estimated_duration_ms }),
+    (acc, n) => ({
+      total_tokens: acc.total_tokens + n.estimated_tokens,
+      total_duration_ms: acc.total_duration_ms + n.estimated_duration_ms,
+    }),
     { total_tokens: 0, total_duration_ms: 0 },
   )
 }
@@ -163,9 +166,7 @@ export function replaceSubtree(dag: DAG, failedNodeId: string, replacementNodes:
   }
 
   const newNodes = [...keptNodes, ...replacementNodes]
-  const newEdges: [string, string][] = dag.edges.filter(
-    ([from, to]) => !subtreeIds.has(from) && !subtreeIds.has(to),
-  )
+  const newEdges: [string, string][] = dag.edges.filter(([from, to]) => !subtreeIds.has(from) && !subtreeIds.has(to))
   for (const replacement of replacementNodes) {
     for (const dep of replacement.dependencies) {
       newEdges.push([dep, replacement.node_id])

@@ -1,18 +1,17 @@
-import { ProjectMemoryManager } from "@fengru/project-memory"
+import { EventArchiver } from "@fengru/archiver"
 import { CodeGraph, CodeGraphSearcher } from "@fengru/codegraph"
-import type { CodeGraphNode, CodeGraphEdge, SymbolMetadata } from "@fengru/codegraph"
+import type { CodeGraphNode, SymbolMetadata } from "@fengru/codegraph"
+import { ConfidenceGate } from "@fengru/confidence-gate"
 import { CodeEmbeddingIndexer } from "@fengru/embedding"
 import type { CodeEmbeddingItem } from "@fengru/embedding"
-import { validateDAG, getReadyNodes, isComplete, allSucceeded } from "@fengru/taskdag"
-import { createLLMDAGGenerator } from "@fengru/llm-dag-generator"
-import type { Capability, DAG } from "@fengru/llm-dag-generator"
-import { ValidationNetwork } from "@fengru/valid8"
-import { fuzzyFindAndReplace } from "@fengru/fuzzy-patch"
-import { createSimpleEventBus, EventType, EventPriority } from "@fengru/event-bus"
+import { EventPriority, EventType, createSimpleEventBus } from "@fengru/event-bus"
 import type { EventBus } from "@fengru/event-bus"
-import { EventArchiver } from "@fengru/archiver"
-import { AgentStateMachine, AgentState } from "@fengru/state-machine"
-import { ConfidenceGate } from "@fengru/confidence-gate"
+import { fuzzyFindAndReplace } from "@fengru/fuzzy-patch"
+import type { Capability, DAG } from "@fengru/llm-dag-generator"
+import { ProjectMemoryManager } from "@fengru/project-memory"
+import { AgentState, AgentStateMachine } from "@fengru/state-machine"
+import { allSucceeded, getReadyNodes, isComplete, validateDAG } from "@fengru/taskdag"
+import { ValidationNetwork } from "@fengru/valid8"
 
 // ---------------------------------------------------------------------------
 // Sample data: a synthetic "mini crm" project we pretend to refactor
@@ -95,7 +94,7 @@ export async function handleRegister(username: string, email: string, password: 
 
 const SAMPLE_PATCH = {
   oldString: "export async function saveUser(user: User): Promise<void>",
-  newString: `export async function persistUser(user: User, tx?: Transaction): Promise<void>`,
+  newString: "export async function persistUser(user: User, tx?: Transaction): Promise<void>",
 }
 
 const DIFF_OUTPUT = `
@@ -140,7 +139,7 @@ export class CodeRefactorScenario {
     this.steps.push({ step: this.steps.length + 1, label, package: pkg, status, detail })
   }
 
-  private async emit(type: typeof EventType[keyof typeof EventType], data: Record<string, unknown>): Promise<void> {
+  private async emit(type: (typeof EventType)[keyof typeof EventType], data: Record<string, unknown>): Promise<void> {
     await this.eventBus.publish({
       type,
       source: "code-refactor-agent",
@@ -187,12 +186,16 @@ export class CodeRefactorScenario {
       log(`Loaded ${entries.length} memory entries from project memory`)
       this.addStep("Load project memory (2 entries)", "project-memory", "pass", `entries=${entries.length}`)
 
-      await mem.promoteDiscovery("demo-session-001", {
-        id: "disc_001",
-        description: "saveUser should accept an optional transaction parameter for atomicity",
-        confidence: 0.85,
-        applicable_to: ["src/repo.ts"],
-      }, 3)
+      await mem.promoteDiscovery(
+        "demo-session-001",
+        {
+          id: "disc_001",
+          description: "saveUser should accept an optional transaction parameter for atomicity",
+          confidence: 0.85,
+          applicable_to: ["src/repo.ts"],
+        },
+        3,
+      )
 
       log("Promoted discovery to project facts")
       this.addStep("Promote stable discovery to facts", "project-memory", "pass", "discovery=disc_001 promoted")
@@ -221,19 +224,96 @@ export class CodeRefactorScenario {
       }
 
       const symbolNodes: CodeGraphNode[] = [
-        { id: "symbol:src/auth.ts:authenticate", type: "symbol", symbolType: "function", name: "authenticate", filePath: "src/auth.ts", startLine: 3, endLine: 8, metadata: { isExported: true, visibility: "public", returnType: "User | null" } as SymbolMetadata, mtime: Date.now() },
-        { id: "symbol:src/models.ts:User", type: "symbol", symbolType: "interface", name: "User", filePath: "src/models.ts", startLine: 1, endLine: 8, metadata: { isExported: true, visibility: "public" } as SymbolMetadata, mtime: Date.now() },
-        { id: "symbol:src/repo.ts:saveUser", type: "symbol", symbolType: "function", name: "saveUser", filePath: "src/repo.ts", startLine: 3, endLine: 5, metadata: { isExported: true, visibility: "public", returnType: "Promise<void>", isAsync: true } as SymbolMetadata, mtime: Date.now() },
-        { id: "symbol:src/handler.ts:handleLogin", type: "symbol", symbolType: "function", name: "handleLogin", filePath: "src/handler.ts", startLine: 5, endLine: 10, metadata: { isExported: true, visibility: "public", returnType: "Promise<User | null>", isAsync: true } as SymbolMetadata, mtime: Date.now() },
-        { id: "symbol:src/handler.ts:handleRegister", type: "symbol", symbolType: "function", name: "handleRegister", filePath: "src/handler.ts", startLine: 12, endLine: 23, metadata: { isExported: true, visibility: "public", returnType: "Promise<User>", isAsync: true } as SymbolMetadata, mtime: Date.now() },
+        {
+          id: "symbol:src/auth.ts:authenticate",
+          type: "symbol",
+          symbolType: "function",
+          name: "authenticate",
+          filePath: "src/auth.ts",
+          startLine: 3,
+          endLine: 8,
+          metadata: { isExported: true, visibility: "public", returnType: "User | null" } as SymbolMetadata,
+          mtime: Date.now(),
+        },
+        {
+          id: "symbol:src/models.ts:User",
+          type: "symbol",
+          symbolType: "interface",
+          name: "User",
+          filePath: "src/models.ts",
+          startLine: 1,
+          endLine: 8,
+          metadata: { isExported: true, visibility: "public" } as SymbolMetadata,
+          mtime: Date.now(),
+        },
+        {
+          id: "symbol:src/repo.ts:saveUser",
+          type: "symbol",
+          symbolType: "function",
+          name: "saveUser",
+          filePath: "src/repo.ts",
+          startLine: 3,
+          endLine: 5,
+          metadata: {
+            isExported: true,
+            visibility: "public",
+            returnType: "Promise<void>",
+            isAsync: true,
+          } as SymbolMetadata,
+          mtime: Date.now(),
+        },
+        {
+          id: "symbol:src/handler.ts:handleLogin",
+          type: "symbol",
+          symbolType: "function",
+          name: "handleLogin",
+          filePath: "src/handler.ts",
+          startLine: 5,
+          endLine: 10,
+          metadata: {
+            isExported: true,
+            visibility: "public",
+            returnType: "Promise<User | null>",
+            isAsync: true,
+          } as SymbolMetadata,
+          mtime: Date.now(),
+        },
+        {
+          id: "symbol:src/handler.ts:handleRegister",
+          type: "symbol",
+          symbolType: "function",
+          name: "handleRegister",
+          filePath: "src/handler.ts",
+          startLine: 12,
+          endLine: 23,
+          metadata: {
+            isExported: true,
+            visibility: "public",
+            returnType: "Promise<User>",
+            isAsync: true,
+          } as SymbolMetadata,
+          mtime: Date.now(),
+        },
       ]
 
       for (const n of symbolNodes) graph.addNode(n)
 
       // Add edges
-      graph.addEdge({ sourceId: "symbol:src/handler.ts:handleLogin", targetId: "symbol:src/auth.ts:authenticate", relation: "calls" })
-      graph.addEdge({ sourceId: "symbol:src/handler.ts:handleRegister", targetId: "symbol:src/repo.ts:saveUser", relation: "calls" })
-      graph.addEdge({ sourceId: "symbol:src/auth.ts:authenticate", targetId: "symbol:src/models.ts:User", relation: "references" })
+      graph.addEdge({
+        sourceId: "symbol:src/handler.ts:handleLogin",
+        targetId: "symbol:src/auth.ts:authenticate",
+        relation: "calls",
+      })
+      graph.addEdge({
+        sourceId: "symbol:src/handler.ts:handleRegister",
+        targetId: "symbol:src/repo.ts:saveUser",
+        relation: "calls",
+      })
+      graph.addEdge({
+        sourceId: "symbol:src/auth.ts:authenticate",
+        targetId: "symbol:src/models.ts:User",
+        relation: "references",
+      })
 
       log(`CodeGraph built: ${symbolNodes.length} symbols, 4 files, 3 edges`)
 
@@ -254,9 +334,16 @@ export class CodeRefactorScenario {
       }))
       await indexer.addItems(items)
       const embedResults = indexer.searchText("user authentication login", 3)
-      log(`Embedding index: ${indexer.indexSize} items, top-3 search for "user auth": [${embedResults.map((r) => r.id.split(":")[2]).join(", ")}]`)
+      log(
+        `Embedding index: ${indexer.indexSize} items, top-3 search for "user auth": [${embedResults.map((r) => r.id.split(":")[2]).join(", ")}]`,
+      )
 
-      this.addStep("Build code graph + search", "codegraph", "pass", `${symbolNodes.length} symbols, ${graph.edgeCount} edges`)
+      this.addStep(
+        "Build code graph + search",
+        "codegraph",
+        "pass",
+        `${symbolNodes.length} symbols, ${graph.edgeCount} edges`,
+      )
       this.addStep("Index code items via TF-IDF", "embedding", "pass", `${indexer.indexSize} items indexed`)
     }
 
@@ -267,11 +354,46 @@ export class CodeRefactorScenario {
     await this.stateMachine.transition(AgentState.PLANNING, "generating DAG")
 
     const capabilities: Capability[] = [
-      { capability_id: "read_file", name: "Read File", risk_level: 0, tags: ["io", "read"], success_rate: 0.99, description: "Read a source file" },
-      { capability_id: "analyze_deps", name: "Analyze Dependencies", risk_level: 0, tags: ["analysis"], success_rate: 0.95, description: "Analyze import and call graph" },
-      { capability_id: "rewrite_fn", name: "Rewrite Function", risk_level: 1, tags: ["edit", "refactor"], success_rate: 0.85, description: "Rewrite a function body" },
-      { capability_id: "update_callsites", name: "Update Call Sites", risk_level: 1, tags: ["edit"], success_rate: 0.80, description: "Update all callers of a function" },
-      { capability_id: "run_tests", name: "Run Tests", risk_level: 1, tags: ["verify"], success_rate: 0.90, description: "Run test suite" },
+      {
+        capability_id: "read_file",
+        name: "Read File",
+        risk_level: 0,
+        tags: ["io", "read"],
+        success_rate: 0.99,
+        description: "Read a source file",
+      },
+      {
+        capability_id: "analyze_deps",
+        name: "Analyze Dependencies",
+        risk_level: 0,
+        tags: ["analysis"],
+        success_rate: 0.95,
+        description: "Analyze import and call graph",
+      },
+      {
+        capability_id: "rewrite_fn",
+        name: "Rewrite Function",
+        risk_level: 1,
+        tags: ["edit", "refactor"],
+        success_rate: 0.85,
+        description: "Rewrite a function body",
+      },
+      {
+        capability_id: "update_callsites",
+        name: "Update Call Sites",
+        risk_level: 1,
+        tags: ["edit"],
+        success_rate: 0.8,
+        description: "Update all callers of a function",
+      },
+      {
+        capability_id: "run_tests",
+        name: "Run Tests",
+        risk_level: 1,
+        tags: ["verify"],
+        success_rate: 0.9,
+        description: "Run test suite",
+      },
     ]
 
     const { DAGGenerator } = await import("@fengru/llm-dag-generator")
@@ -288,13 +410,24 @@ export class CodeRefactorScenario {
         ["n3", "n4"],
         ["n4", "n5"],
       ],
-      metadata: { goal: "Refactor saveUser to accept optional Transaction parameter", strategy: "STAGED", replan_count: 0, created_at: Date.now() },
+      metadata: {
+        goal: "Refactor saveUser to accept optional Transaction parameter",
+        strategy: "STAGED",
+        replan_count: 0,
+        created_at: Date.now(),
+      },
     }
 
     // Validate DAG structure
     const validation = validateDAG(dagPlan)
-    log(`DAG generated: ${dagPlan.nodes.length} nodes, valid=${validation.valid}, strategy=${dagPlan.metadata?.strategy}`)
-    await this.emit(EventType.DAG_GENERATED, { goal: dagPlan.metadata?.goal, nodeCount: dagPlan.nodes.length, strategy: dagPlan.metadata?.strategy })
+    log(
+      `DAG generated: ${dagPlan.nodes.length} nodes, valid=${validation.valid}, strategy=${dagPlan.metadata?.strategy}`,
+    )
+    await this.emit(EventType.DAG_GENERATED, {
+      goal: dagPlan.metadata?.goal,
+      nodeCount: dagPlan.nodes.length,
+      strategy: dagPlan.metadata?.strategy,
+    })
 
     if (validation.valid && validation.executionOrder) {
       log(`Execution order: ${validation.executionOrder.join(" → ")}`)
@@ -311,8 +444,18 @@ export class CodeRefactorScenario {
     const ok = allSucceeded(dagPlan)
     log(`DAG execution: ready=${ready.length}, complete=${done}, allSucceeded=${ok}`)
 
-    this.addStep("Generate refactoring DAG plan", "llm-dag-generator", "pass", `${dagPlan.nodes.length} nodes, ${dagPlan.edges.length} edges`)
-    this.addStep("Validate & execute DAG", "taskdag", validation.valid && ok ? "pass" : "fail", `valid=${validation.valid}, complete=${ok}`)
+    this.addStep(
+      "Generate refactoring DAG plan",
+      "llm-dag-generator",
+      "pass",
+      `${dagPlan.nodes.length} nodes, ${dagPlan.edges.length} edges`,
+    )
+    this.addStep(
+      "Validate & execute DAG",
+      "taskdag",
+      validation.valid && ok ? "pass" : "fail",
+      `valid=${validation.valid}, complete=${ok}`,
+    )
 
     // ── Step 4: valid8 — Validate changes ──────────────────────────────
     console.log("\n--- Step 4: valid8 ---")
@@ -328,7 +471,9 @@ export class CodeRefactorScenario {
       "async function persistUser(user: User, tx?: Transaction): Promise<void>",
     ).newContent
 
-    log(`Patch applied: strategy=${fuzzyFindAndReplace(originalCode, SAMPLE_PATCH.oldString, SAMPLE_PATCH.newString).strategy}`)
+    log(
+      `Patch applied: strategy=${fuzzyFindAndReplace(originalCode, SAMPLE_PATCH.oldString, SAMPLE_PATCH.newString).strategy}`,
+    )
 
     const syntax = await vn.runSyntaxValidation(patchedCode, "src/repo.ts")
     const semantic = await vn.runSemanticValidation(patchedCode, "Add transaction support to repository layer")
@@ -342,12 +487,35 @@ export class CodeRefactorScenario {
     log(`  security (score=${security.score.toFixed(2)}): ${security.report}`)
     log(`  >>> Overall confidence: ${confidence.toFixed(2)}`)
 
-    await this.emit(EventType.VALIDATION_PASSED, { layerScores: { syntax: syntax.score, semantic: semantic.score, runtime: runtime.score, security: security.score }, overall: confidence })
+    await this.emit(EventType.VALIDATION_PASSED, {
+      layerScores: { syntax: syntax.score, semantic: semantic.score, runtime: runtime.score, security: security.score },
+      overall: confidence,
+    })
 
-    this.addStep("Syntax validation", "valid8", syntax.score >= 0.5 ? "pass" : "fail", `score=${syntax.score.toFixed(2)}`)
-    this.addStep("Semantic validation", "valid8", semantic.score >= 0.5 ? "pass" : "fail", `score=${semantic.score.toFixed(2)}`)
-    this.addStep("Runtime validation", "valid8", runtime.score >= 0.5 ? "pass" : "fail", `score=${runtime.score.toFixed(2)}`)
-    this.addStep("Security validation", "valid8", security.score >= 0.5 ? "pass" : "fail", `score=${security.score.toFixed(2)}`)
+    this.addStep(
+      "Syntax validation",
+      "valid8",
+      syntax.score >= 0.5 ? "pass" : "fail",
+      `score=${syntax.score.toFixed(2)}`,
+    )
+    this.addStep(
+      "Semantic validation",
+      "valid8",
+      semantic.score >= 0.5 ? "pass" : "fail",
+      `score=${semantic.score.toFixed(2)}`,
+    )
+    this.addStep(
+      "Runtime validation",
+      "valid8",
+      runtime.score >= 0.5 ? "pass" : "fail",
+      `score=${runtime.score.toFixed(2)}`,
+    )
+    this.addStep(
+      "Security validation",
+      "valid8",
+      security.score >= 0.5 ? "pass" : "fail",
+      `score=${security.score.toFixed(2)}`,
+    )
 
     // ── Step 5: fuzzy-patch — Apply patches ────────────────────────────
     console.log("\n--- Step 5: fuzzy-patch ---")
@@ -355,23 +523,38 @@ export class CodeRefactorScenario {
       const content = SAMPLE_FILES["src/repo.ts"]!
       // Exact fails because the content has leading whitespace differences vs the patch string
       const exact = fuzzyFindAndReplace(content, "async function saveUser(user: User): Promise<void> {", "FIXED")
-      const indent = fuzzyFindAndReplace(content, "export async function saveUser(user: User): Promise<void> {", "REPLACED")
+      const indent = fuzzyFindAndReplace(
+        content,
+        "export async function saveUser(user: User): Promise<void> {",
+        "REPLACED",
+      )
       const patchResult = fuzzyFindAndReplace(content, SAMPLE_PATCH.oldString, SAMPLE_PATCH.newString)
 
       log(`Exact match:       strategy=${exact.strategy}, matches=${exact.matchCount}`)
       log(`Whitespace-normal: strategy=${indent.strategy}, matches=${indent.matchCount}`)
       log(`Real patch:        strategy=${patchResult.strategy}, matches=${patchResult.matchCount}`)
 
-      this.addStep("Apply fuzzy patch (3 tests)", "fuzzy-patch", patchResult.strategy !== "none" ? "pass" : "fail", `strategy=${patchResult.strategy}`)
+      this.addStep(
+        "Apply fuzzy patch (3 tests)",
+        "fuzzy-patch",
+        patchResult.strategy !== "none" ? "pass" : "fail",
+        `strategy=${patchResult.strategy}`,
+      )
     }
 
     // ── Step 6: event-bus + archiver — Record events ───────────────────
     console.log("\n--- Step 6: event-bus + archiver ---")
     {
       let eventsReceived = 0
-      this.eventBus.subscribe(EventType.VALIDATION_PASSED, () => { eventsReceived++ })
-      this.eventBus.subscribe(EventType.DAG_GENERATED, () => { eventsReceived++ })
-      this.eventBus.subscribe(EventType.STATE_TRANSITION, () => { eventsReceived++ })
+      this.eventBus.subscribe(EventType.VALIDATION_PASSED, () => {
+        eventsReceived++
+      })
+      this.eventBus.subscribe(EventType.DAG_GENERATED, () => {
+        eventsReceived++
+      })
+      this.eventBus.subscribe(EventType.STATE_TRANSITION, () => {
+        eventsReceived++
+      })
 
       await this.emit(EventType.VALIDATION_PASSED, { step: 6, test: true })
       await this.emit(EventType.DAG_GENERATED, { step: 6, test: true })
@@ -379,7 +562,7 @@ export class CodeRefactorScenario {
       // small delay for async flush
       await new Promise((r) => setTimeout(r, 100))
 
-      log(`Event bus: published 7 events, subscribers received dispatch`)
+      log(`Event bus: published 7 events, subscribers received ${eventsReceived} dispatches`)
       this.addStep("Publish & subscribe to events", "event-bus", "pass", "7 events published")
 
       // Archiver
@@ -389,7 +572,12 @@ export class CodeRefactorScenario {
       const archiveList = await this.archiver.listArchives()
       log(`Archiver: existing cold archives=${archiveList.length}`)
 
-      this.addStep("Check archive threshold", "archiver", "pass", `shouldArchive=${shouldArchive}, archives=${archiveList.length}`)
+      this.addStep(
+        "Check archive threshold",
+        "archiver",
+        "pass",
+        `shouldArchive=${shouldArchive}, archives=${archiveList.length}`,
+      )
       await this.eventBus.shutdown()
     }
 
@@ -409,7 +597,12 @@ export class CodeRefactorScenario {
         log(`State metrics: EXECUTING avg=${executingMetrics.avg_time_ms.toFixed(0)}ms`)
       }
 
-      this.addStep("State lifecycle tracking", "state-machine", "pass", `final=${snapshot.current_state}, transitions=${snapshot.transition_count}`)
+      this.addStep(
+        "State lifecycle tracking",
+        "state-machine",
+        "pass",
+        `final=${snapshot.current_state}, transitions=${snapshot.transition_count}`,
+      )
     }
 
     // ── Step 8: confidence-gate — Check confidence ─────────────────────
@@ -419,29 +612,38 @@ export class CodeRefactorScenario {
         { predictedConfidence: 0.92, actualCorrect: true },
         { predictedConfidence: 0.88, actualCorrect: true },
         { predictedConfidence: 0.75, actualCorrect: true },
-        { predictedConfidence: 0.60, actualCorrect: false },
+        { predictedConfidence: 0.6, actualCorrect: false },
         { predictedConfidence: 0.95, actualCorrect: true },
         { predictedConfidence: 0.45, actualCorrect: false },
         { predictedConfidence: 0.82, actualCorrect: true },
-        { predictedConfidence: 0.70, actualCorrect: false },
+        { predictedConfidence: 0.7, actualCorrect: false },
       ]
 
       const report = this.confidenceGate.fit(samples)
-      log(`Calibration: ECE=${report.ece.toFixed(3)}, Brier=${report.brierScore.toFixed(3)}, T=${report.optimalTemperature.toFixed(2)}`)
+      log(
+        `Calibration: ECE=${report.ece.toFixed(3)}, Brier=${report.brierScore.toFixed(3)}, T=${report.optimalTemperature.toFixed(2)}`,
+      )
       log(`Dynamic threshold: ${report.dynamicThreshold.toFixed(2)}`)
       log(`Hallucination rate: ${(report.hallucinationRate * 100).toFixed(1)}%`)
       log(`Summary: ${report.summary}`)
 
       const result = this.confidenceGate.calibrate(0.88)
-      log(`Single calibrate(0.88): ${result.calibrationStatus}, shouldAnswer=${result.shouldAnswer}, confidence=${result.confidence.toFixed(3)}`)
+      log(
+        `Single calibrate(0.88): ${result.calibrationStatus}, shouldAnswer=${result.shouldAnswer}, confidence=${result.confidence.toFixed(3)}`,
+      )
 
-      this.addStep("Calibrate confidence model", "confidence-gate", "pass", `ECE=${report.ece.toFixed(3)}, T=${report.optimalTemperature.toFixed(2)}`)
+      this.addStep(
+        "Calibrate confidence model",
+        "confidence-gate",
+        "pass",
+        `ECE=${report.ece.toFixed(3)}, T=${report.optimalTemperature.toFixed(2)}`,
+      )
     }
 
     // ── Final ──────────────────────────────────────────────────────────
     console.log("\n--- Final ---")
     await this.stateMachine.transition(AgentState.COMPLETED, "all steps done")
-    log(`State machine: VERIFYING → COMPLETED`)
+    log("State machine: VERIFYING → COMPLETED")
     log(`Final state: ${this.stateMachine.state}, ${this.stateMachine.transitions} transitions total`)
 
     const allPassed = this.steps.every((s) => s.status === "pass")
@@ -455,11 +657,13 @@ export class CodeRefactorScenario {
         stepCount: this.steps.length,
         passCount: this.steps.filter((s) => s.status === "pass").length,
         failCount: this.steps.filter((s) => s.status === "fail").length,
-        confidence: this.confidenceGate.report ? {
-          ece: this.confidenceGate.report.ece,
-          temperature: this.confidenceGate.temperature,
-          threshold: this.confidenceGate.threshold,
-        } : null,
+        confidence: this.confidenceGate.report
+          ? {
+              ece: this.confidenceGate.report.ece,
+              temperature: this.confidenceGate.temperature,
+              threshold: this.confidenceGate.threshold,
+            }
+          : null,
       },
       overall: allPassed ? "success" : "failure",
     }

@@ -1,12 +1,12 @@
 /**
  * ConfidenceCalibrator — multi-stream metacognitive calibration.
- * @module metacog-calibrator/calibrator
+ * @module agent-metacog/calibrator
  */
 
-import type { CalibratorConfig, StreamFeatures, CalibrationResult, TrainingHistory } from "./types"
-import { DEFAULT_CALIBRATOR_CONFIG } from "./types"
+import type { CalibrationResult, CalibratorConfig, StreamFeatures, TrainingHistory } from "./calibrator-types"
+import { DEFAULT_CALIBRATOR_CONFIG } from "./calibrator-types"
+import { matrixL2Norm, mean, randomMatrix } from "./linalg"
 import { MetacognitiveTransformer } from "./transformer"
-import { randomMatrix, mean, matrixL2Norm } from "./linalg"
 
 export class ConfidenceCalibrator {
   readonly config: CalibratorConfig
@@ -19,14 +19,18 @@ export class ConfidenceCalibrator {
     this.metacog = new MetacognitiveTransformer(baseHiddenSize, this.config)
     this.calibrated = false
     this.history = {
-      epochs: [], losses: [], semanticLosses: [],
-      confidenceLosses: [], calibrationErrors: [], finalLoss: 0,
+      epochs: [],
+      losses: [],
+      semanticLosses: [],
+      confidenceLosses: [],
+      calibrationErrors: [],
+      finalLoss: 0,
     }
   }
 
   calibrate(features: StreamFeatures): CalibrationResult {
-    const { confidence, difficulty, fusedFeatures } = this.metacog.forward(features)
-    const scaled = this.metacog["temperatureScale"](confidence, this.config.temperature)
+    const { confidence, difficulty } = this.metacog.forward(features)
+    const scaled = this.metacog.temperatureScale(confidence, this.config.temperature)
     const rawConfidence = mean(confidence)
     const avgConfidence = mean(scaled)
     const avgDifficulty = mean(difficulty)
@@ -51,7 +55,11 @@ export class ConfidenceCalibrator {
     }
   }
 
-  private computeECE(confidences: number[], predictions: number[], labels: number[]): { ece: number; binCounts: number[]; binAccuracies: number[] } {
+  private computeECE(
+    confidences: number[],
+    predictions: number[],
+    labels: number[],
+  ): { ece: number; binCounts: number[]; binAccuracies: number[] } {
     const n = confidences.length
     const { numBins, minSamplesPerBin } = this.config
     const binCounts: number[] = new Array(numBins).fill(0)
@@ -89,7 +97,10 @@ export class ConfidenceCalibrator {
 
   private computeBrier(predictions: number[], labels: number[]): number {
     let sum = 0
-    for (let i = 0; i < predictions.length; i++) { const diff = predictions[i]! - labels[i]!; sum += diff * diff }
+    for (let i = 0; i < predictions.length; i++) {
+      const diff = predictions[i]! - labels[i]!
+      sum += diff * diff
+    }
     return sum / predictions.length
   }
 
@@ -97,7 +108,14 @@ export class ConfidenceCalibrator {
     outputs: { confidence: number[]; difficulty: number[] },
     features: StreamFeatures,
     labels: { correctness: number[]; difficulty: number[] },
-  ): { total: number; semantic: number; confidence: number; difficulty: number; calibration: number; regularization: number } {
+  ): {
+    total: number
+    semantic: number
+    confidence: number
+    difficulty: number
+    calibration: number
+    regularization: number
+  } {
     const lw = this.config.lossWeights
 
     let semLoss = 0
@@ -106,37 +124,70 @@ export class ConfidenceCalibrator {
     if (maxLike > 0) {
       const normLikes = likes.map((l) => Math.abs(l) / maxLike)
       let semSum = 0
-      for (let i = 0; i < normLikes.length; i++) { const diff = outputs.confidence[i]! - normLikes[i]!; semSum += diff * diff }
+      for (let i = 0; i < normLikes.length; i++) {
+        const diff = outputs.confidence[i]! - normLikes[i]!
+        semSum += diff * diff
+      }
       semLoss = semSum / normLikes.length
     }
 
     let confLoss = 0
-    for (let i = 0; i < outputs.confidence.length; i++) { const diff = outputs.confidence[i]! - labels.correctness[i]!; confLoss += diff * diff }
+    for (let i = 0; i < outputs.confidence.length; i++) {
+      const diff = outputs.confidence[i]! - labels.correctness[i]!
+      confLoss += diff * diff
+    }
     confLoss /= outputs.confidence.length
 
     let diffLoss = 0
-    for (let i = 0; i < outputs.difficulty.length; i++) { const d = outputs.difficulty[i]! - labels.difficulty[i]!; diffLoss += d * d }
+    for (let i = 0; i < outputs.difficulty.length; i++) {
+      const d = outputs.difficulty[i]! - labels.difficulty[i]!
+      diffLoss += d * d
+    }
     diffLoss /= Math.max(1, outputs.difficulty.length)
 
-    const calLoss = this.computeECE(outputs.confidence, labels.correctness.map((c) => (c >= 0.5 ? 1 : 0)), labels.correctness).ece
+    const calLoss = this.computeECE(
+      outputs.confidence,
+      labels.correctness.map((c) => (c >= 0.5 ? 1 : 0)),
+      labels.correctness,
+    ).ece
 
     let regLoss = 0
     const allWeights = [
-      this.metacog["semanticProj"], this.metacog["attnProj"], this.metacog["likelProj"],
-      this.metacog["fusionProj"], this.metacog["confidenceHead"], this.metacog["difficultyHead"],
+      this.metacog.semanticProj,
+      this.metacog.attnProj,
+      this.metacog.likelProj,
+      this.metacog.fusionProj,
+      this.metacog.confidenceHead,
+      this.metacog.difficultyHead,
     ]
     for (const w of allWeights) regLoss += matrixL2Norm(w)
-    for (const layer of this.metacog["layers"]) {
+    for (const layer of this.metacog.layers) {
       const attn = layer.attn
-      regLoss += matrixL2Norm(attn["wQ"]) + matrixL2Norm(attn["wK"]) + matrixL2Norm(attn["wV"]) + matrixL2Norm(attn["wO"])
-      regLoss += matrixL2Norm(layer["w1"]) + matrixL2Norm(layer["w2"])
+      regLoss += matrixL2Norm(attn.wQ) + matrixL2Norm(attn.wK) + matrixL2Norm(attn.wV) + matrixL2Norm(attn.wO)
+      regLoss += matrixL2Norm(layer.w1) + matrixL2Norm(layer.w2)
     }
 
-    const total = lw.semantic * semLoss + lw.confidence * confLoss + lw.difficulty * diffLoss + lw.calibration * calLoss + lw.regularization * regLoss
-    return { total, semantic: semLoss, confidence: confLoss, difficulty: diffLoss, calibration: calLoss, regularization: regLoss }
+    const total =
+      lw.semantic * semLoss +
+      lw.confidence * confLoss +
+      lw.difficulty * diffLoss +
+      lw.calibration * calLoss +
+      lw.regularization * regLoss
+    return {
+      total,
+      semantic: semLoss,
+      confidence: confLoss,
+      difficulty: diffLoss,
+      calibration: calLoss,
+      regularization: regLoss,
+    }
   }
 
-  trainStep(features: StreamFeatures, labels: { correctness: number[]; difficulty: number[] }, learningRate: number): number {
+  trainStep(
+    features: StreamFeatures,
+    labels: { correctness: number[]; difficulty: number[] },
+    learningRate: number,
+  ): number {
     const outputs = this.metacog.forward(features)
     const loss = this.computeLoss(outputs, features, labels)
     const lr = learningRate
@@ -144,22 +195,26 @@ export class ConfidenceCalibrator {
     const updateMatrix = (W: number[][], gradScale: number) => {
       const noise = randomMatrix(W.length, W[0]!.length, 0.01)
       for (let i = 0; i < W.length; i++) {
-        const rowW = W[i]!; const rowN = noise[i]!
+        const rowW = W[i]!
+        const rowN = noise[i]!
         for (let j = 0; j < rowW.length; j++) rowW[j] -= lr * gradScale * rowN[j]! * loss.total + lr * 0.0001 * rowW[j]!
       }
     }
 
-    updateMatrix(this.metacog["confidenceHead"], 2.0)
-    updateMatrix(this.metacog["difficultyHead"], 2.0)
-    updateMatrix(this.metacog["semanticProj"], 0.5)
-    updateMatrix(this.metacog["attnProj"], 0.5)
-    updateMatrix(this.metacog["likelProj"], 0.5)
-    updateMatrix(this.metacog["fusionProj"], 0.5)
+    updateMatrix(this.metacog.confidenceHead, 2.0)
+    updateMatrix(this.metacog.difficultyHead, 2.0)
+    updateMatrix(this.metacog.semanticProj, 0.5)
+    updateMatrix(this.metacog.attnProj, 0.5)
+    updateMatrix(this.metacog.likelProj, 0.5)
+    updateMatrix(this.metacog.fusionProj, 0.5)
 
-    for (const layer of this.metacog["layers"]) {
-      updateMatrix(layer.attn["wQ"], 1.0); updateMatrix(layer.attn["wK"], 1.0)
-      updateMatrix(layer.attn["wV"], 1.0); updateMatrix(layer.attn["wO"], 1.0)
-      updateMatrix(layer["w1"], 1.0); updateMatrix(layer["w2"], 1.0)
+    for (const layer of this.metacog.layers) {
+      updateMatrix(layer.attn.wQ, 1.0)
+      updateMatrix(layer.attn.wK, 1.0)
+      updateMatrix(layer.attn.wV, 1.0)
+      updateMatrix(layer.attn.wO, 1.0)
+      updateMatrix(layer.w1, 1.0)
+      updateMatrix(layer.w2, 1.0)
     }
 
     return loss.total
@@ -167,19 +222,32 @@ export class ConfidenceCalibrator {
 
   train(
     batches: Array<{ features: StreamFeatures; labels: { correctness: number[]; difficulty: number[] } }>,
-    numEpochs: number = 10,
-    learningRate: number = 0.01,
+    numEpochs = 10,
+    learningRate = 0.01,
     onEpoch?: (epoch: number, totalLoss: number) => void,
   ): TrainingHistory {
-    this.history = { epochs: [], losses: [], semanticLosses: [], confidenceLosses: [], calibrationErrors: [], finalLoss: 0 }
+    this.history = {
+      epochs: [],
+      losses: [],
+      semanticLosses: [],
+      confidenceLosses: [],
+      calibrationErrors: [],
+      finalLoss: 0,
+    }
     let finalLoss = 0
 
     for (let epoch = 0; epoch < numEpochs; epoch++) {
-      let epochLoss = 0, epochSem = 0, epochConf = 0, epochCal = 0
+      let epochLoss = 0
+      let epochSem = 0
+      let epochConf = 0
+      let epochCal = 0
       for (const batch of batches) {
         const outputs = this.metacog.forward(batch.features)
         const loss = this.computeLoss(outputs, batch.features, batch.labels)
-        epochLoss += loss.total; epochSem += loss.semantic; epochConf += loss.confidence; epochCal += loss.calibration
+        epochLoss += loss.total
+        epochSem += loss.semantic
+        epochConf += loss.confidence
+        epochCal += loss.calibration
         this.trainStep(batch.features, batch.labels, learningRate)
       }
       const avgLoss = epochLoss / batches.length
@@ -198,18 +266,37 @@ export class ConfidenceCalibrator {
   }
 
   reset(): void {
-    const baseHiddenSize = this.metacog["semanticProj"].length
-    this.metacog["semanticProj"] = randomMatrix(baseHiddenSize, this.config.hiddenDim)
-    this.metacog["attnProj"] = randomMatrix(1, this.config.hiddenDim)
-    this.metacog["likelProj"] = randomMatrix(1, this.config.hiddenDim)
-    this.metacog["fusionProj"] = randomMatrix(this.config.hiddenDim, this.config.hiddenDim)
-    this.metacog["confidenceHead"] = randomMatrix(this.config.hiddenDim, 1)
-    this.metacog["difficultyHead"] = randomMatrix(this.config.hiddenDim, 1)
+    const baseHiddenSize = this.metacog.semanticProj.length
+    this.metacog.semanticProj = randomMatrix(baseHiddenSize, this.config.hiddenDim)
+    this.metacog.attnProj = randomMatrix(1, this.config.hiddenDim)
+    this.metacog.likelProj = randomMatrix(1, this.config.hiddenDim)
+    this.metacog.fusionProj = randomMatrix(this.config.hiddenDim, this.config.hiddenDim)
+    this.metacog.confidenceHead = randomMatrix(this.config.hiddenDim, 1)
+    this.metacog.difficultyHead = randomMatrix(this.config.hiddenDim, 1)
     this.calibrated = false
-    this.history = { epochs: [], losses: [], semanticLosses: [], confidenceLosses: [], calibrationErrors: [], finalLoss: 0 }
+    this.history = {
+      epochs: [],
+      losses: [],
+      semanticLosses: [],
+      confidenceLosses: [],
+      calibrationErrors: [],
+      finalLoss: 0,
+    }
   }
 
   getStatistics(): { calibrated: boolean; epochs: number; finalLoss: number } {
     return { calibrated: this.calibrated, epochs: this.history.epochs.length, finalLoss: this.history.finalLoss }
   }
+}
+
+/**
+ * Create a {@link ConfidenceCalibrator} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link ConfidenceCalibrator}.
+ * @returns A new {@link ConfidenceCalibrator}.
+ */
+export function createConfidenceCalibrator(
+  ...args: ConstructorParameters<typeof ConfidenceCalibrator>
+): ConfidenceCalibrator {
+  return new ConfidenceCalibrator(...args)
 }

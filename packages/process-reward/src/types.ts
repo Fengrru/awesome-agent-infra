@@ -61,15 +61,21 @@ export interface LogicHeuristicOptions {
 }
 
 export const DEFAULT_MATH_OPTIONS: MathHeuristicOptions = {
-  equationWeight: 0.1, coherenceWeight: 0.15, errorPenalty: 0.3,
+  equationWeight: 0.1,
+  coherenceWeight: 0.15,
+  errorPenalty: 0.3,
 }
 
 export const DEFAULT_CODE_OPTIONS: CodeHeuristicOptions = {
-  patternWeight: 0.15, syntaxPenalty: 0.4, indentWeight: 0.05,
+  patternWeight: 0.15,
+  syntaxPenalty: 0.4,
+  indentWeight: 0.05,
 }
 
 export const DEFAULT_LOGIC_OPTIONS: LogicHeuristicOptions = {
-  premiseWeight: 0.1, conclusionWeight: 0.1, contradictionPenalty: 0.3,
+  premiseWeight: 0.1,
+  conclusionWeight: 0.1,
+  contradictionPenalty: 0.3,
 }
 
 /** Generate completions from a given reasoning state. */
@@ -97,8 +103,12 @@ export interface TrainingConfig {
 }
 
 export const DEFAULT_TRAINING_CONFIG: TrainingConfig = {
-  numEpochs: 3, batchSize: 8, learningRate: 2e-5,
-  earlyStopPatience: 0, warmupSteps: 0, lrSchedule: "constant",
+  numEpochs: 3,
+  batchSize: 8,
+  learningRate: 2e-5,
+  earlyStopPatience: 0,
+  warmupSteps: 0,
+  lrSchedule: "constant",
 }
 
 /** Classification of a single reasoning step. */

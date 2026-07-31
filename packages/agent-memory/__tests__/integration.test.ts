@@ -6,11 +6,11 @@
  * for the 4-tier memory system.
  */
 
-import { describe, test, expect, beforeEach } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 
 // agent-memory
 import { MemorySystem } from "../src/index"
-import type { LongTermMemory, CoreRule, WorkingMemory } from "../src/index"
+import type { CoreRule, LongTermMemory, WorkingMemory } from "../src/index"
 
 // engine-db (cross-package import)
 import { EngineDatabase, MemoryBackend } from "../../engine-db/src/index"

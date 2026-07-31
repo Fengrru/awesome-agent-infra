@@ -236,10 +236,6 @@
         "@fengru/internal-tfidf": "workspace:*",
       },
     },
-    "packages/metacog-calibrator": {
-      "name": "@fengru/metacog-calibrator",
-      "version": "0.1.0",
-    },
     "packages/notes-manager": {
       "name": "@fengru/notes-manager",
       "version": "0.1.0",
@@ -447,8 +443,6 @@
     "@fengru/max-mode-sampler": ["@fengru/max-mode-sampler@workspace:packages/max-mode-sampler"],
 
     "@fengru/memory-engine-v2": ["@fengru/memory-engine-v2@workspace:packages/memory-engine-v2"],
-
-    "@fengru/metacog-calibrator": ["@fengru/metacog-calibrator@workspace:packages/metacog-calibrator"],
 
     "@fengru/notes-manager": ["@fengru/notes-manager@workspace:packages/notes-manager"],
 

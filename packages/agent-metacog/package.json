@@ -1,7 +1,7 @@
 {
   "name": "@fengru/agent-metacog",
   "version": "0.1.0",
-  "description": "Agent metacognitive monitoring — knowledge boundary detection, Ebbinghaus forgetting alerts, consolidation triggers, and self-reflection",
+  "description": "Agent metacognitive monitoring and calibration — knowledge boundary detection, Ebbinghaus forgetting alerts, consolidation triggers, self-reflection, and 3-stream transformer confidence calibration (ECE + Brier)",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,6 +20,8 @@
     "ebbinghaus",
     "memory-consolidation",
     "self-reflection",
+    "confidence-calibration",
+    "ece",
     "ai-agent"
   ],
   "license": "MIT",

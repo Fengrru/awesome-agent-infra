@@ -1,15 +1,8 @@
 import { describe, expect, test } from "bun:test"
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import {
-  SkillManager,
-  SkillSystem,
-  HookPoints,
-  DAG_GENERATION_PROMPT,
-  type AgentSkill,
-  type Skill,
-} from "../src/index"
+import { type AgentSkill, DAG_GENERATION_PROMPT, HookPoints, type Skill, SkillManager, SkillSystem } from "../src/index"
 
 function makeSkill(id: string, trigger: string, priority = 5): Skill {
   return {
@@ -40,7 +33,11 @@ function makeAgentSkill(name: string, overrides?: Partial<AgentSkill>): AgentSki
 }
 
 async function withTempManager(
-  fn: (manager: SkillManager, system: SkillSystem, dirs: { projectSkillDir: string; userSkillDir: string }) => Promise<void>,
+  fn: (
+    manager: SkillManager,
+    system: SkillSystem,
+    dirs: { projectSkillDir: string; userSkillDir: string },
+  ) => Promise<void>,
 ): Promise<void> {
   const base = await mkdtemp(join(tmpdir(), "skillforge-test-"))
   const projectSkillDir = join(base, "project-skills")
@@ -75,9 +72,7 @@ describe("SkillSystem — legacy skills", () => {
   test("buildPromptInjection concatenates matched templates, empty when none", () => {
     const sys = new SkillSystem()
     sys.registerSkill(makeSkill("s1", "test"))
-    expect(sys.buildPromptInjection("run the test suite")).toBe(
-      "[Skill: s1] template for s1",
-    )
+    expect(sys.buildPromptInjection("run the test suite")).toBe("[Skill: s1] template for s1")
     expect(sys.buildPromptInjection("unrelated")).toBe("")
   })
 
@@ -95,9 +90,15 @@ describe("SkillSystem — hooks", () => {
   test("triggerHook runs handlers in order and isolates failures", async () => {
     const sys = new SkillSystem()
     const seen: string[] = []
-    sys.onHook(HookPoints.SESSION_INIT, async () => { seen.push("first") })
-    sys.onHook(HookPoints.SESSION_INIT, async () => { throw new Error("boom") })
-    sys.onHook(HookPoints.SESSION_INIT, async (ctx) => { seen.push(`third:${ctx.id}`) })
+    sys.onHook(HookPoints.SESSION_INIT, async () => {
+      seen.push("first")
+    })
+    sys.onHook(HookPoints.SESSION_INIT, async () => {
+      throw new Error("boom")
+    })
+    sys.onHook(HookPoints.SESSION_INIT, async (ctx) => {
+      seen.push(`third:${ctx.id}`)
+    })
 
     await sys.triggerHook(HookPoints.SESSION_INIT, { id: 7 })
     expect(seen).toEqual(["first", "third:7"])
@@ -138,7 +139,12 @@ describe("SkillSystem — agent skills", () => {
     sys.registerAgentSkill(makeAgentSkill("git-flow", { description: "branching model" }))
     sys.registerAgentSkill(makeAgentSkill("deploy", { tags: ["release", "GIT"] }))
 
-    expect(sys.searchAgentSkills("git").map((s) => s.name).sort()).toEqual(["deploy", "git-flow"])
+    expect(
+      sys
+        .searchAgentSkills("git")
+        .map((s) => s.name)
+        .sort(),
+    ).toEqual(["deploy", "git-flow"])
     expect(sys.searchAgentSkills("branching").map((s) => s.name)).toEqual(["git-flow"])
     expect(sys.searchAgentSkills("nothing")).toEqual([])
   })
@@ -157,7 +163,11 @@ describe("SkillSystem — agent skills", () => {
     sys.registerAgentSkill(makeAgentSkill("doc"))
     expect(await sys.loadFullSkill("doc", async () => "file body")).toBe("file body")
     expect(await sys.loadFullSkill("doc")).toContain("[Skill: doc]")
-    expect(await sys.loadFullSkill("doc", async () => { throw new Error("io") })).toBe("")
+    expect(
+      await sys.loadFullSkill("doc", async () => {
+        throw new Error("io")
+      }),
+    ).toBe("")
     expect(await sys.loadFullSkill("missing")).toBe("")
   })
 })
@@ -166,7 +176,7 @@ describe("SkillManager — init and create", () => {
   test("init creates skill dirs plus .archive", async () => {
     await withTempManager(async (manager, _sys, dirs) => {
       await manager.init()
-      expect((await readdir(dirs.projectSkillDir))).toContain(".archive")
+      expect(await readdir(dirs.projectSkillDir)).toContain(".archive")
       expect(await readdir(dirs.userSkillDir)).toEqual([])
     })
   })

@@ -168,11 +168,7 @@ function generateUUID(): string {
 
 // ─── Three-Way Merge ────────────────────────────────────────────────────────
 
-export function threeWayMerge(
-  base: string,
-  ours: string,
-  theirs: string,
-): MergeResult {
+export function threeWayMerge(base: string, ours: string, theirs: string): MergeResult {
   if (ours === theirs) return { content: ours, hasConflicts: false, markers: [] }
   if (theirs === base) return { content: ours, hasConflicts: false, markers: [] }
   if (ours === base) return { content: theirs, hasConflicts: false, markers: [] }
@@ -227,8 +223,14 @@ export function threeWayMerge(
       continue
     }
 
-    if (o.removed && !t.removed && !t.added) { oi++; continue }
-    if (t.removed && !o.removed && !o.added) { ti++; continue }
+    if (o.removed && !t.removed && !t.added) {
+      oi++
+      continue
+    }
+    if (t.removed && !o.removed && !o.added) {
+      ti++
+      continue
+    }
 
     // Conflict: both sides modified the same region
     hasConflicts = true
@@ -362,7 +364,7 @@ export class GitTransactionManager {
     this.activeTransaction = null
   }
 
-  private handleConflict(tx: FileTransaction, file: string, currentHash: string): CommitResult {
+  private handleConflict(tx: FileTransaction, file: string, _currentHash: string): CommitResult {
     tx.status = "conflict"
     return {
       status: "CONFLICT",
@@ -372,11 +374,7 @@ export class GitTransactionManager {
     }
   }
 
-  merge(
-    base: string,
-    ours: string,
-    theirs: string,
-  ): MergeResult {
+  merge(base: string, ours: string, theirs: string): MergeResult {
     return threeWayMerge(base, ours, theirs)
   }
 
@@ -536,7 +534,6 @@ export class RealGitTransactionManager {
   }
 
   async rollback(tx: FileTransaction): Promise<void> {
-    const baseFiles = tx.baselineHash
     for (const file of tx.affectedFiles) {
       const baseContent = this.staging.get(file)
       if (baseContent) {
@@ -563,15 +560,35 @@ export class RealGitTransactionManager {
     }
   }
 
-  merge(
-    base: string,
-    ours: string,
-    theirs: string,
-  ): MergeResult {
+  merge(base: string, ours: string, theirs: string): MergeResult {
     return threeWayMerge(base, ours, theirs)
   }
 
   getActiveTransaction(): FileTransaction | null {
     return this.activeTransaction
   }
+}
+
+/**
+ * Create a {@link GitTransactionManager} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link GitTransactionManager}.
+ * @returns A new {@link GitTransactionManager}.
+ */
+export function createGitTransactionManager(
+  ...args: ConstructorParameters<typeof GitTransactionManager>
+): GitTransactionManager {
+  return new GitTransactionManager(...args)
+}
+
+/**
+ * Create a {@link RealGitTransactionManager} instance.
+ *
+ * @param args - Constructor arguments forwarded to {@link RealGitTransactionManager}.
+ * @returns A new {@link RealGitTransactionManager}.
+ */
+export function createRealGitTransactionManager(
+  ...args: ConstructorParameters<typeof RealGitTransactionManager>
+): RealGitTransactionManager {
+  return new RealGitTransactionManager(...args)
 }

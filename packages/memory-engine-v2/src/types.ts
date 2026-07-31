@@ -154,10 +154,10 @@ export const DEFAULT_META_MEMORY_CONFIG: MetaMemoryConfig = {
 }
 
 export const DEFAULT_ATTENTION_CONFIG: AttentionConfig = {
-  importanceWeight: 0.30,
-  recencyWeight: 0.20,
-  relevanceWeight: 0.40,
-  emotionWeight: 0.10,
+  importanceWeight: 0.3,
+  recencyWeight: 0.2,
+  relevanceWeight: 0.4,
+  emotionWeight: 0.1,
   recencyDecayHours: 24,
   minAttentionThreshold: 0.1,
 }
@@ -179,7 +179,7 @@ export function clamp(value: number, min: number, max: number): number {
 export function createMemoryItem(
   content: unknown,
   memoryType: MemoryType,
-  overrides?: Partial<Omit<MemoryItem, "id" | "content" | "memoryType" | "timestamp" | "accessCount" | "lastAccessed">>
+  overrides?: Partial<Omit<MemoryItem, "id" | "content" | "memoryType" | "timestamp" | "accessCount" | "lastAccessed">>,
 ): MemoryItem {
   const now = Date.now()
   return {

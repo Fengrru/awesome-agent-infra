@@ -11,7 +11,9 @@ async function main() {
 
     console.log("\n==================================")
     console.log(`Result: ${result.overall.toUpperCase()}`)
-    console.log(`Steps: ${result.steps.length} total, ${result.steps.filter((s) => s.status === "pass").length} passed, ${result.steps.filter((s) => s.status === "fail").length} failed`)
+    console.log(
+      `Steps: ${result.steps.length} total, ${result.steps.filter((s) => s.status === "pass").length} passed, ${result.steps.filter((s) => s.status === "fail").length} failed`,
+    )
     console.log(`State transitions: ${result.snapshot.transitionCount}`)
 
     if (result.overall === "failure") {

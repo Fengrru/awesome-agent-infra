@@ -1,4 +1,4 @@
-export { CycleController } from "./cycle-controller"
+export { CycleController, createCycleController } from "./cycle-controller"
 export {
   CycleActionType,
   DEFAULT_CYCLE_CONFIG,

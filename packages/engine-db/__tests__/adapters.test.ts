@@ -5,12 +5,8 @@
  * with EngineDatabase, verifying cross-package structural typing.
  */
 
-import { describe, test, expect } from "bun:test"
-import {
-  EngineDatabase,
-  MemoryBackend,
-  EventArchiveBackend,
-} from "../src/index"
+import { describe, expect, test } from "bun:test"
+import { EngineDatabase, EventArchiveBackend, MemoryBackend } from "../src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -43,7 +39,6 @@ function createMockDB() {
 // ── MemoryBackend ──────────────────────────────────────────────────────
 
 describe("MemoryBackend (engine-db × agent-memory)", () => {
-
   test("constructs wrapping EngineDatabase", () => {
     const db = new EngineDatabase()
     // Set up mock to avoid missing table errors
@@ -132,7 +127,6 @@ describe("MemoryBackend (engine-db × agent-memory)", () => {
 // ── EventArchiveBackend ────────────────────────────────────────────────
 
 describe("EventArchiveBackend (engine-db × archiver/dreamdistill)", () => {
-
   test("constructs wrapping EngineDatabase", () => {
     const db = new EngineDatabase()
     db.setDatabase(createMockDB())
