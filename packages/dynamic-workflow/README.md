@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/dynamic-workflow)](https://www.npmjs.com/package/@fengru/dynamic-workflow) [![npm downloads](https://img.shields.io/npm/dm/@fengru/dynamic-workflow)](https://www.npmjs.com/package/@fengru/dynamic-workflow) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 VM-sandboxed workflow engine for AI agent execution.
 

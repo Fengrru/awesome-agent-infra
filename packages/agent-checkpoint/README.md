@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/agent-checkpoint)](https://www.npmjs.com/package/@fengru/agent-checkpoint) [![npm downloads](https://img.shields.io/npm/dm/@fengru/agent-checkpoint)](https://www.npmjs.com/package/@fengru/agent-checkpoint) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 3-level checkpoint system (L1/L2/L3) for agent state persistence.
 

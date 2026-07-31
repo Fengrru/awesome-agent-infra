@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/agent-metacog)](https://www.npmjs.com/package/@fengru/agent-metacog) [![npm downloads](https://img.shields.io/npm/dm/@fengru/agent-metacog)](https://www.npmjs.com/package/@fengru/agent-metacog) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Metacognitive monitoring and confidence calibration for AI agents. Tracks knowledge boundaries and forgetting, and fuses 3 information streams (semantic features, attention entropy, and token likelihoods) through a lightweight transformer to produce calibrated confidence scores.
 

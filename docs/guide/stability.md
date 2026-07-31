@@ -4,7 +4,7 @@
 
 ## 稳定性分级
 
-### 🟢 Stable — 破坏性变更仅限大版本
+### Stable — 破坏性变更仅限大版本
 
 | 包 | 关键 API |
 |----|----------|
@@ -19,19 +19,19 @@
 | `@fengru/archiver` | `EventArchiver`、`loadArchive`、`shouldArchive` |
 | `@fengru/worker` | `StatelessWorkerPool`、`TrueWorkerPool` |
 
-### 🟡 Evolving — 小版本可能调整
+### Evolving — 小版本可能调整
 
 `agent-memory`、`memory-engine-v2`、`codegraph`、`code-sandbox`、`taskdag`、`reasoning-search`、`goal-verifier`、`healix`、`replay`、`notes-manager`、`project-memory`、`branch`、`lifecycle-manager`、`agentic-search`
 
 这些包 API 在实践中稳定，但内部细节、构造签名或可选参数可能在小版本中变化。
 
-### 🔴 Experimental — 小版本可能破坏
+### Experimental — 小版本可能破坏
 
 `dreamdistill`、`process-reward`、`agent-metacog`、`hallucination-detector`、`confidence-gate`、`pomdp-planner`、`guardrail`、`max-mode-sampler`、`cycle-controller`、`agent-checkpoint`、`checkpoint-writer`、`llm-dag-generator`、`dynamic-workflow`、`skillforge`、`skill-curator`、`learning-nudge`
 
 活跃开发中的包。API 反馈欢迎，但 `0.x` 版本可能随时破坏。
 
-### ⚪ Internal — 勿直接使用
+### Internal — 勿直接使用
 
 `@fengru/internal-tfidf`：私有工作区包，不对外发布，仅被内部消费。
 

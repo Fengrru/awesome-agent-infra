@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/skill-curator)](https://www.npmjs.com/package/@fengru/skill-curator) [![npm downloads](https://img.shields.io/npm/dm/@fengru/skill-curator)](https://www.npmjs.com/package/@fengru/skill-curator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Automated skill library curation for AI agent skills.
 

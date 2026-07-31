@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/process-reward)](https://www.npmjs.com/package/@fengru/process-reward) [![npm downloads](https://img.shields.io/npm/dm/@fengru/process-reward)](https://www.npmjs.com/package/@fengru/process-reward) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Process Reward Model with MC rollout labeling for AI agent reasoning.
 

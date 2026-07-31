@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/learning-nudge)](https://www.npmjs.com/package/@fengru/learning-nudge) [![npm downloads](https://img.shields.io/npm/dm/@fengru/learning-nudge)](https://www.npmjs.com/package/@fengru/learning-nudge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Self-reflection trigger for continuous learning in AI agents.
 

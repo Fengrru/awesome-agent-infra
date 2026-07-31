@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/hallucination-detector)](https://www.npmjs.com/package/@fengru/hallucination-detector) [![npm downloads](https://img.shields.io/npm/dm/@fengru/hallucination-detector)](https://www.npmjs.com/package/@fengru/hallucination-detector) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Zero-dependency spectral clustering hallucination detection with self-consistency verification.
 

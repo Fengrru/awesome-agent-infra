@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/pomdp-planner)](https://www.npmjs.com/package/@fengru/pomdp-planner) [![npm downloads](https://img.shields.io/npm/dm/@fengru/pomdp-planner)](https://www.npmjs.com/package/@fengru/pomdp-planner) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Zero-dependency POMDP LLM planner with particle filter belief tracking and iterative rollout.
 

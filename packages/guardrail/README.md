@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengru/guardrail)](https://www.npmjs.com/package/@fengru/guardrail) [![npm downloads](https://img.shields.io/npm/dm/@fengru/guardrail)](https://www.npmjs.com/package/@fengru/guardrail) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Runtime safety guard with risk classification for AI agent operations.
 
