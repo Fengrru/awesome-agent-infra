@@ -92,6 +92,18 @@ Zero runtime dependencies. Plug into any framework.
 | [code-sandbox](./packages/code-sandbox) | Secure code execution sandbox with VerifierPool | `@fengru/code-sandbox` |
 | [memory-engine-v2](./packages/memory-engine-v2) | 5-layer memory engine with sleep consolidation + attention retrieval | `@fengru/memory-engine-v2` |
 
+## Stability
+
+Every package carries an explicit stability tier — see [STABILITY.md](STABILITY.md) for the full matrix and versioning policy.
+
+| Tier | Guarantee | Packages |
+|---|---|---|
+| 🟢 Stable | Strict semver; breaking changes only in majors | txn-fs, event-bus, state-machine, engine-db, embedding, fuzzy-patch, valid8, tracing, archiver, worker |
+| 🟡 Evolving | API stable in practice; minor versions may adjust details | agent-memory, memory-engine-v2, codegraph, code-sandbox, taskdag, reasoning-search, goal-verifier, healix, replay, notes-manager, project-memory, branch, lifecycle-manager, agentic-search |
+| 🔴 Experimental | No guarantees; minor versions may break | dreamdistill, process-reward, agent-metacog, hallucination-detector, confidence-gate, pomdp-planner, guardrail, max-mode-sampler, cycle-controller, agent-checkpoint, checkpoint-writer, llm-dag-generator, dynamic-workflow, skillforge, skill-curator, learning-nudge |
+
+Experimental packages are marked with a ⚠️ notice in their README. All packages follow [Changesets](https://github.com/changesets/changesets) for versioning.
+
 ## Quick Start
 
 ```bash

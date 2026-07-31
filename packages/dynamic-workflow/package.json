@@ -27,5 +27,9 @@
     "type": "git",
     "url": "https://github.com/Fengrru/awesome-agent-infra.git",
     "directory": "packages/dynamic-workflow"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

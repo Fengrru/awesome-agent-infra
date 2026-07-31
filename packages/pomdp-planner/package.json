@@ -19,5 +19,14 @@
     "prepublishOnly": "bun run build"
   },
   "keywords": ["pomdp", "planner", "particle-filter", "llm", "ai-agent"],
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/pomdp-planner"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

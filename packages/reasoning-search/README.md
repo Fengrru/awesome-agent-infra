@@ -1,5 +1,7 @@
 # @fengru/reasoning-search
 
+[![npm version](https://img.shields.io/npm/v/@fengru/reasoning-search)](https://www.npmjs.com/package/@fengru/reasoning-search) [![npm downloads](https://img.shields.io/npm/dm/@fengru/reasoning-search)](https://www.npmjs.com/package/@fengru/reasoning-search) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 MCTS tree search reasoning engine for AI agents.
 
 ## Install
@@ -43,6 +45,12 @@ console.log(result.score) // confidence score
 - **Adaptive floor**: decreases with depth
 - **Completion detection**: math/code/logic patterns
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/reasoning-search)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

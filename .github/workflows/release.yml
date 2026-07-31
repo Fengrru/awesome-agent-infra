@@ -35,8 +35,14 @@ jobs:
       - name: TypeCheck
         run: bun turbo typecheck
 
+      - name: Lint (strict)
+        run: bun run lint
+
       - name: Test
         run: bun turbo test
+
+      - name: Integration Tests
+        run: bun turbo integration
 
       - name: Build
         run: bun turbo build
@@ -80,6 +86,8 @@ jobs:
         uses: changesets/action@v1
         with:
           version: bun changeset version
+          # provenance is enabled per-package via publishConfig.provenance: true
+          # (npm attaches a Sigstore attestation using the OIDC id-token above)
           publish: bun changeset publish
           commit: "chore: version packages"
           title: "chore: version packages"

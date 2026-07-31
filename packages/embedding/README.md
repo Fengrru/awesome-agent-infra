@@ -1,5 +1,7 @@
 # @fengru/embedding
 
+[![npm version](https://img.shields.io/npm/v/@fengru/embedding)](https://www.npmjs.com/package/@fengru/embedding) [![npm downloads](https://img.shields.io/npm/dm/@fengru/embedding)](https://www.npmjs.com/package/@fengru/embedding) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 TF-IDF vector indexing and hybrid search for code intelligence.
 
 ## Quick Start

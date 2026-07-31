@@ -1,5 +1,7 @@
 # @fengru/agentic-search
 
+[![npm version](https://img.shields.io/npm/v/@fengru/agentic-search)](https://www.npmjs.com/package/@fengru/agentic-search) [![npm downloads](https://img.shields.io/npm/dm/@fengru/agentic-search)](https://www.npmjs.com/package/@fengru/agentic-search) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 4-layer intent-driven search orchestrator for AI agents.
 
 ## Install
@@ -45,6 +47,12 @@ console.log(result.confidence) // 0-1
 3. **Execution**: 3 search tools (code_symbol, code_graph, semantic)
 4. **Fusion**: Token budget truncation + confidence scoring
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agentic-search)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

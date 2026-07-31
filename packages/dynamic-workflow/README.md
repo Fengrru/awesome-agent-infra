@@ -1,5 +1,9 @@
 # @fengru/dynamic-workflow
 
+[![npm version](https://img.shields.io/npm/v/@fengru/dynamic-workflow)](https://www.npmjs.com/package/@fengru/dynamic-workflow) [![npm downloads](https://img.shields.io/npm/dm/@fengru/dynamic-workflow)](https://www.npmjs.com/package/@fengru/dynamic-workflow) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 VM-sandboxed workflow engine for AI agent execution.
 
 ## Install
@@ -47,6 +51,12 @@ const result = await engine.execute("process-data", { input: "data.csv" })
 - **Nesting depth**: max 5 levels
 - **State persistence**: resume after failure
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/dynamic-workflow)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

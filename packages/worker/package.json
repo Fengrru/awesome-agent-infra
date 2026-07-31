@@ -19,5 +19,14 @@
     "prepublishOnly": "bun run build"
   },
   "keywords": ["worker-pool", "task-execution", "concurrency", "parallel", "ai-agent"],
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/worker"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

@@ -1,5 +1,7 @@
 # @fengru/engine-db
 
+[![npm version](https://img.shields.io/npm/v/@fengru/engine-db)](https://www.npmjs.com/package/@fengru/engine-db) [![npm downloads](https://img.shields.io/npm/dm/@fengru/engine-db)](https://www.npmjs.com/package/@fengru/engine-db) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Pluggable SQLite engine with 13 tables for agent state persistence.
 
 ## Install
@@ -48,6 +50,12 @@ const checkpoints = db.queryCheckpoints("s1")
 - **Auto-increment**: sequence_index per session
 - **Session fork/branch**: experimental branching
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/engine-db)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

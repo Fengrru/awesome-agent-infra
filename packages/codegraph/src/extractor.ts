@@ -155,7 +155,7 @@ async function getParsers(deps?: ExtractorDependencies): Promise<LanguageParser[
 
 function parserForFile(parsers: LanguageParser[], filePath: string): LanguageParser | null {
   const ext = filePath.toLowerCase().replace(/.*\.(\w+)$/, ".$1")
-  return parsers.find((p) => p.filePatterns.includes(`.${ext}`)) ?? null
+  return parsers.find((p) => p.filePatterns.includes(ext)) ?? null
 }
 
 export async function extractFromFile(
@@ -491,6 +491,13 @@ function parseImport(node: TreeSitterNode, source: string, imports: Array<{ sour
           importedNames.push(getNodeText(spec, source))
         }
         if (spec.type === "namespace_import") importedNames.push("*")
+        // some grammars nest specifiers one level deeper inside named_imports
+        if (spec.type === "named_imports") {
+          for (let k = 0; k < spec.childCount; k++) {
+            const inner = spec.child(k)
+            if (inner && inner.type === "import_specifier") importedNames.push(getNodeText(inner, source))
+          }
+        }
       }
     }
   }
@@ -877,7 +884,7 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
     return lineOffsets[line - 1] ?? 0
   }
 
-  const funcRe = /^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm
+  const funcRe = /^[ \t]*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm
   for (const m of source.matchAll(funcRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
@@ -901,7 +908,7 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
     })
   }
 
-  const classRe = /^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/gm
+  const classRe = /^[ \t]*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/gm
   for (const m of source.matchAll(classRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
@@ -923,7 +930,7 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
     })
   }
 
-  const ifaceRe = /^\s*(?:export\s+)?interface\s+(\w+)/gm
+  const ifaceRe = /^[ \t]*(?:export\s+)?interface\s+(\w+)/gm
   for (const m of source.matchAll(ifaceRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
@@ -945,7 +952,29 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
     })
   }
 
-  const varRe = /^\s*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*(?::|=)/gm
+  const typeRe = /^[ \t]*(?:export\s+)?type\s+(\w+)/gm
+  for (const m of source.matchAll(typeRe)) {
+    const lineNum = source.slice(0, m.index).split("\n").length
+    const startB = byteAtLine(lineNum)
+    symbols.push({
+      id: makeSymbolId("type", m[1]),
+      type: "symbol",
+      symbolType: "type",
+      name: m[1],
+      filePath,
+      startLine: lineNum,
+      endLine: lineNum,
+      startByte: startB,
+      endByte: startB + m[0].length,
+      startToken: getTokenIndex(source, startB, filePath),
+      endToken: getTokenIndex(source, startB + m[0].length, filePath),
+      tokenizerName: tName,
+      metadata: { isExported: m[0].includes("export") },
+      mtime,
+    })
+  }
+
+  const varRe = /^[ \t]*(?:export\s+)?(?:const|let|var)\s+(\w+)\s*(?::|=)/gm
   for (const m of source.matchAll(varRe)) {
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)

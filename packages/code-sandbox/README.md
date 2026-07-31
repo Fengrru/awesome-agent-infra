@@ -1,5 +1,7 @@
 # @fengru/code-sandbox
 
+[![npm version](https://img.shields.io/npm/v/@fengru/code-sandbox)](https://www.npmjs.com/package/@fengru/code-sandbox) [![npm downloads](https://img.shields.io/npm/dm/@fengru/code-sandbox)](https://www.npmjs.com/package/@fengru/code-sandbox) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Secure code execution sandbox with math, code, and logic verification.
 
 Zero dependencies. Uses Node.js `child_process` for subprocess isolation.

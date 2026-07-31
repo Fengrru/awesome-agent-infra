@@ -1,5 +1,9 @@
 # @fengru/learning-nudge
 
+[![npm version](https://img.shields.io/npm/v/@fengru/learning-nudge)](https://www.npmjs.com/package/@fengru/learning-nudge) [![npm downloads](https://img.shields.io/npm/dm/@fengru/learning-nudge)](https://www.npmjs.com/package/@fengru/learning-nudge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 Self-reflection trigger for continuous learning in AI agents.
 
 ## Install
@@ -43,6 +47,12 @@ if (evaluation.shouldNudge) {
 - **Memory persistence**: high-confidence insights saved
 - **Non-blocking**: works in background
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/learning-nudge)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

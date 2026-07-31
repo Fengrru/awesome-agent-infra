@@ -1,5 +1,9 @@
 # @fengru/cycle-controller
 
+[![npm version](https://img.shields.io/npm/v/@fengru/cycle-controller)](https://www.npmjs.com/package/@fengru/cycle-controller) [![npm downloads](https://img.shields.io/npm/dm/@fengru/cycle-controller)](https://www.npmjs.com/package/@fengru/cycle-controller) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 Context window cycle manager for AI agents. Monitors token utilization and triggers checkpoints at thresholds (20%, 45%, 70%) and context rebuild at 90%.
 
 ## Quick Start

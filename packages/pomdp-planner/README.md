@@ -1,5 +1,9 @@
 # @fengru/pomdp-planner
 
+[![npm version](https://img.shields.io/npm/v/@fengru/pomdp-planner)](https://www.npmjs.com/package/@fengru/pomdp-planner) [![npm downloads](https://img.shields.io/npm/dm/@fengru/pomdp-planner)](https://www.npmjs.com/package/@fengru/pomdp-planner) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 Zero-dependency POMDP LLM planner with particle filter belief tracking and iterative rollout.
 
 ## Quick Start
@@ -54,6 +58,12 @@ console.log(result.converged, result.steps.length, result.totalCost)
 | maxPlanSteps        | 20      | Max steps in plan                  |
 | temperature         | 0.5     | Q-value softmax temperature        |
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/pomdp-planner)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

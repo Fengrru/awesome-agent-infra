@@ -1,5 +1,7 @@
 # @fengru/memory-engine-v2
 
+[![npm version](https://img.shields.io/npm/v/@fengru/memory-engine-v2)](https://www.npmjs.com/package/@fengru/memory-engine-v2) [![npm downloads](https://img.shields.io/npm/dm/@fengru/memory-engine-v2)](https://www.npmjs.com/package/@fengru/memory-engine-v2) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Zero-dependency 5-layer memory engine with sleep consolidation, meta-memory, and attention retrieval for AI agents.
 
 ## Quick Start
@@ -70,6 +72,12 @@ Multi-factor attention-based retrieval using:
 - **Relevance** (40%): TF-IDF cosine similarity
 - **Emotion** (10%): Emotional salience
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/memory-engine-v2)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

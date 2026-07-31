@@ -31,5 +31,14 @@
   },
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/confidence-gate"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

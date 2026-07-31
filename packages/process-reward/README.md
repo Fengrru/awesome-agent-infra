@@ -1,5 +1,9 @@
 # @fengru/process-reward
 
+[![npm version](https://img.shields.io/npm/v/@fengru/process-reward)](https://www.npmjs.com/package/@fengru/process-reward) [![npm downloads](https://img.shields.io/npm/dm/@fengru/process-reward)](https://www.npmjs.com/package/@fengru/process-reward) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 Process Reward Model with MC rollout labeling for AI agent reasoning.
 
 ## Install
@@ -47,6 +51,12 @@ const labels = prm.labelSteps(steps, { outcome: "correct" })
 - **Cross-step coherence**: boosts consistent reasoning
 - **Custom scorers**: register domain-specific evaluators
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/process-reward)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

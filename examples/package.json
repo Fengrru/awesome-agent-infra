@@ -1,0 +1,19 @@
+{
+  "name": "agent-kit-examples",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fuzzy-patch": "bun run fuzzy-patch.ts",
+    "event-bus": "bun run event-bus.ts",
+    "state-machine": "bun run state-machine.ts",
+    "agent-memory": "bun run agent-memory.ts",
+    "confidence-gate": "bun run confidence-gate.ts",
+    "codegraph": "bun run codegraph.ts",
+    "txn-fs": "bun run txn-fs.ts",
+    "valid8": "bun run valid8.ts",
+    "worker": "bun run worker.ts",
+    "tracing": "bun run tracing.ts",
+    "taskdag": "bun run taskdag.ts",
+    "guardrail": "bun run guardrail.ts"
+  }
+}

@@ -22,11 +22,22 @@
     "web-tree-sitter": ">=0.24"
   },
   "peerDependenciesMeta": {
-    "web-tree-sitter": { "optional": true }
+    "web-tree-sitter": {
+      "optional": true
+    }
   },
   "keywords": ["code-graph", "pagerank", "symbol-search", "ego-graph", "code-analysis"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/codegraph"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

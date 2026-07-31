@@ -27,5 +27,9 @@
     "type": "git",
     "url": "https://github.com/Fengrru/awesome-agent-infra.git",
     "directory": "packages/engine-db"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

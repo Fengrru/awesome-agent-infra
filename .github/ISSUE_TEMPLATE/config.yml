@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Qoder Community
+    url: https://github.com/fengru/awesome-agent-infra/discussions
+    about: Questions, design discussions and usage help
+  - name: Security issues
+    url: https://github.com/fengru/awesome-agent-infra/security/policy
+    about: Please report security vulnerabilities here instead of opening a public issue

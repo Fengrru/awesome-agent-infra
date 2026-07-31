@@ -1,5 +1,7 @@
 # @fengru/notes-manager
 
+[![npm version](https://img.shields.io/npm/v/@fengru/notes-manager)](https://www.npmjs.com/package/@fengru/notes-manager) [![npm downloads](https://img.shields.io/npm/dm/@fengru/notes-manager)](https://www.npmjs.com/package/@fengru/notes-manager) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Session scratchpad manager for AI agents. Stores notes as JSONL files with full Node.js `fs/promises` support and automatic in-memory fallback.
 
 ## Quick Start
@@ -75,6 +77,12 @@ Notes are stored as [JSONL](https://jsonlines.org/) — one JSON object per line
 
 When `node:fs/promises` is unavailable (browser, restricted runtimes), `NotesManager` automatically falls back to an in-memory store. All methods continue to work identically — data is simply not persisted to disk.
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/notes-manager)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

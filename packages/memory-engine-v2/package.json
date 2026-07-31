@@ -22,5 +22,14 @@
     "@fengru/internal-tfidf": "workspace:*"
   },
   "keywords": ["memory", "memory-engine", "ai-agent", "sleep-consolidation", "meta-memory", "attention-retrieval"],
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/memory-engine-v2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

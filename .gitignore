@@ -7,5 +7,10 @@ dist/
 .env.local
 *.log
 coverage/
-docs/api/
+.coverage/
+docs/public/api/
 docs/api.json
+# VitePress site
+/docs/node_modules/
+/docs/.vitepress/dist/
+/docs/.vitepress/cache/

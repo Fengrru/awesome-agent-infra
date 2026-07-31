@@ -1,5 +1,7 @@
 # @fengru/taskdag
 
+[![npm version](https://img.shields.io/npm/v/@fengru/taskdag)](https://www.npmjs.com/package/@fengru/taskdag) [![npm downloads](https://img.shields.io/npm/dm/@fengru/taskdag)](https://www.npmjs.com/package/@fengru/taskdag) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 DAG execution engine with incremental replanning for AI agent task orchestration.
 
 ## Install
@@ -43,6 +45,12 @@ const newDag = replaceSubtree(repaired, "a", replacementNodes, replacementEdges)
 - **Cost estimation**: sum tokens and duration
 - **Immutable operations**: original DAG unchanged
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/taskdag)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

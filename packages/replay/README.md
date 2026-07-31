@@ -1,5 +1,7 @@
 # @fengru/replay
 
+[![npm version](https://img.shields.io/npm/v/@fengru/replay)](https://www.npmjs.com/package/@fengru/replay) [![npm downloads](https://img.shields.io/npm/dm/@fengru/replay)](https://www.npmjs.com/package/@fengru/replay) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Session event replay engine for AI agent sessions.
 
 ## Install
@@ -50,6 +52,12 @@ const fullResult = await replayer.replay("full", async (event) => {
 - **Differences detection**: records mismatches between expected and actual results
 - **Optional dependencies**: integrates with `@fengru/state-machine` and `@fengru/taskdag` when available
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/replay)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

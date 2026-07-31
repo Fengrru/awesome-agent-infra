@@ -46,7 +46,7 @@
   "entryPointStrategy": "packages",
   "includeVersion": true,
   "readme": "./README.md",
-  "out": "./docs/api",
+  "out": "./docs/public/api",
   "json": "./docs/api.json",
   "plugin": [],
   "exclude": ["**/node_modules/**", "**/dist/**", "**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"],
@@ -116,9 +116,6 @@
   "treatWarningsAsErrors": false,
   "treatValidationWarningsAsErrors": false,
   "commentStyle": "jsdoc",
-  "useHTMLEncodedBrackets": false,
   "hideGenerator": false,
-  "customCss": "",
-  "markedOptions": {},
   "maxTypeConversionDepth": 10
 }

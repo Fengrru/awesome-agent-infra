@@ -1,5 +1,7 @@
 # @fengru/goal-verifier
 
+[![npm version](https://img.shields.io/npm/v/@fengru/goal-verifier)](https://www.npmjs.com/package/@fengru/goal-verifier) [![npm downloads](https://img.shields.io/npm/dm/@fengru/goal-verifier)](https://www.npmjs.com/package/@fengru/goal-verifier) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Independent goal completion verification for AI agents.
 
 ## Install
@@ -43,6 +45,12 @@ console.log(result.gaps) // what's missing
 - **Loop prevention**: maxRetries → force pass
 - **Heuristic fallback**: DAG completion rate when LLM fails
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/goal-verifier)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

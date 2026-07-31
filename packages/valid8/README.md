@@ -1,5 +1,7 @@
 # @fengru/valid8
 
+[![npm version](https://img.shields.io/npm/v/@fengru/valid8)](https://www.npmjs.com/package/@fengru/valid8) [![npm downloads](https://img.shields.io/npm/dm/@fengru/valid8)](https://www.npmjs.com/package/@fengru/valid8) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 4-layer output validation for AI agents: syntax, semantic, runtime, security.
 
 ## Install
@@ -43,6 +45,12 @@ console.log(result.layers) // [{ name: "syntax", passed: true, ... }]
 - **Retry logic**: configurable threshold and max retries
 - **Permission rules**: bash blocked by default,可配置
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/valid8)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

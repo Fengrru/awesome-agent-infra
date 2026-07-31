@@ -30,5 +30,9 @@
     "type": "git",
     "url": "https://github.com/Fengrru/awesome-agent-infra.git",
     "directory": "packages/embedding"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

@@ -1,5 +1,9 @@
 # @fengru/skillforge
 
+[![npm version](https://img.shields.io/npm/v/@fengru/skillforge)](https://www.npmjs.com/package/@fengru/skillforge) [![npm downloads](https://img.shields.io/npm/dm/@fengru/skillforge)](https://www.npmjs.com/package/@fengru/skillforge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 Agent-writeable skill creation and management system.
 
 ## Install
@@ -52,6 +56,12 @@ await manager.patchSkill("error-handling", {
 - **Pin/unpin**: prioritize important skills
 - **Usage tracking**: record access patterns
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/skillforge)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

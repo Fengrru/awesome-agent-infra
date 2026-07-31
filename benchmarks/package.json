@@ -1,0 +1,9 @@
+{
+  "name": "@fengru/benchmarks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "bun run-all.ts",
+    "typecheck": "bunx tsc --noEmit -p tsconfig.json"
+  }
+}

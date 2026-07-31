@@ -1,5 +1,7 @@
 # @fengru/txn-fs
 
+[![npm version](https://img.shields.io/npm/v/@fengru/txn-fs)](https://www.npmjs.com/package/@fengru/txn-fs) [![npm downloads](https://img.shields.io/npm/dm/@fengru/txn-fs)](https://www.npmjs.com/package/@fengru/txn-fs) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 Transactional filesystem with 3-way merge for AI agent file operations.
 
 ## Install
@@ -36,6 +38,12 @@ console.log(result.conflicts) // files with conflicts
 - **TOCTOU detection**: race condition prevention
 - **Git integration**: real Git backend available
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/txn-fs)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

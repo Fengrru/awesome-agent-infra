@@ -22,11 +22,22 @@
     "typescript": ">=5.0"
   },
   "peerDependenciesMeta": {
-    "typescript": { "optional": true }
+    "typescript": {
+      "optional": true
+    }
   },
   "keywords": ["validation", "security", "syntax-check", "ai-output", "code-quality"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/valid8"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

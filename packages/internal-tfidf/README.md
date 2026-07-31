@@ -1,5 +1,7 @@
 # @fengru/internal-tfidf
 
+> **Internal package** — not published to npm.
+
 Shared TF-IDF utilities — tokenization, IDF computation, vectorization, and cosine similarity.
 
 > **Internal package** — marked `"private": true` and never published to npm. It is consumed via

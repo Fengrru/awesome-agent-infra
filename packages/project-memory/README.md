@@ -1,5 +1,7 @@
 # @fengru/project-memory
 
+[![npm version](https://img.shields.io/npm/v/@fengru/project-memory)](https://www.npmjs.com/package/@fengru/project-memory) [![npm downloads](https://img.shields.io/npm/dm/@fengru/project-memory)](https://www.npmjs.com/package/@fengru/project-memory) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
 File-based MEMORY.md project knowledge persistence.
 
 ## Install
@@ -50,6 +52,12 @@ await manager.promoteDiscovery("User prefers dark mode")
 - **User lock**: protect user-created entries
 - **Confidence markers**: visual indicator in markdown
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/project-memory)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT

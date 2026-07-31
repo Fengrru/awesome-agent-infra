@@ -1,5 +1,9 @@
 # @fengru/skill-curator
 
+[![npm version](https://img.shields.io/npm/v/@fengru/skill-curator)](https://www.npmjs.com/package/@fengru/skill-curator) [![npm downloads](https://img.shields.io/npm/dm/@fengru/skill-curator)](https://www.npmjs.com/package/@fengru/skill-curator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+
+> ⚠️ **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+
 Automated skill library curation for AI agent skills.
 
 ## Install
@@ -40,6 +44,12 @@ const review = await curator.reviewSkill("error-handling")
   - Reusability
   - Maintainability
 
+
+## Documentation
+
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
+- [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/skill-curator)
+- [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 ## License
 
 MIT
