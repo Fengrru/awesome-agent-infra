@@ -3,6 +3,9 @@
   "include": ["*.ts"],
   "compilerOptions": {
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@fengru/*": ["../packages/*/src/index.ts"]
+    }
   }
 }
