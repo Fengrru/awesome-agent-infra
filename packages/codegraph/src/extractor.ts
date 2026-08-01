@@ -90,7 +90,9 @@ function resolveWasmPath(asset: string): string {
 }
 
 export function setExtractorDependencies(deps: ExtractorDependencies): void {
-  _deps = { ..._deps, ...deps }
+  // Replace (not merge) so callers can fully reset deps, e.g. restore the
+  // fallback parser path with setExtractorDependencies({}).
+  _deps = deps
   _parserInit = null
 }
 
