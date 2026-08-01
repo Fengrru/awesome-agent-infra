@@ -11,31 +11,54 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  BUN_VERSION: "1.3.14"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Pipeline design:
+#
+#   Stage 0 (parallel, no build required):
+#     typecheck  — tsc --noEmit across all 43 packages
+#     lint       — biome check --error-on-warnings
+#     lockfile   — verify bun.lock is consistent
+#
+#   Stage 1 (parallel, needs typecheck):
+#     test       — bun test on ubuntu/windows/macos
+#     integration— cross-package integration tests
+#
+#   Stage 2 (parallel, needs typecheck):
+#     coverage   — per-package lcov gate (85%+ threshold)
+#     build      — tsc emit + dist verification
+#     bench      — benchmark smoke (crash/hang detection)
+#     docs       — typedoc generation check
+#
+# Turbo cache keys use content hashing (lockfile + configs) so unchanged
+# packages hit the cache across commits.
+# ────────────────────────────────────────────────────────────────────────────
+
 jobs:
-  # ── TypeCheck ──────────────────────────────────────────────────────────
+  # ═══════════════════════════════════════════════════════════════════════
+  # Stage 0 — Static Analysis
+  # ═══════════════════════════════════════════════════════════════════════
+
   typecheck:
-    name: TypeCheck (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    name: TypeCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Cache turbo
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: .turbo
-          key: turbo-typecheck-${{ runner.os }}-${{ github.sha }}
+          key: turbo-typecheck-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
           restore-keys: |
-            turbo-typecheck-${{ runner.os }}-
+            turbo-typecheck-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -43,9 +66,55 @@ jobs:
       - name: TypeCheck (all packages)
         run: bun turbo typecheck
 
-  # ── Lint ───────────────────────────────────────────────────────────────
   lint:
-    name: Lint (${{ matrix.os }})
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-lint-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
+          restore-keys: |
+            turbo-lint-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint (strict, all packages)
+        run: bun run lint
+
+  lockfile:
+    name: Lockfile Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Verify lockfile is consistent
+        run: |
+          bun install --frozen-lockfile
+          echo "OK: bun.lock is consistent with all package.json manifests."
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Stage 1 — Runtime Validation
+  # ═══════════════════════════════════════════════════════════════════════
+
+  test:
+    name: Test (${{ matrix.os }})
+    needs: [typecheck]
     strategy:
       fail-fast: false
       matrix:
@@ -58,48 +127,15 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Cache turbo
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: .turbo
-          key: turbo-lint-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            turbo-lint-${{ runner.os }}-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Lint (strict, all packages)
-        run: bun run lint
-
-  # ── Test ───────────────────────────────────────────────────────────────
-  test:
-    name: Test (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    needs: [typecheck]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.3.14"
-
-      - name: Cache turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-test-${{ runner.os }}-${{ github.sha }}
+          key: turbo-test-${{ runner.os }}-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
           restore-keys: |
             turbo-test-${{ runner.os }}-
-            turbo-typecheck-${{ runner.os }}-
+            turbo-typecheck-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -107,28 +143,35 @@ jobs:
       - name: Test (all packages)
         run: bun turbo test
 
-  # ── Integration Tests ──────────────────────────────────────────────────
+      - name: Collect diagnostics on failure
+        if: failure()
+        run: |
+          echo "--- bun version ---"
+          bun --version
+          echo "--- os info ---"
+          echo "runner: ${{ runner.os }}"
+          uname -a 2>/dev/null || echo "(uname not available)"
+
   integration:
     name: Integration Tests
+    needs: [typecheck]
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [typecheck]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Cache turbo
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: .turbo
-          key: turbo-integration-${{ runner.os }}-${{ github.sha }}
+          key: turbo-integration-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
           restore-keys: |
-            turbo-integration-${{ runner.os }}-
-            turbo-typecheck-${{ runner.os }}-
+            turbo-integration-
+            turbo-typecheck-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -136,20 +179,86 @@ jobs:
       - name: Integration Tests
         run: bun turbo integration
 
-  # ── Benchmarks (smoke) ────────────────────────────────────────────────
-  # Numbers are machine-specific; the job only fails on crashes/hangs.
-  bench:
-    name: Benchmarks (smoke)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  # ═══════════════════════════════════════════════════════════════════════
+  # Stage 2 — Quality Gates
+  # ═══════════════════════════════════════════════════════════════════════
+
+  coverage:
+    name: Coverage Gate
     needs: [typecheck]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-coverage-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
+          restore-keys: |
+            turbo-coverage-
+            turbo-typecheck-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Coverage (85%+ per gated package)
+        run: bun scripts/check-coverage.ts
+
+  build:
+    name: Build
+    needs: [typecheck]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-build-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
+          restore-keys: |
+            turbo-build-
+            turbo-typecheck-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build (all packages)
+        run: bun turbo build
+
+      - name: Verify dist outputs
+        run: |
+          PKG_COUNT=$(find packages -maxdepth 2 -name "index.js" -path "*/dist/*" 2>/dev/null | wc -l)
+          echo "packages with dist/index.js: $PKG_COUNT"
+          if [ "$PKG_COUNT" -eq 0 ]; then
+            echo "ERROR: No dist outputs found."
+            exit 1
+          fi
+          echo "OK: $PKG_COUNT package(s) built successfully."
+
+  bench:
+    name: Benchmarks (smoke)
+    needs: [typecheck]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -166,72 +275,91 @@ jobs:
         working-directory: benchmarks
         run: bun run-all.ts
 
-  # ── Debug codegraph (TEMPORARY: remove after CI failure is root-caused) ──
-  debug-codegraph:
-    name: Debug Codegraph (temporary)
+  docs:
+    name: Docs Build
+    needs: [typecheck]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Probe extractFromFile results
-        working-directory: packages/codegraph
-        run: |
-          bun -e "
-          const { extractFromFile } = await import('./src/index.ts')
-          const src = 'import { add } from \"./util\"\n\nexport function main(): number {\n  return add(1, 2)\n}\n'
-          const r = await extractFromFile('main.ts', src, 0)
-          console.log('PROBE main.ts imports:', JSON.stringify(r.imports))
-          console.log('PROBE main.ts names:', JSON.stringify(r.symbols.map(s => s.name)))
-          const e = await extractFromFile('empty.ts', '', 0)
-          console.log('PROBE empty.ts symbols:', e.symbols.length)
-          const u = await extractFromFile('util.ts', 'export function add(a: number, b: number): number {\n  return a + b\n}\n', 0)
-          console.log('PROBE util.ts names:', JSON.stringify(u.symbols.map(s => s.name)))
-          "
-
-      - name: Full test run with failure details
-        working-directory: packages/codegraph
-        run: bun test
-
-  # ── Build ──────────────────────────────────────────────────────────────
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [test, integration]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.3.14"
-
-      - name: Cache turbo
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: .turbo
-          key: turbo-build-${{ runner.os }}-${{ github.sha }}
+          key: turbo-docs-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
           restore-keys: |
-            turbo-build-${{ runner.os }}-
+            turbo-docs-
+            turbo-typecheck-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build (all packages)
-        run: bun turbo build
+      - name: Generate TypeDoc
+        run: bun run docs
 
-      - name: Verify outputs
+  # ═══════════════════════════════════════════════════════════════════════
+  # Final Gate — aggregator for branch-protection required check
+  # ═══════════════════════════════════════════════════════════════════════
+
+  gate:
+    name: CI Gate
+    if: always()
+    needs: [typecheck, lint, lockfile, test, integration, coverage, build, bench, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Aggregate results
         run: |
-          echo "Checking dist outputs..."
-          find packages -name "dist" -type d | head -5
-          PKG_COUNT=$(find packages -maxdepth 2 -name "index.js" -path "*/dist/*" | wc -l)
-          echo "Packages with dist/index.js: $PKG_COUNT"
+          echo "## CI Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          PASS=0
+          FAIL=0
+          SKIP=0
+
+          check() {
+            local job="$1"
+            local result="$2"
+            case "$result" in
+              success)
+                echo "- [PASS] **$job**" >> "$GITHUB_STEP_SUMMARY"
+                PASS=$((PASS + 1))
+                ;;
+              skipped)
+                echo "- [SKIP] **$job**" >> "$GITHUB_STEP_SUMMARY"
+                SKIP=$((SKIP + 1))
+                ;;
+              *)
+                echo "- [FAIL] **$job** (result: $result)" >> "$GITHUB_STEP_SUMMARY"
+                FAIL=$((FAIL + 1))
+                ;;
+            esac
+          }
+
+          check "typecheck"     "${{ needs.typecheck.result }}"
+          check "lint"          "${{ needs.lint.result }}"
+          check "lockfile"      "${{ needs.lockfile.result }}"
+          check "test"          "${{ needs.test.result }}"
+          check "integration"   "${{ needs.integration.result }}"
+          check "coverage"      "${{ needs.coverage.result }}"
+          check "build"         "${{ needs.build.result }}"
+          check "bench"         "${{ needs.bench.result }}"
+          check "docs"          "${{ needs.docs.result }}"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Passed:** $PASS | **Failed:** $FAIL | **Skipped:** $SKIP" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FAIL" -gt 0 ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "CI failed — $FAIL job(s) did not pass." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "All $PASS checks passed." >> "$GITHUB_STEP_SUMMARY"
