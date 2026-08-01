@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+import { beforeAll, describe, expect, test } from "bun:test"
 import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -8,7 +8,13 @@ import {
   type CodeGraphConfig,
   createCodeGraphBuilder,
   extractFromFile,
+  setExtractorDependencies,
 } from "../src/index.js"
+
+// Ensure the fallback (regex) parser path is used.
+beforeAll(() => {
+  setExtractorDependencies({})
+})
 
 const UTIL_SOURCE = `export function add(a: number, b: number): number {
   return a + b

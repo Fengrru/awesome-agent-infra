@@ -1,5 +1,11 @@
-import { describe, expect, test } from "bun:test"
-import { extractFromFile } from "../src/index.js"
+import { beforeAll, describe, expect, test } from "bun:test"
+import { extractFromFile, setExtractorDependencies } from "../src/index.js"
+
+// Ensure the fallback (regex) parser path is used — tree-sitter deps are not
+// installed, and module-level state must not leak from other test files.
+beforeAll(() => {
+  setExtractorDependencies({})
+})
 
 const MOCK_TIME = 1_700_000_000_000
 
