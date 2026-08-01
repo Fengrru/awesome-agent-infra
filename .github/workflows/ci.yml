@@ -157,6 +157,11 @@ jobs:
       - name: TypeCheck benchmarks
         run: bunx tsc --noEmit -p benchmarks/tsconfig.json
 
+      - name: Build workspace deps used by benchmarks
+        # agent-memory/src/bridge.ts imports @fengru/memory-engine-v2 by package
+        # name; benchmarks import src directly, so its dist must exist at runtime.
+        run: bun turbo build --filter=@fengru/memory-engine-v2
+
       - name: Run benchmarks (smoke)
         working-directory: benchmarks
         run: bun run-all.ts

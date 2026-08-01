@@ -29,6 +29,7 @@ APIs are stable in practice but internal details, constructor signatures, or opt
 |---|---|---|
 | `@fengru/agent-memory` | v0.1.0 | `MemorySystem` API stable; `UnifiedMemoryBridge` evolving |
 | `@fengru/memory-engine-v2` | v0.1.0 | Store layer interfaces evolving; query syntax may change |
+| `@fengru/memory-graph` | v0.1.0 | CoW versioning + BFS cascade stable; retrieval mode schema evolving |
 | `@fengru/codegraph` | v0.1.0 | In-memory graph API stable; serialization format may change |
 | `@fengru/code-sandbox` | v0.1.0 | `VerifierPool` API stable; sandbox isolation model under review |
 | `@fengru/taskdag` | v0.1.0 | DAG execution stable; plan serialization format evolving |

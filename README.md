@@ -2,7 +2,7 @@
 
 # awesome-agent-infra
 
-> **Awesome Agent Infrastructure** — 42 battle-tested, zero-dependency TypeScript packages for building reliable AI agents.
+> **Awesome Agent Infrastructure** — 43 battle-tested, zero-dependency TypeScript packages for building reliable AI agents.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
@@ -16,7 +16,7 @@ Zero runtime dependencies. Plug into any framework.
 
 ## Why awesome-agent-infra?
 
-- **Zero dependencies, zero conflicts.** Every one of the 42 packages ships with no runtime dependencies — drop them into any agent stack without version fights or bloat.
+- **Zero dependencies, zero conflicts.** Every one of the 43 packages ships with no runtime dependencies — drop them into any agent stack without version fights or bloat.
 - **One package per concern.** Memory, patching, validation, search, workflows, self-evolution — each building block is isolated, typed, and testable on its own.
 - **Production-grade by default.** Every package carries tests, a 95%+ coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
 - **TypeScript-native.** Written in strict TypeScript 5.8 with ESM-only output, so your IDE and compiler see exactly what your agent runs.
@@ -87,7 +87,7 @@ More runnable examples live in [examples/](./examples).
 |---|---|
 | Apply reliable edits to files | `fuzzy-patch`, `txn-fs`, `codegraph` |
 | Validate / verify agent output | `valid8`, `confidence-gate`, `goal-verifier` |
-| Give my agent memory | `agent-memory`, `embedding`, `project-memory` |
+| Give my agent memory | `agent-memory`, `memory-graph`, `memory-engine-v2`, `embedding`, `project-memory` |
 | Keep the agent safe | `guardrail`, `healix`, `hallucination-detector` |
 | Orchestrate multi-step work | `taskdag`, `state-machine`, `dynamic-workflow` |
 | Search and reason | `agentic-search`, `reasoning-search`, `code-sandbox` |
@@ -116,6 +116,7 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 | Package | Description | npm |
 |---------|-------------|-----|
 | [agent-memory](./packages/agent-memory) | 4-tier memory with Ebbinghaus forgetting curve | `@fengru/agent-memory` |
+| [memory-graph](./packages/memory-graph) | Causal dependency graph with CoW versioning + BFS cascade invalidation | `@fengru/memory-graph` |
 | [project-memory](./packages/project-memory) | File-based MEMORY.md project knowledge | `@fengru/project-memory` |
 | [agent-checkpoint](./packages/agent-checkpoint) | 3-level checkpoint system (L1/L2/L3) | `@fengru/agent-checkpoint` |
 | [checkpoint-writer](./packages/checkpoint-writer) | LLM-driven 11-field state extraction | `@fengru/checkpoint-writer` |
@@ -192,7 +193,7 @@ Every package carries an explicit stability tier — see [STABILITY.md](STABILIT
 | Tier | Guarantee | Packages |
 |---|---|---|
 | Stable | Strict semver; breaking changes only in majors | txn-fs, event-bus, state-machine, engine-db, embedding, fuzzy-patch, valid8, tracing, archiver, worker |
-| Evolving | API stable in practice; minor versions may adjust details | agent-memory, memory-engine-v2, codegraph, code-sandbox, taskdag, reasoning-search, goal-verifier, healix, replay, notes-manager, project-memory, branch, lifecycle-manager, agentic-search |
+| Evolving | API stable in practice; minor versions may adjust details | agent-memory, memory-graph, memory-engine-v2, codegraph, code-sandbox, taskdag, reasoning-search, goal-verifier, healix, replay, notes-manager, project-memory, branch, lifecycle-manager, agentic-search |
 | Experimental | No guarantees; minor versions may break | dreamdistill, process-reward, agent-metacog, hallucination-detector, confidence-gate, pomdp-planner, guardrail, max-mode-sampler, cycle-controller, agent-checkpoint, checkpoint-writer, llm-dag-generator, dynamic-workflow, skillforge, skill-curator, learning-nudge |
 
 Experimental packages are marked with an **Experimental** notice in their README. All packages follow [Changesets](https://github.com/changesets/changesets) for versioning.
@@ -201,7 +202,7 @@ Experimental packages are marked with an **Experimental** notice in their README
 
 ```bash
 bun install                          # Install all dependencies
-bun run build                        # Build all packages (42 packages)
+bun run build                        # Build all packages (43 packages)
 bun run test                         # Run all tests
 bun run lint                         # Biome strict lint
 bun scripts/check-coverage.ts        # Coverage gate (95%+ per package)

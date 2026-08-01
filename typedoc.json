@@ -28,6 +28,7 @@
     "packages/llm-dag-generator",
     "packages/max-mode-sampler",
     "packages/memory-engine-v2",
+    "packages/memory-graph",
     "packages/notes-manager",
     "packages/pomdp-planner",
     "packages/process-reward",

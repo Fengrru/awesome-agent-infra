@@ -1,0 +1,32 @@
+{
+  "name": "@fengru/memory-graph",
+  "version": "0.1.0",
+  "description": "Zero-dependency causal dependency graph for AI agent memory revision with CoW versioning, BFS cascade invalidation, and consistency-aware retrieval",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": ["memory", "causal-graph", "memory-revision", "ai-agent", "consistency", "cascade-invalidation", "copy-on-write"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
+    "directory": "packages/memory-graph"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
