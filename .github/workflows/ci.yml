@@ -239,7 +239,7 @@ jobs:
 
       - name: Verify dist outputs
         run: |
-          PKG_COUNT=$(find packages -maxdepth 2 -name "index.js" -path "*/dist/*" 2>/dev/null | wc -l)
+          PKG_COUNT=$(find packages -maxdepth 3 -name "index.js" -path "*/dist/*" 2>/dev/null | wc -l)
           echo "packages with dist/index.js: $PKG_COUNT"
           if [ "$PKG_COUNT" -eq 0 ]; then
             echo "ERROR: No dist outputs found."
@@ -279,7 +279,7 @@ jobs:
     name: Docs Build
     needs: [typecheck]
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -298,6 +298,9 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Build all packages (TypeDoc needs cross-package deps)
+        run: bun turbo build
 
       - name: Generate TypeDoc
         run: bun run docs
