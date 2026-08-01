@@ -683,9 +683,7 @@ describe("Retrieval Modes", () => {
     // First results should match "admin"
     expect(results.length).toBeGreaterThan(0)
     // admin-related nodes should have higher relevance
-    const adminResults = results.filter(
-      (r) => (r.node.content as Record<string, unknown>).role === "admin",
-    )
+    const adminResults = results.filter((r) => (r.node.content as Record<string, unknown>).role === "admin")
     expect(adminResults.length).toBe(2)
     expect(adminResults[0]!.relevance).toBeGreaterThan(0)
   })
@@ -722,16 +720,12 @@ describe("Live Index Validation", () => {
 
     const retriever = createConsistencyRetriever()
     // Index was built when a was at v0
-    const result = retriever.validateIndex(g, [
-      { nodeId: "a", indexedVersion: 0 },
-    ])
+    const result = retriever.validateIndex(g, [{ nodeId: "a", indexedVersion: 0 }])
     expect(result[0]!.valid).toBe(true)
 
     // Node advances → index becomes stale
     g.updateNode("a", { v: 1 })
-    const result2 = retriever.validateIndex(g, [
-      { nodeId: "a", indexedVersion: 0 },
-    ])
+    const result2 = retriever.validateIndex(g, [{ nodeId: "a", indexedVersion: 0 }])
     expect(result2[0]!.valid).toBe(false)
   })
 
@@ -742,24 +736,18 @@ describe("Live Index Validation", () => {
     g.addEdge("a", "b", RelationType.DEPENDS_ON, 1.0)
 
     const retriever = createConsistencyRetriever()
-    const result0 = retriever.validateIndex(g, [
-      { nodeId: "b", indexedVersion: 0 },
-    ])
+    const result0 = retriever.validateIndex(g, [{ nodeId: "b", indexedVersion: 0 }])
     expect(result0[0]!.valid).toBe(true)
 
     g.updateNode("a", { revised: true })
-    const result1 = retriever.validateIndex(g, [
-      { nodeId: "b", indexedVersion: 0 },
-    ])
+    const result1 = retriever.validateIndex(g, [{ nodeId: "b", indexedVersion: 0 }])
     expect(result1[0]!.valid).toBe(false) // STALE
   })
 
   test("validateIndex marks missing nodes as invalid", () => {
     const retriever = createConsistencyRetriever()
     const g = createMemoryGraph()
-    const result = retriever.validateIndex(g, [
-      { nodeId: "nonexistent", indexedVersion: 0 },
-    ])
+    const result = retriever.validateIndex(g, [{ nodeId: "nonexistent", indexedVersion: 0 }])
     expect(result[0]!.valid).toBe(false)
   })
 })

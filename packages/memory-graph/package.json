@@ -18,7 +18,15 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["memory", "causal-graph", "memory-revision", "ai-agent", "consistency", "cascade-invalidation", "copy-on-write"],
+  "keywords": [
+    "memory",
+    "causal-graph",
+    "memory-revision",
+    "ai-agent",
+    "consistency",
+    "cascade-invalidation",
+    "copy-on-write"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
