@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from "bun:test"
+import { beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -11,8 +11,9 @@ import {
   setExtractorDependencies,
 } from "../src/index.js"
 
-// Ensure the fallback (regex) parser path is used.
-beforeAll(() => {
+// Ensure the fallback (regex) parser path is used — prevents module-level
+// state from other test files (tree-sitter.test.ts) leaking via _deps/_parserInit.
+beforeEach(() => {
   setExtractorDependencies({})
 })
 
@@ -43,6 +44,7 @@ async function makeFixture(): Promise<{ dir: string; cleanup: () => Promise<void
 
 describe("extractFromFile", () => {
   test("extracts function symbols and imports from TypeScript source", async () => {
+    setExtractorDependencies({})
     const result = await extractFromFile("main.ts", MAIN_SOURCE, Date.now())
     expect(result.durationMs).toBeGreaterThanOrEqual(0)
     expect(result.imports.some((i) => i.source === "./util")).toBe(true)
@@ -51,6 +53,7 @@ describe("extractFromFile", () => {
   })
 
   test("extracts multiple functions from a single file", async () => {
+    setExtractorDependencies({})
     const result = await extractFromFile("util.ts", UTIL_SOURCE, Date.now())
     const names = result.symbols.map((s) => s.name)
     expect(names).toContain("add")
@@ -58,6 +61,7 @@ describe("extractFromFile", () => {
   })
 
   test("returns an empty result for empty source", async () => {
+    setExtractorDependencies({})
     const result = await extractFromFile("empty.ts", "", Date.now())
     expect(result.symbols).toEqual([])
     expect(result.imports).toEqual([])
@@ -68,6 +72,7 @@ describe("extractFromFile", () => {
 
 describe("CodeGraphBuilder", () => {
   test("build creates file nodes, symbol nodes, and defines edges", async () => {
+    setExtractorDependencies({})
     const { dir, cleanup } = await makeFixture()
     try {
       const config: CodeGraphConfig = { rootDir: dir, include: ["**/*.ts"] }
