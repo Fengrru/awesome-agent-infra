@@ -207,6 +207,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build all packages (tests import cross-package dist)
+        run: bun turbo build
+
       - name: Coverage (85%+ per gated package)
         run: bun scripts/check-coverage.ts
 
