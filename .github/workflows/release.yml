@@ -100,9 +100,10 @@ jobs:
         uses: changesets/action@v1
         with:
           version: bun changeset version
-          # Provenance is enabled per-package via publishConfig.provenance: true
-          # (npm attaches a Sigstore attestation using the OIDC id-token above.)
-          publish: bun changeset publish
+          # publish is only enabled when NPM_TOKEN is configured. Without it the
+          # action still runs `bun changeset publish` on every push even with no
+          # pending changesets, failing the workflow (changesets/action#1152).
+          publish: ${{ secrets.NPM_TOKEN != '' && 'bun changeset publish' || '' }}
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
