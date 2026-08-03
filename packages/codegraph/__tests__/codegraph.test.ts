@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
@@ -11,12 +11,15 @@ import {
   GraphPersistence,
   ImpactAnalyzer,
   IncrementalParser,
+  analyzeImpact,
+  buildContentSource,
   buildRepoSummary,
   buildSignatureSource,
   computeEntityHashes,
   createCallSite,
   estimateTokens,
   flattenSubGraph,
+  hashBuffer,
   hashString,
   hashesEqual,
   signatureChanged,
@@ -73,6 +76,15 @@ function makeEdge(overrides?: Partial<CodeGraphEdge>): CodeGraphEdge {
 
 describe("CodeGraph", () => {
   // ── Node Operations ──────────────────────────────────────────────────────
+
+  test("setBidirectional toggles and getter reflects state", () => {
+    const g = new CodeGraph()
+    expect(g.bidirectional).toBe(false)
+    g.setBidirectional(true)
+    expect(g.bidirectional).toBe(true)
+    g.setBidirectional(false)
+    expect(g.bidirectional).toBe(false)
+  })
 
   test("adds and retrieves a node", () => {
     const g = new CodeGraph()
@@ -306,6 +318,57 @@ describe("CodeGraph", () => {
     // Notifications are sent only by watcher, testing observer registration
     g.removeObserver(() => {})
   })
+
+  test("getCalleesOf returns direct callees via calls relation", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:caller", name: "caller" }))
+    g.addNode(makeNode({ id: "symbol:callee", name: "callee" }))
+    g.addEdge({ sourceId: "symbol:caller", targetId: "symbol:callee", relation: "calls" })
+    const callees = g.getCalleesOf("symbol:caller")
+    expect(callees.length).toBe(1)
+    expect(callees[0]!.name).toBe("callee")
+  })
+
+  test("getOverrides and getOverriddenBy track inheritance", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:parent", name: "parentMethod", symbolType: "method" }))
+    g.addNode(makeNode({ id: "symbol:child", name: "parentMethod", symbolType: "method" }))
+    g.addEdge({ sourceId: "symbol:child", targetId: "symbol:parent", relation: "overrides" })
+    const overrides = g.getOverrides("symbol:child")
+    expect(overrides.length).toBe(1)
+    expect(overrides[0]!.id).toBe("symbol:parent")
+    const overriddenBy = g.getOverriddenBy("symbol:parent")
+    expect(overriddenBy.length).toBe(1)
+    expect(overriddenBy[0]!.id).toBe("symbol:child")
+  })
+
+  test("getTypeUsersOf and getDataFlowConsumers", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "symbol:userFn", name: "userFn", symbolType: "function" }))
+    g.addNode(makeNode({ id: "symbol:myType", name: "MyType", symbolType: "interface" }))
+    g.addNode(makeNode({ id: "symbol:val", name: "x", symbolType: "variable" }))
+    g.addEdge({ sourceId: "symbol:myType", targetId: "symbol:userFn", relation: "type_uses" })
+    g.addEdge({ sourceId: "symbol:val", targetId: "symbol:userFn", relation: "data_flow" })
+    expect(g.getTypeUsersOf("symbol:myType").length).toBe(1)
+    expect(g.getDataFlowConsumers("symbol:val").length).toBe(1)
+  })
+
+  test("private notify calls observer without throwing", () => {
+    const g = new CodeGraph()
+    let called = false
+    g.addObserver(() => { called = true })
+    ;(g as any).notify({ type: "complete", phase: "build", message: "ok" })
+    expect(called).toBe(true)
+  })
+
+  test("notify swallows observer errors", () => {
+    const g = new CodeGraph()
+    g.addObserver(() => { throw new Error("boom") })
+    expect(() => (g as any).notify({ type: "complete", phase: "build", message: "ok" })).not.toThrow()
+  })
 })
 
 describe("CodeGraphRanker", () => {
@@ -480,6 +543,23 @@ describe("CodeGraphSearcher", () => {
     expect(summary.length).toBeGreaterThan(0)
     expect(summary).toContain("```codegraph")
   })
+
+  test("getFileContext returns empty subgraph for non-existent file", () => {
+    const g = new CodeGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const ctx = searcher.getFileContext("nonexistent.ts")
+    expect(ctx.nodes).toEqual([])
+    expect(ctx.edges).toEqual([])
+    expect(ctx.estimatedTokens).toBe(0)
+  })
+
+  test("getFileContext returns ego graph for an existing file", () => {
+    const g = buildSearchGraph()
+    const searcher = new CodeGraphSearcher(g)
+    const ctx = searcher.getFileContext("src/order.ts")
+    expect(ctx.nodes.length).toBeGreaterThan(0)
+    expect(ctx.edges.length).toBeGreaterThan(0)
+  })
 })
 
 describe("Helpers", () => {
@@ -537,6 +617,25 @@ describe("Helpers", () => {
     const g = new CodeGraph()
     const summary = buildRepoSummary(g)
     expect(summary).toContain("CodeGraph Repository Summary")
+  })
+
+  test("buildRepoSummary with files lists high-value files", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "file:src/a.ts", type: "file", name: "a.ts", filePath: "src/a.ts" }))
+    g.addNode(makeNode({ id: "file:src/b.ts", type: "file", name: "b.ts", filePath: "src/b.ts" }))
+    g.addNode(makeNode({ id: "symbol:fn", name: "fn", filePath: "src/a.ts" }))
+    const summary = buildRepoSummary(g)
+    expect(summary).toContain("src/a.ts")
+  })
+
+  test("getTestsFor returns entities covered by tests", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "symbol:src", name: "src", filePath: "src/a.ts" }))
+    g.addNode(makeNode({ id: "symbol:t", name: "testA", filePath: "tests/a.test.ts" }))
+    g.addEdge(makeEdge({ sourceId: "symbol:t", targetId: "symbol:src", relation: "test_covers" }))
+    const covered = g.getTestsFor("symbol:src")
+    expect(covered.map((n) => n.id)).toContain("symbol:t")
+    expect(g.getTestsFor("symbol:missing")).toEqual([])
   })
 
   test("estimateTokens returns positive number for non-empty graph", () => {
@@ -671,6 +770,31 @@ describe("CodeGraphWatcher", () => {
     // No extractor set, applyChanges should return 0 nodes added
     const result = await watcher.applyChanges([{ filePath: "src/nonexistent.ts", type: "modify" }])
     expect(result.nodesAdded).toBe(0)
+  })
+
+  test("getIncrementalParser returns incremental parser", () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "file:src/a.ts", type: "file", filePath: "src/a.ts" }))
+    const watcher = new CodeGraphWatcher(g, ".")
+    const parser = watcher.getIncrementalParser()
+    expect(parser).toBeDefined()
+  })
+
+  test("getStaleEntities, isStale, clearStale delegate to incremental parser", async () => {
+    const g = new CodeGraph()
+    g.addNode(makeNode({ id: "file:src/s.ts", type: "file", filePath: "src/s.ts" }))
+    const watcher = new CodeGraphWatcher(g, ".")
+    watcher.setExtractor(async () => ({ symbols: [], imports: [], exports: [] }))
+
+    // Initially no stale entities
+    expect(watcher.getStaleEntities().length).toBe(0)
+    expect(watcher.isStale("symbol:stale")).toBe(false)
+
+    // Process a delete to create a stale marker
+    await watcher.applyChanges([{ filePath: "src/s.ts", type: "delete" }])
+    // After delete, entities from that file should be stale
+    watcher.clearStale()
+    expect(watcher.getStaleEntities().length).toBe(0)
   })
 })
 
@@ -1191,6 +1315,30 @@ describe("CallSiteStore", () => {
     store.clear()
     expect(store.size).toBe(0)
   })
+
+  test("Symbol.iterator yields all call sites", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ calleeName: "a" }))
+    store.add(makeCS({ calleeName: "b" }))
+    const items = [...store]
+    expect(items.length).toBe(2)
+    expect(items[0]!.calleeName).toBeDefined()
+  })
+
+  test("fromJSON correctly loads and iterates data", () => {
+    const store = new CallSiteStore()
+    store.add(makeCS({ calleeName: "alpha" }))
+    store.add(makeCS({ calleeName: "beta" }))
+    const json = store.toJSON()
+    expect(json.length).toBe(2)
+    const store2 = new CallSiteStore()
+    store2.fromJSON(json)
+    expect(store2.size).toBe(2)
+    // verify the loaded data is correct
+    const loaded = store2.toJSON()
+    expect(loaded.length).toBe(2)
+    expect(loaded.some((cs) => cs.calleeName === "alpha")).toBe(true)
+  })
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1244,6 +1392,19 @@ describe("Hashing", () => {
     expect(hashes.signatureHash.length).toBe(64)
     expect(hashes.contentHash.length).toBe(64)
     expect(hashes.signatureHash).not.toBe(hashes.contentHash)
+  })
+
+  test("hashBuffer produces deterministic hex string", () => {
+    const buf = Buffer.from("hello")
+    const h1 = hashBuffer(buf)
+    const h2 = hashBuffer(Buffer.from("hello"))
+    expect(h1.length).toBe(64)
+    expect(h1).toBe(h2)
+  })
+
+  test("buildContentSource returns body text", () => {
+    expect(buildContentSource("fn", "function fn() {}")).toBe("function fn() {}")
+    expect(buildContentSource("", "")).toBe("")
   })
 })
 
@@ -1430,6 +1591,14 @@ describe("ImpactAnalyzer", () => {
     expect(result.riskScore).toBeGreaterThanOrEqual(0)
     expect(result.riskScore).toBeLessThanOrEqual(1)
   })
+
+  test("analyzeImpact standalone wrapper works", () => {
+    const { graph, callSites } = buildImpactGraph()
+    const result = analyzeImpact(graph, "symbol:function:target", callSites)
+    expect(result.riskScore).toBeGreaterThanOrEqual(0)
+    expect(result.riskScore).toBeLessThanOrEqual(1)
+    expect(result.directCallers.length).toBeGreaterThan(0)
+  })
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1577,5 +1746,182 @@ describe("IncrementalParser", () => {
     const parser = new IncrementalParser(g, cs, ".")
     expect(parser.hasSignatureChanged("symbol:sig", hashString("old_sig"))).toBe(false)
     expect(parser.hasSignatureChanged("symbol:sig", hashString("new_sig"))).toBe(true)
+  })
+
+  test("computeFileContentHash returns hash for entities with content hashes", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+    const entities = [
+      makeNode({ id: "symbol:a", metadata: { contentHash: hashString("body_a") } }),
+      makeNode({ id: "symbol:b", metadata: { signatureHash: hashString("sig_b") } }),
+    ]
+    const hash = (parser as any).computeFileContentHash(entities)
+    expect(typeof hash).toBe("string")
+    expect(hash!.length).toBe(64)
+  })
+
+  test("computeFileContentHash returns undefined for empty entities", () => {
+    const g = new CodeGraph()
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+    const hash = (parser as any).computeFileContentHash([])
+    expect(hash).toBeUndefined()
+  })
+
+  test("resolveImportSimple resolves relative imports", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    // Leading "./" is normalized away, so the node is registered without it
+    g.addNode(makeNode({ id: "file:utils", type: "file", filePath: "utils" }))
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+    const resolved = (parser as any).resolveImportSimple("./utils", "index")
+    expect(resolved).toBe("utils")
+  })
+
+  test("resolveImportSimple returns null for non-relative imports", () => {
+    const g = new CodeGraph()
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+    const resolved = (parser as any).resolveImportSimple("lodash", "src/main")
+    expect(resolved).toBeNull()
+  })
+
+  test("watcher resolveImportSimple resolves relative imports", () => {
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "file:lib", type: "file", filePath: "lib" }))
+    const watcher = new CodeGraphWatcher(g, ".")
+    const resolved = (watcher as any).resolveImportSimple("./lib", "index")
+    expect(resolved).toBe("lib")
+  })
+
+  test("processEdit modify extracts symbols and wires call sites", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-inc-"))
+    const filePath = join(tmpDir, "main.ts")
+    writeFileSync(
+      filePath,
+      `
+      function helper() { return 1 }
+      export function run() { return helper() }
+    `,
+    )
+
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, tmpDir)
+
+    const result = await parser.processEdit({ filePath, editType: "add" })
+    expect(result.entities.length).toBeGreaterThan(0)
+    expect(result.callSites.length).toBeGreaterThan(0)
+    expect(g.hasNode("file:main.ts")).toBe(true)
+
+    // Re-processing identical content short-circuits (content hash unchanged)
+    const second = await parser.processEdit({
+      filePath,
+      editType: "modify",
+      source: readFileSync(filePath, "utf-8"),
+    })
+    expect(second.entities.length).toBe(0)
+
+    // Changed content re-extracts
+    writeFileSync(filePath, `export function run() { return 2 }`)
+    const third = await parser.processEdit({ filePath, editType: "modify" })
+    expect(third.entities.length).toBeGreaterThan(0)
+
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("processEdit modify with unreadable file returns empty", async () => {
+    const g = new CodeGraph()
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, ".")
+    const result = await parser.processEdit({ filePath: ".", editType: "modify" })
+    expect(result.entities.length).toBe(0)
+  })
+
+  test("processEdit short-circuits via entity content hash with cold source cache", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-inc-cold-"))
+    const filePath = join(tmpDir, "main.ts")
+    // The entity-hash fallback compares `hashString(source)` against a hash of
+    // entity content hashes, so craft source to be exactly that hash text.
+    const bodyHash = hashString("export function run() { return 1 }")
+    const source = bodyHash
+    writeFileSync(filePath, source, "utf-8")
+
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(
+      makeNode({
+        id: "symbol:run",
+        name: "run",
+        symbolType: "function",
+        filePath: "main.ts",
+        metadata: { contentHash: bodyHash },
+      }),
+    )
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, tmpDir)
+
+    const result = await parser.processEdit({ filePath, editType: "modify", source })
+    expect(result.entities.length).toBe(0)
+    expect(result.removedEntityIds.length).toBe(0)
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("processEdit wires import edges and reference edges to known file nodes", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-inc-import-"))
+    const srcDir = join(tmpDir, "src")
+    mkdirSync(srcDir, { recursive: true })
+    const filePath = join(srcDir, "main.ts")
+    // Relative import — resolveImportSimple ignores bare module specifiers
+    writeFileSync(filePath, `import { helper } from "./util"\nexport function run() { return helper() }\n`, "utf-8")
+
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    g.addNode(makeNode({ id: "file:src/util.ts", type: "file", name: "util.ts", filePath: "src/util.ts" }))
+    g.addNode(
+      makeNode({
+        id: "symbol:helper",
+        name: "helper",
+        symbolType: "function",
+        filePath: "src/util.ts",
+      }),
+    )
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, tmpDir)
+
+    const result = await parser.processEdit({ filePath, editType: "add" })
+    expect(result.entities.length).toBeGreaterThan(0)
+    expect(g.getOutgoing("file:src/main.ts", "imports").map((n) => n.id)).toContain("file:src/util.ts")
+    expect(g.getOutgoing("file:src/main.ts", "references").map((n) => n.id)).toContain("symbol:helper")
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  test("processEdit marks callers and overriders as stale neighbors", async () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-inc-neighbor-"))
+    const filePath = join(tmpDir, "main.ts")
+    writeFileSync(filePath, `export function run() { return 1 }\n`, "utf-8")
+
+    const g = new CodeGraph()
+    g.setBidirectional(true)
+    const cs = new CallSiteStore()
+    const parser = new IncrementalParser(g, cs, tmpDir)
+
+    // Simulate a prior build: run() exists and caller/overrider reference it.
+    const runNode = makeNode({ id: "symbol:run", name: "run", symbolType: "function", filePath: "main.ts" })
+    g.addNode(runNode)
+    const caller = makeNode({ id: "symbol:caller", name: "caller", symbolType: "function", filePath: "other.ts" })
+    g.addNode(caller)
+    g.addEdge(makeEdge({ sourceId: caller.id, targetId: runNode.id, relation: "calls" }))
+
+    const result = await parser.processEdit({ filePath, editType: "modify" })
+    expect(result.entities.length).toBeGreaterThan(0)
+    const stale = parser.getStaleEntities()
+    expect(stale.some((m) => m.entityId === "symbol:caller" && m.neighborsMarked)).toBe(true)
+    rmSync(tmpDir, { recursive: true, force: true })
   })
 })

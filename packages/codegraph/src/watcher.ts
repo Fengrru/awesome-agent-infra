@@ -283,17 +283,19 @@ export class CodeGraphWatcher {
 
   private resolveImportSimple(importSource: string, currentFile: string): string | null {
     if (!importSource.startsWith(".") && !importSource.startsWith("/")) return null
+    // Normalize the leading "./" so "src/" + "./util" resolves like "src/util"
+    const normalized = importSource.startsWith("./") ? importSource.slice(2) : importSource
 
     const dir = currentFile.includes("/") ? currentFile.substring(0, currentFile.lastIndexOf("/")) : ""
 
     const extensions = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs"]
     for (const ext of extensions) {
-      const candidate = `${dir ? `${dir}/` : ""}${importSource}${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${normalized}${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
 
     for (const ext of [".ts", ".js", ".tsx", ".jsx"]) {
-      const candidate = `${dir ? `${dir}/` : ""}${importSource}/index${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${normalized}/index${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
 

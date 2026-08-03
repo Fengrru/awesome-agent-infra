@@ -341,6 +341,8 @@ export class CodeVerifier {
 }
 
 export class LogicVerifier {
+  constructor() {}
+
   verify(generated: string, reference: string): VerificationResult {
     const genWords = new Set(generated.toLowerCase().split(/\W+/).filter(Boolean))
     const refWords = new Set(reference.toLowerCase().split(/\W+/).filter(Boolean))

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+import { existsSync, utimesSync, writeFileSync } from "node:fs"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -114,5 +115,18 @@ describe("GraphPersistence", () => {
   test("default constructor uses cwd/.codegraph", () => {
     const p = new GraphPersistence(undefined)
     expect(p).toBeInstanceOf(GraphPersistence)
+  })
+
+  test("cleanupWal removes stale WAL files older than 60s", async () => {
+    const p = new GraphPersistence(join(dir, "walclean"))
+    await p.save([], [], [])
+    const walDir = join(dir, "walclean", "wal")
+    const staleFile = join(walDir, "nodes_old.json")
+    writeFileSync(staleFile, "[]", "utf-8")
+    const past = new Date(Date.now() - 120_000)
+    utimesSync(staleFile, past, past)
+    expect(existsSync(staleFile)).toBe(true)
+    await p.save(NODES, EDGES, CALL_SITES)
+    expect(existsSync(staleFile)).toBe(false)
   })
 })

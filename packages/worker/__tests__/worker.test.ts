@@ -501,3 +501,17 @@ describe("StatelessWorkerPool", () => {
     await pool.shutdown()
   })
 })
+
+describe("createStatelessWorkerPool", () => {
+  test("returns a StatelessWorkerPool instance", () => {
+    const { createStatelessWorkerPool } = require("../src/index")
+    const pool = createStatelessWorkerPool()
+    expect(pool).toBeInstanceOf(StatelessWorkerPool)
+  })
+
+  test("createStatelessWorkerPool with custom config", () => {
+    const { createStatelessWorkerPool } = require("../src/index")
+    const pool = createStatelessWorkerPool(5, 30000)
+    expect(pool.getHandlerCount()).toBe(0)
+  })
+})

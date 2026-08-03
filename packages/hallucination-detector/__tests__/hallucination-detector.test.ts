@@ -5,6 +5,8 @@ import {
   HallucinationDetector,
   type HallucinationReport,
   SpectralHallucinationDetector,
+  createHallucinationDetector,
+  createSpectralHallucinationDetector,
 } from "../src/index"
 
 describe("HallucinationDetector", () => {
@@ -312,5 +314,125 @@ describe("DEFAULT_DETECTOR_CONFIG", () => {
     expect(DEFAULT_DETECTOR_CONFIG.maxClusters).toBe(5)
     expect(DEFAULT_DETECTOR_CONFIG.selfConsistencySamples).toBe(3)
     expect(DEFAULT_DETECTOR_CONFIG.hallucinationThreshold).toBe(0.3)
+  })
+})
+
+describe("SpectralHallucinationDetector private methods", () => {
+  test("laplacianEigenDecomposition with 2x2 matrix", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const matrix = [
+      [1.0, 0.5],
+      [0.5, 1.0],
+    ]
+    const result = (sdetect as any).laplacianEigenDecomposition(matrix, 2)
+    expect(result.eigenvalues).toBeDefined()
+    expect(result.eigenvectors).toBeDefined()
+    expect(result.eigenvalues.length).toBe(2)
+    expect(result.eigenvectors.length).toBe(2)
+    expect(result.eigenvectors[0].length).toBe(2)
+  })
+
+  test("laplacianEigenDecomposition with empty matrix", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const result = (sdetect as any).laplacianEigenDecomposition([], 0)
+    expect(result.eigenvalues).toEqual([])
+    expect(result.eigenvectors).toEqual([])
+  })
+
+  test("laplacianEigenDecomposition with single element", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const result = (sdetect as any).laplacianEigenDecomposition([[1.0]], 1)
+    expect(result.eigenvalues.length).toBe(1)
+    expect(result.eigenvectors.length).toBe(1)
+    expect(result.eigenvectors[0].length).toBe(1)
+  })
+
+  test("laplacianEigenDecomposition k > n is clamped", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const matrix = [
+      [1.0, 0.3],
+      [0.3, 1.0],
+    ]
+    const result = (sdetect as any).laplacianEigenDecomposition(matrix, 10)
+    // k should be clamped to n (2)
+    expect(result.eigenvalues.length).toBe(2)
+    expect(result.eigenvectors.length).toBe(2)
+  })
+
+  test("precluster with empty claims", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const result = (sdetect as any).precluster([], 2)
+    expect(result).toEqual([])
+  })
+
+  test("precluster with k=0", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const claims: FactClaim[] = [
+      { text: "Hello world", startIndex: 0, endIndex: 11, confidence: 0.5, source: "test" },
+    ]
+    const result = (sdetect as any).precluster(claims, 0)
+    expect(result).toEqual([])
+  })
+
+  test("precluster produces assignments for claims", () => {
+    const sdetect = new SpectralHallucinationDetector()
+    const claims: FactClaim[] = [
+      { text: "Cats are mammals", startIndex: 0, endIndex: 15, confidence: 0.5, source: "test" },
+      { text: "Dogs are mammals", startIndex: 16, endIndex: 31, confidence: 0.5, source: "test" },
+      { text: "Birds are dinosaurs", startIndex: 32, endIndex: 50, confidence: 0.5, source: "test" },
+    ]
+    const result = (sdetect as any).precluster(claims, 2)
+    expect(result.length).toBe(3)
+    expect(result[0].length).toBe(2)
+  })
+
+  test("jaccardSimilarity private method", () => {
+    const detector = new HallucinationDetector()
+    const setA = new Set(["hello", "world"])
+    const setB = new Set(["hello", "there"])
+    const sim = (detector as any).jaccardSimilarity(setA, setB)
+    expect(sim).toBeGreaterThan(0)
+    expect(sim).toBeLessThanOrEqual(1)
+  })
+
+  test("cosineSimilarity private method", () => {
+    const detector = new HallucinationDetector()
+    const a = [1, 2, 3]
+    const b = [1, 2, 3]
+    const sim = (detector as any).cosineSimilarity(a, b)
+    expect(sim).toBeCloseTo(1.0, 5)
+  })
+
+  test("buildTFIDF private method", () => {
+    const detector = new HallucinationDetector()
+    const docs = ["hello world", "hello there"]
+    const result = (detector as any).buildTFIDF(docs)
+    expect(result.vectors).toBeDefined()
+    expect(result.terms).toBeDefined()
+    expect(result.vectors.length).toBe(2)
+  })
+})
+
+describe("factory functions", () => {
+  test("createHallucinationDetector creates instance", () => {
+    const detector = createHallucinationDetector()
+    expect(detector).toBeInstanceOf(HallucinationDetector)
+    expect(detector.config.minClusterSize).toBe(2)
+  })
+
+  test("createHallucinationDetector accepts config", () => {
+    const detector = createHallucinationDetector({ minClusterSize: 5 })
+    expect(detector.config.minClusterSize).toBe(5)
+  })
+
+  test("createSpectralHallucinationDetector creates instance", () => {
+    const detector = createSpectralHallucinationDetector()
+    expect(detector).toBeInstanceOf(SpectralHallucinationDetector)
+    expect(detector).toBeInstanceOf(HallucinationDetector)
+  })
+
+  test("createSpectralHallucinationDetector accepts config", () => {
+    const detector = createSpectralHallucinationDetector({ maxClusters: 10 })
+    expect(detector.config.maxClusters).toBe(10)
   })
 })

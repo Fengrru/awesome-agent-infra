@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type BusEvent, EventPriority, EventType, type PersistentEvent, createSimpleEventBus } from "../src/index"
+import { type BusEvent, EventBusService, EventPriority, EventType, type PersistentEvent, calculateSpecificity, createEventBusService, createSimpleEventBus } from "../src/index"
 
 describe("createSimpleEventBus", () => {
   // ── Basic publish/subscribe ─────────────────────────────────────────────
@@ -506,5 +506,112 @@ describe("createSimpleEventBus", () => {
     expect(new Set(ids).size).toBe(10)
 
     await bus.shutdown()
+  })
+})
+
+describe("EventBusService", () => {
+  test("delegates all methods to underlying bus", async () => {
+    const inner = createSimpleEventBus()
+    const service = new EventBusService(inner)
+
+    expect(typeof service.publish).toBe("function")
+    expect(typeof service.enqueuePriority).toBe("function")
+    expect(typeof service.subscribe).toBe("function")
+    expect(typeof service.unsubscribe).toBe("function")
+    expect(typeof service.waitForEvent).toBe("function")
+    expect(typeof service.setPersistFn).toBe("function")
+    expect(typeof service.shutdown).toBe("function")
+
+    await service.shutdown()
+  })
+
+  test("EventBusService has correct static key", () => {
+    expect(EventBusService.key).toBe("@fengru/EventBus")
+  })
+})
+
+describe("enqueuePriority", () => {
+  test("enqueuePriority dispatches event immediately", async () => {
+    const bus = createSimpleEventBus()
+    let received: BusEvent | null = null
+
+    bus.subscribe(EventType.TASK_START, (event) => {
+      received = event
+    })
+
+    await bus.enqueuePriority({
+      type: EventType.TASK_START,
+      priority: EventPriority.CRITICAL,
+      session_id: "s1",
+      data: { key: "enqueued" },
+      source: "test",
+      timestamp: Date.now(),
+      require_persistence: false,
+    })
+
+    await new Promise((r) => setTimeout(r, 10))
+    expect(received).not.toBeNull()
+    expect(received!.data.key).toBe("enqueued")
+
+    await bus.shutdown()
+  })
+})
+
+describe("calculateSpecificity", () => {
+  test("adds 10 for AND condition", () => {
+    expect(calculateSpecificity("a AND b", "any")).toBeGreaterThanOrEqual(10)
+  })
+
+  test("adds 5 for context.contains", () => {
+    expect(calculateSpecificity("context.contains(x)", "any")).toBeGreaterThanOrEqual(5)
+  })
+
+  test("adds 3 for tool= with specific tool", () => {
+    const score = calculateSpecificity("tool=lint", "lint")
+    const base = calculateSpecificity("tool=lint", "any")
+    expect(score).toBeGreaterThan(base)
+  })
+
+  test("adds 1 for non-always condition", () => {
+    expect(calculateSpecificity("x > 10", "any")).toBeGreaterThanOrEqual(1)
+  })
+
+  test("always returns 0", () => {
+    expect(calculateSpecificity("always", "any")).toBe(0)
+  })
+})
+
+describe("createEventBusService", () => {
+  test("returns an EventBusService instance", () => {
+    const inner = createSimpleEventBus()
+    const service = createEventBusService(inner)
+    expect(service).toBeInstanceOf(EventBusService)
+  })
+})
+
+describe("UUID generation", () => {
+  test("falls back to Math.random when crypto.randomUUID is unavailable", async () => {
+    const original = (crypto as { randomUUID?: unknown }).randomUUID
+    ;(crypto as { randomUUID?: unknown }).randomUUID = undefined
+    try {
+      const persisted: PersistentEvent[] = []
+      const bus = createSimpleEventBus(undefined, async (batch: PersistentEvent[]) => {
+        persisted.push(...batch)
+      })
+      await bus.publish({
+        type: EventType.TASK_START,
+        source: "test",
+        session_id: "s1",
+        data: {},
+        priority: EventPriority.HIGH,
+        timestamp: Date.now(),
+        require_persistence: true,
+      })
+      expect(persisted.length).toBe(1)
+      expect(persisted[0]!.event_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4/)
+      await bus.shutdown()
+    } finally {
+      ;(crypto as { randomUUID?: unknown }).randomUUID = original
+    }
   })
 })

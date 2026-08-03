@@ -8,9 +8,14 @@ dist/
 *.log
 coverage/
 .coverage/
+.coverage-*.json
+.coverage-*.txt
 docs/public/api/
 docs/api.json
 # VitePress site
 /docs/node_modules/
 /docs/.vitepress/dist/
 /docs/.vitepress/cache/
+# Temporary scripts and probe files
+/scripts/tmp-*.ts
+/packages/*/__tests__/probe-*.ts

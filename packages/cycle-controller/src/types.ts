@@ -6,7 +6,7 @@ export interface BusEvent {
 }
 
 export interface EventBus {
-  emit(event: BusEvent): void
+  publish(event: BusEvent): void
 }
 
 export type AgentState = string

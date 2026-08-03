@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type ISkillManager, type ProviderAdapter, SkillCurator, type SkillListItem } from "../src/index"
+import { type ISkillManager, type ProviderAdapter, SkillCurator, type SkillListItem, createSkillCurator } from "../src/index"
 
 const DAY = 24 * 60 * 60 * 1000
 
@@ -265,5 +265,21 @@ describe("run — full curation cycle", () => {
     const result = await curator.run()
     expect(result.reviewed).toEqual([])
     expect(result.warnings).toEqual([])
+  })
+})
+
+describe("createSkillCurator factory", () => {
+  test("returns a SkillCurator instance", () => {
+    const mgr = new FakeSkillManager()
+    const curator = createSkillCurator(mgr)
+    expect(curator).toBeInstanceOf(SkillCurator)
+    expect(curator.shouldArchive("ghost")).toBe(false)
+  })
+
+  test("forwards custom config", () => {
+    const mgr = new FakeSkillManager()
+    mgr.skills = [makeSkill("old", { lastUsed: Date.now() - 5 * 24 * 60 * 60 * 1000 })]
+    const curator = createSkillCurator(mgr, { minSkillsForPin: 3 })
+    expect(curator.shouldArchive("old", 3)).toBe(true)
   })
 })

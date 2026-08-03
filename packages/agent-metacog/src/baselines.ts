@@ -12,6 +12,8 @@ import { mean, sigmoid } from "./linalg"
 
 // biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class CalibrationBaselines {
+  constructor() {}
+
   static rawConfidence(features: StreamFeatures): number {
     const likes = features.tokenLogLikelihoods
     const n = likes.length

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { DEFAULT_GOAL_VERIFIER_CONFIG, type GoalContext, GoalVerifier, type ProviderAdapter } from "../src/index"
+import { DEFAULT_GOAL_VERIFIER_CONFIG, type GoalContext, GoalVerifier, type ProviderAdapter, createGoalVerifier } from "../src/index"
 
 function makeContext(overrides?: Partial<GoalContext>): GoalContext {
   return {
@@ -211,5 +211,18 @@ describe("GoalVerifier", () => {
       }),
     )
     expect(result.satisfied).toBeDefined()
+  })
+})
+
+describe("createGoalVerifier factory", () => {
+  test("returns a GoalVerifier instance", () => {
+    const v = createGoalVerifier()
+    expect(v).toBeInstanceOf(GoalVerifier)
+    expect(v.config.maxRetries).toBe(DEFAULT_GOAL_VERIFIER_CONFIG.maxRetries)
+  })
+
+  test("forwards custom config", () => {
+    const v = createGoalVerifier({ maxRetries: 7 })
+    expect(v.config.maxRetries).toBe(7)
   })
 })

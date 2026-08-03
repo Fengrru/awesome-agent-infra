@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { ErrorClassifier, type RecoveryRule, RepairMemoryEngine } from "../src/index"
+import { ErrorClassifier, type RecoveryRule, RepairMemoryEngine, createErrorClassifier, createRepairMemoryEngine } from "../src/index"
 
 describe("ErrorClassifier", () => {
   const classifier = new ErrorClassifier()
@@ -210,5 +210,20 @@ describe("RepairMemoryEngine", () => {
       // Category fallback is always possible
       expect(matched).toBeDefined()
     }
+  })
+})
+
+describe("factory functions", () => {
+  test("createErrorClassifier returns an ErrorClassifier", () => {
+    const ec = createErrorClassifier()
+    expect(ec).toBeInstanceOf(ErrorClassifier)
+    expect(ec.classify("file not found")).toBe("not_found")
+  })
+
+  test("createRepairMemoryEngine returns a RepairMemoryEngine", () => {
+    const engine = createRepairMemoryEngine()
+    expect(engine).toBeInstanceOf(RepairMemoryEngine)
+    const hash = engine.computeExactHash("test")
+    expect(hash).toHaveLength(16)
   })
 })

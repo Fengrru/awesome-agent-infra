@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { AgentState, AgentStateMachine, StateTransitionError } from "../src/index"
+import { AgentState, AgentStateMachine, StateTransitionError, createAgentStateMachine } from "../src/index"
 
 describe("AgentStateMachine", () => {
   // ── Initial State ────────────────────────────────────────────────────────
@@ -468,5 +468,13 @@ describe("AgentStateMachine", () => {
       expect(metrics[state]).toBeDefined()
       expect(metrics[state]!.enter_count).toBe(0)
     }
+  })
+
+  // ── Factory Function ─────────────────────────────────────────────────────
+
+  test("createAgentStateMachine creates valid instance", () => {
+    const sm = createAgentStateMachine()
+    expect(sm).toBeInstanceOf(AgentStateMachine)
+    expect(sm.state).toBe(AgentState.IDLE)
   })
 })

@@ -123,7 +123,7 @@ export class CycleController {
         true,
         this.state.cycleIndex,
       )
-      this.eventBus?.emit({
+      this.eventBus?.publish({
         type: "checkpoint:written",
         priority: 1,
         payload: { sessionId, checkpointId, cycleIndex: this.state.cycleIndex, threshold: action.threshold ?? 0 },
@@ -138,7 +138,7 @@ export class CycleController {
     await this.callbacks.onCompactingStart?.(sessionId, this.state.cycleIndex)
 
     this.state.isCompacting = true
-    this.eventBus?.emit({
+    this.eventBus?.publish({
       type: "cycle:compacting:start",
       priority: 1,
       payload: { sessionId, cycleIndex: this.state.cycleIndex, reason: action.reason ?? "" },
@@ -170,7 +170,7 @@ export class CycleController {
       }
     }
 
-    this.eventBus?.emit({
+    this.eventBus?.publish({
       type: "cycle:compacting:end",
       priority: 1,
       payload: { sessionId, cycleIndex: this.state.cycleIndex - 1, newCycleIndex: this.state.cycleIndex },

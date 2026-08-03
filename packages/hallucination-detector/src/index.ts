@@ -351,6 +351,10 @@ export class HallucinationDetector {
 }
 
 export class SpectralHallucinationDetector extends HallucinationDetector {
+  constructor(config?: Partial<DetectorConfig>) {
+    super(config)
+  }
+
   private precluster(claims: FactClaim[], k: number): number[][] {
     if (claims.length === 0 || k === 0) return []
 

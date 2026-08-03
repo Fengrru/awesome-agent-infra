@@ -125,7 +125,10 @@ export class CodeGraphSearcher {
     if (name === query) score += 10
     else if (name.startsWith(query)) score += 5
     else if (name.includes(query)) score += 3
-    else if (name.split(/[_.\-]/).some((part) => part === query)) score += 4
+
+    // NOTE: a split-part equality check is intentionally absent — any
+    // `part === query` would imply `name.includes(query)`, so it could never
+    // be reached.
 
     const meta = node.metadata as Record<string, unknown>
     if (meta.isExported) score += 1

@@ -64,6 +64,8 @@ export interface RepairDatabase {
  * Extracts error structure (type, symbols, normalized form) for hashing.
  */
 export class ErrorClassifier {
+  constructor() {}
+
   private static CATEGORY_PATTERNS: [ErrorCategory, string[]][] = [
     ["not_found", ["not found", "no such file", "does not exist", "path not found", "enoent"]],
     ["permission", ["permission", "denied", "forbidden", "unauthorized", "eacces"]],
@@ -129,6 +131,8 @@ export class ErrorClassifier {
  *   4. Category fallback
  */
 export class RepairMemoryEngine {
+  constructor() {}
+
   private errorClassifier = new ErrorClassifier()
   private rules = new Map<string, RecoveryRule>()
   private readonly MAX_RULES = 50

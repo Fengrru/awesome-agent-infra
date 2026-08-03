@@ -5,9 +5,11 @@ import {
   applyTemperatureScaling,
   computeBrierScore,
   computeECE,
+  createConfidenceGate,
   findDynamicThreshold,
   findOptimalTemperature,
   hallucinationRate,
+  reliabilityDiagram,
 } from "../src/index.js"
 
 // ─── ECE ────────────────────────────────────────────────────────────────────
@@ -165,6 +167,36 @@ describe("hallucinationRate", () => {
     const r = [false, false, true]
     // Only 0.9s are counted: 1 wrong out of 2 = 0.5
     expect(hallucinationRate(c, r)).toBeCloseTo(0.5)
+  })
+})
+
+// ─── Reliability Diagram ──────────────────────────────────────────────────────
+
+describe("reliabilityDiagram", () => {
+  test("returns bins from ECE computation", () => {
+    const confidences = [0.1, 0.2, 0.8, 0.9]
+    const correctness = [false, false, true, true]
+    const bins = reliabilityDiagram(confidences, correctness, 2)
+    expect(bins.length).toBe(2)
+    for (const bin of bins) {
+      expect(bin).toHaveProperty("accuracy")
+      expect(bin).toHaveProperty("avgConfidence")
+      expect(bin).toHaveProperty("count")
+    }
+  })
+})
+
+// ─── Factory Function ─────────────────────────────────────────────────────────
+
+describe("createConfidenceGate", () => {
+  test("returns a ConfidenceGate instance", () => {
+    const gate = createConfidenceGate()
+    expect(gate).toBeInstanceOf(ConfidenceGate)
+  })
+
+  test("forwards config", () => {
+    const gate = createConfidenceGate({ defaultTemperature: 2.0 })
+    expect(gate.temperature).toBe(2.0)
   })
 })
 

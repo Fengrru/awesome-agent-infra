@@ -34,7 +34,16 @@ interface Fallback {
   deleteSession(sessionId: string): void
 }
 
+/**
+ * Load the fs/path modules. Returns null when the filesystem backend is
+ * unavailable — either because the imports failed, or because the
+ * `NOTES_MANAGER_BACKEND=memory` environment variable explicitly forces the
+ * in-memory fallback (useful in sandboxed/no-filesystem environments).
+ */
 async function loadFs(): Promise<{ fs: FsModule; path: PathModule } | null> {
+  if (process.env.NOTES_MANAGER_BACKEND === "memory") {
+    return null
+  }
   try {
     const fs = (await import("node:fs/promises")) as unknown as FsModule
     const path = (await import("node:path")) as unknown as PathModule

@@ -4,6 +4,7 @@ import {
   EntropyController,
   type EntropyMetrics,
   type RiskLevel,
+  createEntropyController,
   describeRisk,
   isDestructive,
   requiresConfirmation,
@@ -211,5 +212,19 @@ describe("EntropyController", () => {
       }),
     )
     expect(action).toBe("CONTINUE")
+  })
+})
+
+describe("createEntropyController factory", () => {
+  test("returns an EntropyController instance", () => {
+    const ctrl = createEntropyController()
+    expect(ctrl).toBeInstanceOf(EntropyController)
+    expect(ctrl.evaluate(makeMetrics())).toBe("CONTINUE")
+  })
+
+  test("forwards custom config", () => {
+    const ctrl = createEntropyController({ tokenBudget: 100 })
+    const action = ctrl.evaluate(makeMetrics({ cumulativeTokens: 101 }))
+    expect(action).toBe("TERMINATE")
   })
 })

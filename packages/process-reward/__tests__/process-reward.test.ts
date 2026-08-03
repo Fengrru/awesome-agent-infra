@@ -9,6 +9,7 @@ import {
   type StepScore,
   type TaskType,
   type TrainingSample,
+  createPRMTrainer,
   heuristicScore,
   rolloutConfidence,
   scoreCodeStep,
@@ -723,5 +724,71 @@ describe("Default configs", () => {
     expect(labeler.config.numRollouts).toBe(16)
     expect(labeler.config.labelingStrategy).toBe("hybrid")
     expect(labeler.config.minConfidence).toBe(0.3)
+  })
+})
+
+// ─── createPRMTrainer ────────────────────────────────────────────────────────
+
+describe("createPRMTrainer", () => {
+  test("creates a trainer from factory", () => {
+    const trainer = createPRMTrainer({ numEpochs: 5 })
+    expect(trainer).toBeDefined()
+  })
+})
+
+// ─── Score Cache (ProcessRewardModel private methods via scoreStep) ──────────
+
+describe("ProcessRewardModel score cache", () => {
+  test("scoreStep caches results for repeated state/action pairs", async () => {
+    const model = new ProcessRewardModel()
+    // Access private cache methods to verify cache works
+    const state = "initial state"
+    const action = "2 + 2 = 4"
+
+    // First call: should not be cached
+    const result1 = await model.scoreStep(state, action, undefined, "math")
+    expect(result1.score).toBeGreaterThanOrEqual(0)
+
+    // Manually exercise the cache
+    ;(model as any).setCachedScore(state, action, 0.5)
+    const cached = (model as any).getCachedScore(state, action)
+    expect(cached).toBe(0.5)
+  })
+})
+
+// ─── scoreCodeStep with multi-line indented code ─────────────────────────────
+
+describe("scoreCodeStep indent coverage", () => {
+  test("multi-line well-indented code scores higher", () => {
+    const multiLine = "const x = 1;\nconst y = 2;\nconst z = 3;"
+    const score = scoreCodeStep(multiLine, null)
+    expect(score).toBeGreaterThanOrEqual(0)
+    expect(score).toBeLessThanOrEqual(1)
+  })
+})
+
+// ─── HeuristicStepScorer: detectContradiction via scoreLogic ─────────────────
+
+describe("HeuristicStepScorer contradiction detection", () => {
+  test("logic step with contradiction pattern is penalized", () => {
+    const scorer = new HeuristicStepScorer()
+    const score = scorer.scoreStep(
+      "If P is true and P is false then we have a contradiction",
+      null,
+      "logic",
+    )
+    expect(score).toBeLessThan(0.5)
+  })
+})
+
+// ─── HeuristicStepScorer: checkIndentationConsistency via scoreCode ──────────
+
+describe("HeuristicStepScorer indentation consistency", () => {
+  test("multi-line code step triggers indentation check", () => {
+    const scorer = new HeuristicStepScorer()
+    const multiLineCode = "  const x = 1;\n  const y = 2;"
+    const score = scorer.scoreStep(multiLineCode, null, "code")
+    expect(score).toBeGreaterThanOrEqual(0)
+    expect(score).toBeLessThanOrEqual(1)
   })
 })

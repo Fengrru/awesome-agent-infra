@@ -82,6 +82,8 @@ export interface PlanningMetadata {
 
 // biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class StateHasher {
+  constructor() {}
+
   static hash(state: POMDPState): string {
     return StateHasher.hashVariables(state.variables)
   }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { MemorySystem } from "../src/index"
+import { createMemorySystem, MemorySystem } from "../src/index"
 import type { CoreRule, LongTermMemory, MemoryDatabase, WorkingMemory } from "../src/index"
 
 function createMem(overrides?: Partial<LongTermMemory>): LongTermMemory {
@@ -15,6 +15,14 @@ function createMem(overrides?: Partial<LongTermMemory>): LongTermMemory {
     ...overrides,
   }
 }
+
+describe("factory function", () => {
+  test("createMemorySystem returns a MemorySystem", () => {
+    const ms = createMemorySystem()
+    expect(ms).toBeInstanceOf(MemorySystem)
+    expect(ms.getMaxTokens()).toBe(8000)
+  })
+})
 
 describe("MemorySystem", () => {
   // ── Core Rules ──────────────────────────────────────────────────────────

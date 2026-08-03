@@ -92,8 +92,9 @@ function build(source: string, def: Def, scopeStart: number, scopeEnd: number): 
 let currentRoot: MockNode | null = null
 
 class MockParser {
-  static init(): void {
-    // no-op: the real implementation boots the WASM runtime
+  static init(options?: { locateFile?: () => string }): string | undefined {
+    // Exercise the locateFile hook so the wasm-path resolution is covered
+    return options?.locateFile?.()
   }
 
   setLanguage(_lang: unknown): void {}
@@ -597,7 +598,7 @@ describe("extractFromFile (tree-sitter path)", () => {
     const ABS_SRC = [
       `abstract class Base {`,
       `  protected name = "x"`,
-      `  static create(): Base {`,
+      `  static create(label: string): Base {`,
       `    return new Base()`,
       `  }`,
       `  abstract run(): void`,
@@ -625,11 +626,24 @@ describe("extractFromFile (tree-sitter path)", () => {
                 },
                 {
                   type: "method_definition",
-                  text: `static create(): Base {\n    return new Base()\n  }`,
+                  text: `static create(label: string): Base {\n    return new Base()\n  }`,
                   children: [{ type: "static", text: "static" }],
                   fields: {
                     name: { type: "property_identifier", text: "create" },
-                    parameters: { type: "formal_parameters", text: `()`, children: [] },
+                    parameters: {
+                      type: "formal_parameters",
+                      text: `(label: string)`,
+                      children: [
+                        {
+                          type: "required_parameter",
+                          text: `label: string`,
+                          fields: {
+                            name: { type: "identifier", text: "label" },
+                            type: { type: "type_identifier", text: "string" },
+                          },
+                        },
+                      ],
+                    },
                     return_type: { type: "type_identifier", text: "Base" },
                   },
                 },
@@ -689,8 +703,192 @@ describe("extractFromFile (tree-sitter path)", () => {
   test("unmatched extensions fall back to the regex parser", async () => {
     registerTree(SRC, TREE)
     const result = await extractFromFile("src/app.py", SRC, MOCK_TIME)
-    // .py has no parser registered → fallback rules apply
+    // .py has no parser registered �?fallback rules apply
     expect(result.symbols.some((s) => s.symbolType === "function" && s.name === "greet")).toBe(true)
-    expect(result.calls).toEqual([])
+    // the fallback extracts best-effort call sites from function bodies
+    const call = result.calls.find((c) => c.callerName === "greet")
+    expect(call).toBeDefined()
+    expect(call!.calleeName).toBe("format")
+  })
+
+  test("arrow function bodies are walked with the enclosing caller", async () => {
+    const ARROW_SRC = `function run() {\n  () => { helper() }\n}`
+    registerTree(ARROW_SRC, {
+      type: "program",
+      text: ARROW_SRC,
+      children: [
+        {
+          type: "function_declaration",
+          text: ARROW_SRC,
+          fields: {
+            name: { type: "identifier", text: "run" },
+            body: {
+              type: "statement_block",
+              text: `{\n  () => { helper() }\n}`,
+              children: [
+                {
+                  type: "arrow_function",
+                  text: `() => { helper() }`,
+                  fields: {
+                    body: {
+                      type: "statement_block",
+                      text: `{ helper() }`,
+                      children: [
+                        {
+                          type: "expression_statement",
+                          text: `helper()`,
+                          children: [
+                            {
+                              type: "call_expression",
+                              text: `helper()`,
+                              fields: {
+                                function: { type: "identifier", text: "helper" },
+                                arguments: { type: "arguments", text: `()`, children: [] },
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    })
+    const result = await extractFromFile("src/arrow.ts", ARROW_SRC, MOCK_TIME)
+    expect(result.calls.some((c) => c.callerName === "run" && c.calleeName === "helper")).toBe(true)
+  })
+
+  test("doc comment lookup skips plain // comments", async () => {
+    const DOC_SRC = `/** Real doc */\n// intermediary note\nfunction g() {}\n`
+    registerTree(DOC_SRC, {
+      type: "program",
+      text: DOC_SRC,
+      children: [
+        { type: "comment", text: `/** Real doc */` },
+        { type: "comment", text: `// intermediary note` },
+        {
+          type: "function_declaration",
+          text: `function g() {}`,
+          fields: {
+            name: { type: "identifier", text: "g" },
+            parameters: { type: "formal_parameters", text: `()`, children: [] },
+          },
+        },
+      ],
+    })
+    const result = await extractFromFile("src/doc.ts", DOC_SRC, MOCK_TIME)
+    expect(result.symbols[0]?.metadata).toHaveProperty("docComment", "Real doc")
+  })
+
+  test("export statements with inline declarations are walked", async () => {
+    const EXP_SRC = `export default function run() {}\n`
+    registerTree(EXP_SRC, {
+      type: "program",
+      text: EXP_SRC,
+      children: [
+        {
+          type: "export_statement",
+          text: `export default function run() {}`,
+          children: [
+            { type: "default", text: "default" },
+            {
+              type: "function_declaration",
+              text: `function run() {}`,
+              fields: {
+                name: { type: "identifier", text: "run" },
+                parameters: { type: "formal_parameters", text: `()`, children: [] },
+              },
+            },
+          ],
+        },
+      ],
+    })
+    const result = await extractFromFile("src/exp.ts", EXP_SRC, MOCK_TIME)
+    // inline declarations are walked for export tracking (not re-collected as symbols)
+    expect(result.exports).toContain("default")
+  })
+
+  test("wasm path resolution handles file:// URLs", async () => {
+    const origCreate = URL.createObjectURL
+    URL.createObjectURL = () => "file:///fake/tree.wasm" as unknown as string
+    try {
+      setExtractorDependencies({ Parser: MockParser, Language: MockLanguage })
+      registerTree(`function a() {}`, {
+        type: "program",
+        text: `function a() {}`,
+        children: [
+          {
+            type: "function_declaration",
+            text: `function a() {}`,
+            fields: {
+              name: { type: "identifier", text: "a" },
+              parameters: { type: "formal_parameters", text: `()`, children: [] },
+            },
+          },
+        ],
+      })
+      const result = await extractFromFile("src/wasm1.ts", `function a() {}`, MOCK_TIME)
+      expect(result.symbols.some((s) => s.name === "a")).toBe(true)
+    } finally {
+      URL.createObjectURL = origCreate
+    }
+  })
+
+  test("wasm path resolution falls back for unresolvable URLs", async () => {
+    const origCreate = URL.createObjectURL
+    URL.createObjectURL = () => "http://" as unknown as string
+    try {
+      setExtractorDependencies({ Parser: MockParser, Language: MockLanguage })
+      registerTree(`function b() {}`, {
+        type: "program",
+        text: `function b() {}`,
+        children: [
+          {
+            type: "function_declaration",
+            text: `function b() {}`,
+            fields: {
+              name: { type: "identifier", text: "b" },
+              parameters: { type: "formal_parameters", text: `()`, children: [] },
+            },
+          },
+        ],
+      })
+      const result = await extractFromFile("src/wasm2.ts", `function b() {}`, MOCK_TIME)
+      expect(result.symbols.some((s) => s.name === "b")).toBe(true)
+    } finally {
+      URL.createObjectURL = origCreate
+    }
+  })
+
+  test("parser init failure falls back to the regex parser", async () => {
+    class FailInitParser {
+      static init(): void {
+        throw new Error("wasm boot failed")
+      }
+
+      setLanguage(_lang: unknown): void {}
+
+      parse(_source: string): never {
+        throw new Error("unreachable")
+      }
+    }
+    setExtractorDependencies({ Parser: FailInitParser, Language: MockLanguage })
+    const result = await extractFromFile("src/wasm3.ts", `function c() {}`, MOCK_TIME)
+    expect(result.symbols.some((s) => s.name === "c")).toBe(true)
+  })
+
+  test("language load failure falls back to the regex parser", async () => {
+    class FailLoadLanguage {
+      static async load(_path: string): Promise<never> {
+        throw new Error("wasm corrupt")
+      }
+    }
+    setExtractorDependencies({ Parser: MockParser, Language: FailLoadLanguage })
+    const result = await extractFromFile("src/wasm4.ts", `function d() {}`, MOCK_TIME)
+    expect(result.symbols.some((s) => s.name === "d")).toBe(true)
   })
 })

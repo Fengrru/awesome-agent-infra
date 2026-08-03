@@ -100,6 +100,59 @@ describe("extractFromFile (fallback parser)", () => {
     const result = await extractFromFile("src/x.ts", "export function f() {}", MOCK_TIME, undefined, "cl100k")
     expect(result.symbols[0]?.tokenizerName).toBe("cl100k")
   })
+
+  test("fallback extracts calls with args, keywords and spread", async () => {
+    const src = [
+      `function outer() {`,
+      `  if (true) { return 1 }`,
+      `  function inner() { return helper() }`,
+      `  return inner()`,
+      `}`,
+      `function fact(n) { return fact(n - 1) }`,
+      `export function run(opts, ...rest) {`,
+      `  const msg = outer("a,b", { key: 1 }, ...rest)`,
+      `  return msg`,
+      `}`,
+    ].join("\n")
+    const result = await extractFromFile("src/calls.ts", src, MOCK_TIME)
+    const calls = result.calls
+
+    // keywords and self-recursion are skipped
+    expect(calls.some((c) => c.calleeName === "if")).toBe(false)
+    expect(calls.filter((c) => c.callerName === "fact")).toEqual([])
+
+    // nested declaration heads are not treated as calls of the outer function
+    expect(calls.filter((c) => c.callerName === "outer")).toEqual([])
+    // inner's own call is attributed to inner (fallback granularity)
+    expect(calls.some((c) => c.callerName === "inner" && c.calleeName === "helper")).toBe(true)
+
+    // quoted commas are preserved and object args become keyword args
+    const runCall = calls.find((c) => c.callerName === "run" && c.calleeName === "outer")
+    expect(runCall).toBeDefined()
+    expect(runCall!.argCount).toBe(3)
+    expect(runCall!.keywordArgNames).toContain("key")
+    expect(runCall!.hasSpread).toBe(true)
+    expect(runCall!.startLine).toBeGreaterThan(0)
+  })
+
+  test("fallback skips calls with unbalanced parens", async () => {
+    const src = `function broken() {\n  return helper(\n}\nfunction ok() { return 1 }`
+    const result = await extractFromFile("src/broken.ts", src, MOCK_TIME)
+    // helper( has no closing paren before the next declaration boundary
+    expect(result.calls.filter((c) => c.calleeName === "helper")).toEqual([])
+  })
+
+  test("fallback extracts import names for named, namespace and default imports", async () => {
+    const src = `import { a, b } from "x"\nimport * as ns from "y"\nimport def from "z"\n`
+    const result = await extractFromFile("src/imp.ts", src, MOCK_TIME)
+
+    const x = result.imports.find((i) => i.source === "x")
+    expect(x?.names).toEqual(["a", "b"])
+    const y = result.imports.find((i) => i.source === "y")
+    expect(y?.names).toEqual(["*"])
+    const z = result.imports.find((i) => i.source === "z")
+    expect(z?.names).toEqual(["def"])
+  })
 })
 
 // ─── token-level indexing helpers ───────────────────────────────────────────

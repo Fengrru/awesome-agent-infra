@@ -368,6 +368,65 @@ describe("Integration: Provider × Indexer × Hybrid → Complete Stack", () => 
   })
 })
 
+describe("Integration: VectorStore edge cases", () => {
+  test("query on empty store returns empty results", async () => {
+    const provider = new SimpleEmbeddingProvider()
+    const store = provider.createVectorStore()!
+    const model = provider.createEmbeddingModel()!
+    const vec = await model.embed("anything")
+    const results = await store.query(vec, 5)
+    expect(results).toEqual([])
+  })
+
+  test("query topK larger than store returns all entries", async () => {
+    const provider = new SimpleEmbeddingProvider()
+    const store = provider.createVectorStore()!
+    const model = provider.createEmbeddingModel()!
+    const vec1 = await model.embed("function alpha() {}")
+    const vec2 = await model.embed("function beta() {}")
+    await store.upsert("a", vec1)
+    await store.upsert("b", vec2)
+    const vec = await model.embed("alpha")
+    const results = await store.query(vec, 100)
+    expect(results.length).toBe(2)
+  })
+
+  test("delete removes an entry from the store", async () => {
+    const provider = new SimpleEmbeddingProvider()
+    const store = provider.createVectorStore()!
+    const model = provider.createEmbeddingModel()!
+    const vec1 = await model.embed("function alpha() {}")
+    await store.upsert("a", vec1, { type: "function" })
+    await store.delete("a")
+    const vec = await model.embed("alpha")
+    const results = await store.query(vec, 5)
+    expect(results.length).toBe(0)
+  })
+
+  test("delete on missing id is a no-op", async () => {
+    const provider = new SimpleEmbeddingProvider()
+    const store = provider.createVectorStore()!
+    await store.delete("missing")
+    const model = provider.createEmbeddingModel()!
+    const vec = await model.embed("x")
+    expect(await store.query(vec, 1)).toEqual([])
+  })
+
+  test("upsert overwrites an existing id", async () => {
+    const provider = new SimpleEmbeddingProvider()
+    const store = provider.createVectorStore()!
+    const model = provider.createEmbeddingModel()!
+    const vec1 = await model.embed("function alpha() {}")
+    const vec2 = await model.embed("const beta = 1")
+    await store.upsert("a", vec1)
+    await store.upsert("a", vec2)
+    const vec = await model.embed("beta")
+    const results = await store.query(vec, 1)
+    expect(results.length).toBe(1)
+    expect(results[0]!.id).toBe("a")
+  })
+})
+
 // ── Cosine Similarity Helper (copied for test independence) ────────────────
 
 function cosineSimilarity(a: number[], b: number[]): number {

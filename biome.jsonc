@@ -20,7 +20,7 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noExplicitAny": "off",
+        "noExplicitAny": "warn",
         "noPrototypeBuiltins": "warn"
       },
       "style": {
@@ -37,7 +37,7 @@
         "noUnusedImports": "warn"
       }
     },
-    "ignore": ["__tests__/**"]
+
   },
   "javascript": {
     "formatter": {

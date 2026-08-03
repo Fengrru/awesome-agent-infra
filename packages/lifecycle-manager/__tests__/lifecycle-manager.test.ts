@@ -5,6 +5,7 @@ import {
   type IStateMachine,
   LifecycleManager,
   type ModuleLifecycle,
+  createLifecycleManager,
 } from "../src/index"
 
 /** Minimal fake state machine capturing onEnter registrations */
@@ -329,5 +330,14 @@ describe("hookStateMachine", () => {
     manager.hookStateMachine()
     await sm.fireEnter(AgentState.PLANNING)
     expect(calls).toEqual(["planned"])
+  })
+})
+
+describe("createLifecycleManager factory", () => {
+  test("returns a LifecycleManager instance", () => {
+    const sm = new FakeStateMachine()
+    const manager = createLifecycleManager(sm)
+    expect(manager).toBeInstanceOf(LifecycleManager)
+    expect(manager.getRegisteredIds()).toEqual([])
   })
 })

@@ -9,6 +9,7 @@ import {
   SearchToolRegistry,
   type SemanticResult,
   type SubGraphResult,
+  createAgenticSearchOrchestrator,
   createSearchTools,
 } from "../src/index"
 
@@ -309,5 +310,80 @@ describe("SearchContextBuilder", () => {
   test("quickSearch returns result", async () => {
     const result = await builder.quickSearch("testFn")
     expect(typeof result).toBe("string")
+  })
+
+  test("buildFileContext returns formatted result", async () => {
+    const result = await builder.buildFileContext("src/test.ts")
+    expect(typeof result).toBe("string")
+  })
+
+  test("buildSymbolContext returns formatted result", async () => {
+    const result = await builder.buildSymbolContext("testFn")
+    expect(typeof result).toBe("string")
+  })
+})
+
+// ─── createAgenticSearchOrchestrator ─────────────────────────────────────────
+
+describe("createAgenticSearchOrchestrator", () => {
+  test("factory creates orchestrator", () => {
+    const symSearcher = createMockSymbolSearcher()
+    const semSearcher = createMockSemanticSearcher()
+    const orch = createAgenticSearchOrchestrator(symSearcher, semSearcher)
+    expect(orch).toBeDefined()
+    expect(orch instanceof AgenticSearchOrchestrator).toBe(true)
+  })
+})
+
+// ─── Tool estimateCost ───────────────────────────────────────────────────────
+
+describe("SearchTool estimateCost", () => {
+  const symSearcher = createMockSymbolSearcher()
+  const semSearcher = createMockSemanticSearcher()
+  const tools = createSearchTools(symSearcher, semSearcher)
+
+  test("code_symbol tool has estimateCost", () => {
+    const tool = tools.find((t) => t.name === "code_symbol")!
+    expect(tool).toBeDefined()
+    expect(tool.estimateCost({ query: "test" })).toBeGreaterThan(0)
+  })
+
+  test("code_graph tool has estimateCost", () => {
+    const tool = tools.find((t) => t.name === "code_graph")!
+    expect(tool).toBeDefined()
+    expect(tool.estimateCost({})).toBe(100)
+  })
+
+  test("semantic_search tool has estimateCost", () => {
+    const tool = tools.find((t) => t.name === "semantic_search")!
+    expect(tool).toBeDefined()
+    expect(tool.estimateCost({ query: "test" })).toBeGreaterThan(0)
+  })
+})
+
+// ─── code_graph tool execute ─────────────────────────────────────────────────
+
+describe("code_graph tool execute", () => {
+  const symSearcher = createMockSymbolSearcher()
+  const semSearcher = createMockSemanticSearcher()
+  const tools = createSearchTools(symSearcher, semSearcher)
+  const codeGraphTool = tools.find((t) => t.name === "code_graph")!
+
+  test("executes with nodeId", async () => {
+    const result = await codeGraphTool.execute({ nodeId: "symbol:test" })
+    expect(result.success).toBe(true)
+    expect(result.data).toContain("SubGraph")
+  })
+
+  test("executes with filePath", async () => {
+    const result = await codeGraphTool.execute({ filePath: "src/test.ts" })
+    expect(result.success).toBe(true)
+    expect(result.data).toContain("SubGraph")
+  })
+
+  test("executes with neither nodeId nor filePath", async () => {
+    const result = await codeGraphTool.execute({})
+    expect(result.success).toBe(true)
+    expect(result.data).toContain("Specify either nodeId or filePath")
   })
 })

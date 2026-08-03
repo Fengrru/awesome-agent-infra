@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test"
-import { type ReplayEvent, type ReplayMode, type ReplayResult, SessionReplayer } from "../src/index"
+import {
+  type ReplayEvent,
+  type ReplayMode,
+  type ReplayResult,
+  SessionReplayer,
+  type StateMachineLike,
+  createSessionReplayer,
+} from "../src/index"
 
 function makeEvent(overrides?: Partial<ReplayEvent>): ReplayEvent {
   return {
@@ -31,7 +38,7 @@ describe("SessionReplayer", () => {
 
   // ── loadEvents ─────────────────────────────────────────────────────────
 
-  test("loadEvents sorts events by timestamp", () => {
+  test("loadEvents sorts events by timestamp", async () => {
     const replayer = new SessionReplayer()
     const events = [
       { eventId: "b", type: "x", timestamp: 200, payload: {} },
@@ -40,7 +47,7 @@ describe("SessionReplayer", () => {
     replayer.loadEvents(events)
 
     // We verify ordering by replaying in dry-run and checking trajectory order
-    const result = replayer.replay("dry-run") as ReplayResult
+    const result = await replayer.replay("dry-run")
     // The events should be sorted; we can't inspect private state directly
     // but replay in dry-run will process in sorted order
     expect(result).toBeTruthy()
@@ -172,5 +179,64 @@ describe("SessionReplayer", () => {
     expect(result.eventsProcessed).toBe(0)
     expect(result.eventsSkipped).toBe(0)
     expect(result.success).toBe(true)
+  })
+})
+
+describe("internal helpers", () => {
+  test("createSessionReplayer builds a working replayer", async () => {
+    const replayer = createSessionReplayer()
+    expect(replayer).toBeInstanceOf(SessionReplayer)
+    replayer.loadEvents(makeEvents(1))
+    const result = await replayer.replay("dry-run")
+    expect(result.success).toBe(true)
+  })
+
+  test("createSessionReplayer forwards injected dependencies", async () => {
+    const machine = {
+      state: "IDLE",
+      async transition(to: string) {
+        this.state = to
+      },
+      getSnapshot: () => ({ current_state: "IDLE" }),
+      restore: () => {},
+    }
+    const replayer = createSessionReplayer(machine, () => ({ valid: false, error: "bad dag" }))
+    replayer.loadEvents([
+      makeEvent({ eventId: "x", timestamp: 1, stateTransition: { from: "IDLE", to: "RUN" } }),
+    ])
+    const result = await replayer.replay("dry-run")
+    expect(result.stateTrajectory[0]!.state).toBe("RUN")
+  })
+
+  test("getStateTrajectory and getDifferences expose latest replay results", () => {
+    const replayer = new SessionReplayer()
+    expect(replayer.getStateTrajectory()).toEqual([])
+    expect(replayer.getDifferences()).toEqual([])
+  })
+
+  test("default minimal state machine supports snapshot/restore", () => {
+    const replayer = new SessionReplayer()
+    const machine = (replayer as unknown as { stateMachine: StateMachineLike }).stateMachine
+    machine.restore({ current_state: "RUNNING", states: ["IDLE", "RUNNING"] })
+    expect(machine.state).toBe("RUNNING")
+    const snapshot = machine.getSnapshot()
+    expect(snapshot.current_state).toBe("RUNNING")
+    expect(snapshot.states).toEqual(["IDLE", "RUNNING"])
+  })
+
+  test("default minimal state machine ignores malformed snapshot fields", () => {
+    const replayer = new SessionReplayer()
+    const machine = (replayer as unknown as { stateMachine: StateMachineLike }).stateMachine
+    machine.restore({ current_state: 42, states: "nope" })
+    expect(machine.state).toBe("IDLE")
+    expect(machine.getSnapshot()).toEqual({ current_state: "IDLE", states: [] })
+  })
+
+  test("default DAG validator accepts any DAG", () => {
+    const replayer = new SessionReplayer()
+    const validate = (replayer as unknown as {
+      validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
+    }).validateDAG
+    expect(validate({ nodes: [], edges: [] }).valid).toBe(true)
   })
 })

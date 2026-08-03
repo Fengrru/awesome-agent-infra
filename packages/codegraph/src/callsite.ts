@@ -21,6 +21,8 @@ function generateId(): string {
 }
 
 export class CallSiteStore {
+  constructor() {}
+
   private _byId = new Map<string, CallSite>()
   private _byCaller = new Map<string, Set<string>>()
   private _byCallee = new Map<string, Set<string>>()

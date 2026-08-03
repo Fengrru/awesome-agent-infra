@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type Capability, DEFAULT_MAX_MODE_CONFIG, MaxModeSampler, type ProviderAdapter } from "../src/index"
+import { type Capability, DEFAULT_MAX_MODE_CONFIG, MaxModeSampler, type ProviderAdapter, createMaxModeSampler } from "../src/index"
 
 function makeCapability(id: string): Capability {
   return { capability_id: id, description: `does ${id}` }
@@ -216,5 +216,18 @@ describe("heuristic judge scoring", () => {
     const result = await sampler.sampleAndSelect("goal", CAPS)
     expect(result.winner.id).toBe("candidate_0")
     expect(result.judgeResult.scores["candidate_0"]!).toBeGreaterThan(result.judgeResult.scores["candidate_1"]!)
+  })
+})
+
+describe("createMaxModeSampler factory", () => {
+  test("returns a MaxModeSampler instance", () => {
+    const sampler = createMaxModeSampler()
+    expect(sampler).toBeInstanceOf(MaxModeSampler)
+    expect(sampler.config.candidateCount).toBe(DEFAULT_MAX_MODE_CONFIG.candidateCount)
+  })
+
+  test("forwards custom config", () => {
+    const sampler = createMaxModeSampler({ candidateCount: 2 })
+    expect(sampler.config.candidateCount).toBe(2)
   })
 })

@@ -1,6 +1,19 @@
 import { beforeEach, describe, expect, it } from "bun:test"
-import { CycleActionType, CycleController, DEFAULT_CYCLE_CONFIG, clamp } from "../src/index"
-import type { ConversationMessage, CycleAction, CycleCallbacks, ICheckpointWriter } from "../src/types"
+import {
+  CycleActionType,
+  CycleController,
+  DEFAULT_CYCLE_CONFIG,
+  clamp,
+  createCycleController,
+} from "../src/index"
+import type {
+  AgentStateMachine,
+  ConversationMessage,
+  CycleAction,
+  CycleCallbacks,
+  EventBus,
+  ICheckpointWriter,
+} from "../src/types"
 
 function makeHistory(n: number): ConversationMessage[] {
   return Array.from({ length: n }, (_, i) => ({
@@ -202,5 +215,116 @@ describe("CycleController", () => {
     expect(snap.cycleIndex).toBe(0)
     expect(snap.stepsSinceLastCheckpoint).toBe(0)
     expect(snap.triggeredThresholds).toEqual([])
+  })
+
+  it("currentState getter returns a copy of the state", () => {
+    const c = new CycleController()
+    c.advanceStep(3)
+    const state = c.currentState
+    expect(state.cycleIndex).toBe(0)
+    expect(state.stepsSinceLastCheckpoint).toBe(3)
+    expect(state.triggeredThresholds).toBeInstanceOf(Set)
+    // Mutating the returned copy must not affect the controller
+    state.triggeredThresholds.add(0.2)
+    expect(c.currentState.triggeredThresholds.has(0.2)).toBe(false)
+  })
+
+  it("cycleIndex getter exposes the current cycle", () => {
+    const c = new CycleController()
+    expect(c.cycleIndex).toBe(0)
+    c.restoreFromSnapshot({ ...c.getSnapshot(), cycleIndex: 7 })
+    expect(c.cycleIndex).toBe(7)
+  })
+
+  it("setEventBus wires the bus used by executeCheckpoint", async () => {
+    const events: string[] = []
+    const bus: EventBus = {
+      publish(event) {
+        events.push(event.type)
+      },
+    }
+    const writer: ICheckpointWriter = {
+      async write(sid: string) {
+        return `ckpt-${sid}`
+      },
+    }
+    const c = new CycleController({ checkpointWriter: writer })
+    c.setEventBus(bus)
+    c.advanceStep(5)
+    const usage = Math.ceil(128_000 * 0.25)
+    const action = c.evaluate(usage, 128_000, "s1", makeHistory(10))
+    await c.executeCheckpoint("s1", makeHistory(10), action)
+    expect(events).toContain("checkpoint:written")
+  })
+
+  it("setStateMachine wires the state machine used by evaluate", async () => {
+    const transitions: string[] = []
+    const sm: AgentStateMachine = {
+      state: "READY",
+      async transition(to: string) {
+        transitions.push(to)
+      },
+    }
+    const c = new CycleController()
+    c.setStateMachine(sm)
+    c.advanceStep(5)
+    const usage = Math.ceil(128_000 * 0.92)
+    const action = c.evaluate(usage, 128_000, "s1", makeHistory(10))
+    await c.executeRebuild("s1", action)
+    expect(transitions).toContain("COMPACTING")
+  })
+
+  it("setCheckpointWriter wires the writer used by executeCheckpoint", async () => {
+    const writer: ICheckpointWriter = {
+      async write(sid: string, _h: ConversationMessage[], _inc: boolean, idx: number) {
+        return `ckpt-${sid}-${idx}`
+      },
+    }
+    const c = new CycleController()
+    c.setCheckpointWriter(writer)
+    c.advanceStep(5)
+    const usage = Math.ceil(128_000 * 0.25)
+    const action = c.evaluate(usage, 128_000, "s1", makeHistory(10))
+    const result = await c.executeCheckpoint("s1", makeHistory(10), action)
+    expect(result).toBe("ckpt-s1-0")
+  })
+
+  it("setCallbacks merges into existing callbacks", async () => {
+    const calls: string[] = []
+    const c = new CycleController({
+      callbacks: {
+        onCompactingStart: async () => {
+          calls.push("start")
+        },
+      },
+    })
+    c.setCallbacks({
+      onRebuild: async () => {
+        calls.push("rebuild")
+      },
+      onCompactingEnd: async () => {
+        calls.push("end")
+      },
+    })
+    const action: CycleAction = { type: CycleActionType.REBUILD, threshold: 0.9 }
+    await c.executeRebuild("s1", action)
+    expect(calls).toEqual(["start", "rebuild", "end"])
+  })
+
+  it("constructor with explicit callbacks stores them", () => {
+    const callbacks: CycleCallbacks = {
+      onRebuild: async () => {},
+    }
+    const c = new CycleController({ callbacks })
+    const snap = c.getSnapshot()
+    expect(snap.cycleIndex).toBe(0)
+  })
+
+  it("createCycleController factory returns a working controller", () => {
+    const c = createCycleController({ config: { tokenBudget: 64_000 } })
+    expect(c).toBeInstanceOf(CycleController)
+    expect(c.getSnapshot().config.tokenBudget).toBe(64_000)
+    const viaSpread = createCycleController()
+    expect(viaSpread.getSnapshot().config.tokenBudget).toBe(DEFAULT_CYCLE_CONFIG.tokenBudget)
   })
 })

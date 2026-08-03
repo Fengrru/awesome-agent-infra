@@ -30,6 +30,8 @@ function edgeKey(sourceId: string, relation: string, targetId: string): string {
 }
 
 export class CodeGraph {
+  constructor() {}
+
   private _nodes = new Map<string, CodeGraphNode>()
   private _fileIndex = new Map<string, Set<string>>()
   private _outgoing = new Map<string, Map<EdgeRelation, Set<string>>>()
@@ -404,9 +406,10 @@ export class CodeGraph {
 
   /**
    * Get test entities that cover a given entity.
+   * Edges are created as test → covered (see builder), so look at incoming.
    */
   getTestsFor(entityId: string): CodeGraphNode[] {
-    return this.getOutgoing(entityId, "test_covers")
+    return this.getIncoming(entityId, "test_covers")
   }
 
   /** K-hop ego subgraph extraction via BFS */

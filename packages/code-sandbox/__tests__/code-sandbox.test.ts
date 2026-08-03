@@ -351,3 +351,27 @@ describe("VerifierPool", () => {
     expect(types).toContain("logic")
   })
 })
+
+describe("createSecureExecutor", () => {
+  test("returns a SecureExecutor instance", () => {
+    const { createSecureExecutor } = require("../src/index")
+    const executor = createSecureExecutor()
+    expect(executor).toBeInstanceOf(SecureExecutor)
+    expect(executor.config.timeoutMs).toBe(10000)
+  })
+
+  test("createSecureExecutor with custom config", () => {
+    const { createSecureExecutor } = require("../src/index")
+    const executor = createSecureExecutor({ timeoutMs: 5000, memoryLimitMb: 256 })
+    expect(executor.config.timeoutMs).toBe(5000)
+    expect(executor.config.memoryLimitMb).toBe(256)
+  })
+})
+
+describe("createVerifierPool", () => {
+  test("returns a VerifierPool instance", () => {
+    const { createVerifierPool } = require("../src/index")
+    const pool = createVerifierPool()
+    expect(pool).toBeInstanceOf(VerifierPool)
+  })
+})

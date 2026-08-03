@@ -7,6 +7,8 @@ import type { EvaluationMetrics } from "./utils"
  */
 // biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class MetricCalculator {
+  constructor() {}
+
   /**
    * Compute all evaluation metrics for a dataset.
    *

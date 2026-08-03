@@ -1,6 +1,18 @@
 import { hashString } from "./hashing"
 import type { CodeGraphNode, SymbolMetadata, SymbolType } from "./types"
 
+/** Identifiers that can be followed by `(` but are not call targets */
+const CALL_KEYWORDS = new Set([
+  "return", "if", "for", "while", "switch", "catch", "function", "new",
+  "typeof", "delete", "void", "await", "throw", "case", "do", "else",
+  "yield", "import", "export", "class", "extends", "implements",
+  "instanceof", "as", "from", "default", "try", "finally", "super",
+  "this", "const", "let", "var", "async", "static", "get", "set",
+  "type", "enum", "namespace", "module", "declare", "public", "private",
+  "protected", "readonly", "abstract", "satisfies", "using", "in", "of",
+  "break", "continue",
+])
+
 export interface TreeSitterNode {
   type: string
   childCount: number
@@ -873,9 +885,21 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
   const exports: string[] = []
   const tName = tokenizerName ?? "simple"
 
-  const importRe = /import\s+(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+['"]([^'"]+)['"]/g
+  const importRe =
+    /import\s+(?:\{([^}]*)\}|\*\s+as\s+(\w+)|(\w+))\s+from\s+['"]([^'"]+)['"]/g
   for (const m of source.matchAll(importRe)) {
-    if (m[1]) imports.push({ source: m[1], names: [] })
+    if (!m[4]) continue
+    const names = m[1]
+      ? m[1]
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : m[2]
+        ? ["*"]
+        : m[3]
+          ? [m[3]]
+          : []
+    imports.push({ source: m[4], names })
   }
 
   const lineOffsets = [0]
@@ -887,11 +911,18 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
   }
 
   const funcRe = /^[ \t]*(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm
-  for (const m of source.matchAll(funcRe)) {
+  const funcMatches = [...source.matchAll(funcRe)]
+  const funcSpans: Array<{ name: string; start: number; bodyStart: number }> = []
+  for (let i = 0; i < funcMatches.length; i++) {
+    const m = funcMatches[i]
+    if (!m) continue
     const lineNum = source.slice(0, m.index).split("\n").length
     const startB = byteAtLine(lineNum)
     const st = getTokenIndex(source, startB, filePath)
     const et = getTokenIndex(source, startB + m[0].length, filePath)
+    // Body spans from this declaration to the next one (or end of file)
+    const bodyEnd = i + 1 < funcMatches.length ? funcMatches[i + 1]!.index : source.length
+    const body = source.slice(m.index + m[0].length, bodyEnd)
     symbols.push({
       id: makeSymbolId("function", m[1]),
       type: "symbol",
@@ -905,9 +936,10 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
       startToken: st,
       endToken: et,
       tokenizerName: tName,
-      metadata: { isExported: m[0].includes("export") },
+      metadata: { isExported: m[0].includes("export"), contentHash: hashString(body) },
       mtime,
     })
+    funcSpans.push({ name: m[1], start: m.index, bodyStart: source.indexOf("{", m.index) })
   }
 
   const classRe = /^[ \t]*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/gm
@@ -1007,5 +1039,110 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
     exports.push(...names)
   }
 
-  return { symbols, imports, exports, calls: [], durationMs: Date.now() - startMs }
+  const calls = extractFallbackCalls(source, funcSpans)
+
+  return { symbols, imports, exports, calls, durationMs: Date.now() - startMs }
+}
+
+/**
+ * Best-effort call-site extraction for the regex fallback parser.
+ *
+ * Each function's body is the span from its declaration to the next
+ * declaration (or end of file); calls are `identifier(` matches inside that
+ * span, skipping keywords, the function's own name and nested declarations.
+ */
+function extractFallbackCalls(
+  source: string,
+  spans: Array<{ name: string; start: number; bodyStart: number }>,
+): ExtractedCall[] {
+  const calls: ExtractedCall[] = []
+
+  for (let i = 0; i < spans.length; i++) {
+    const fn = spans[i]
+    if (!fn || fn.bodyStart === -1) continue
+
+    const bodyEnd = i + 1 < spans.length ? spans[i + 1]!.start : source.length
+    const callRe = /\b([A-Za-z_$][\w$]*)\s*\(/g
+    callRe.lastIndex = fn.bodyStart + 1
+
+    for (;;) {
+      const cm = callRe.exec(source)
+      if (!cm || cm.index > bodyEnd) break
+
+      const calleeName = cm[1]
+      if (calleeName === fn.name || CALL_KEYWORDS.has(calleeName)) continue
+
+      const openParen = callRe.lastIndex - 1
+      const closeParen = findClosingParen(source, openParen, bodyEnd)
+      if (closeParen === -1) continue
+
+      const argText = source.slice(openParen + 1, closeParen)
+      const argList = splitCallArgs(argText)
+      const keywordArgNames: string[] = []
+      for (const arg of argList) {
+        const kw = /^\s*\{?\s*([A-Za-z_$][\w$]*)\s*:/.exec(arg)
+        if (kw) keywordArgNames.push(kw[1])
+      }
+
+      calls.push({
+        callerName: fn.name,
+        calleeName,
+        startByte: cm.index,
+        endByte: closeParen + 1,
+        startLine: source.slice(0, cm.index).split("\n").length,
+        endLine: source.slice(0, closeParen + 1).split("\n").length,
+        argCount: argList.length,
+        keywordArgNames,
+        hasSpread: argText.includes("..."),
+      })
+    }
+  }
+
+  return calls
+}
+
+/** Find the matching close paren for a call, bounded by `limit` */
+function findClosingParen(source: string, openParen: number, limit: number): number {
+  let depth = 0
+  for (let i = openParen; i < source.length && i <= limit; i++) {
+    const ch = source[i]
+    if (ch === "(") depth++
+    else if (ch === ")") {
+      depth--
+      if (depth === 0) return i
+    }
+  }
+  return -1
+}
+
+/** Split call arguments on top-level commas, ignoring quoted commas */
+function splitCallArgs(text: string): string[] {
+  const parts: string[] = []
+  let depth = 0
+  let current = ""
+  let quote: string | null = null
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (quote) {
+      current += ch
+      if (ch === quote && text[i - 1] !== "\\") quote = null
+      continue
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      quote = ch
+      current += ch
+      continue
+    }
+    if (ch === "(" || ch === "[" || ch === "{") depth++
+    else if (ch === ")" || ch === "]" || ch === "}") depth--
+    else if (ch === "," && depth === 0) {
+      parts.push(current)
+      current = ""
+      continue
+    }
+    current += ch
+  }
+  if (current.trim()) parts.push(current)
+  return parts
 }

@@ -14,6 +14,8 @@ import {
   type MemoryEntry,
   type MemorySection,
   type ProviderAdapter,
+  createDistillJob,
+  createDreamJob,
 } from "../src/index"
 
 // ── Fakes ──────────────────────────────────────────────────────────────────
@@ -451,5 +453,115 @@ describe("DistillJob — LLM crystallization", () => {
       },
       { useLLM: true },
     )
+  })
+})
+
+// ─── DistillJob: setProjectMemory ────────────────────────────────────────────
+
+describe("DistillJob setProjectMemory", () => {
+  test("wires project memory dependency", () => {
+    const job = new DistillJob()
+    const memory = new FakeMemory()
+    job.setProjectMemory(memory)
+    // No error thrown = success
+  })
+})
+
+// ─── DistillJob: startTimer / stopTimer ─────────────────────────────────────
+
+describe("DistillJob timer", () => {
+  test("startTimer and stopTimer do not throw", () => {
+    const job = new DistillJob()
+    let counter = 0
+    job.startTimer(() => ++counter)
+    expect(() => job.startTimer(() => 0)).not.toThrow() // second call is no-op
+    job.stopTimer()
+    expect(() => job.stopTimer()).not.toThrow() // second stop is safe
+  })
+
+  test("timer callback executes and handles errors gracefully", async () => {
+    const job = new DistillJob()
+    // mock setInterval to invoke the callback immediately
+    const origSetInterval = globalThis.setInterval
+    globalThis.setInterval = ((fn: () => void) => {
+      fn()
+      return 1 as unknown as ReturnType<typeof setInterval>
+    }) as typeof setInterval
+    try {
+      // startTimer sets up the interval; the mock fires the callback synchronously
+      // shouldDistill will throw because no archiver is set, but catch covers it
+      job.startTimer(() => 0)
+      // give the async callback time to settle
+      await new Promise((r) => setTimeout(r, 10))
+    } finally {
+      globalThis.setInterval = origSetInterval
+    }
+    job.stopTimer()
+  })
+})
+
+// ─── createDistillJob ────────────────────────────────────────────────────────
+
+describe("createDistillJob", () => {
+  test("factory creates DistillJob", () => {
+    const job = createDistillJob()
+    expect(job).toBeDefined()
+    expect(job instanceof DistillJob).toBe(true)
+  })
+})
+
+// ─── DreamJob: setEventArchiver ──────────────────────────────────────────────
+
+describe("DreamJob setEventArchiver", () => {
+  test("wires event archiver dependency", () => {
+    const job = new DreamJob()
+    const archiver: IEventArchiver = {
+      queryEvents: () => Promise.resolve([]),
+      getSessionIds: () => Promise.resolve([]),
+    }
+    job.setEventArchiver(archiver)
+    // No error thrown = success
+  })
+})
+
+// ─── DreamJob: startTimer / stopTimer ────────────────────────────────────────
+
+describe("DreamJob timer", () => {
+  test("startTimer and stopTimer do not throw", () => {
+    const job = new DreamJob()
+    job.startTimer()
+    expect(() => job.startTimer()).not.toThrow() // second call is no-op
+    job.stopTimer()
+    expect(() => job.stopTimer()).not.toThrow() // second stop is safe
+  })
+
+  test("timer callback executes and handles errors gracefully", async () => {
+    const job = new DreamJob()
+    // mock setInterval to invoke the callback immediately
+    const origSetInterval = globalThis.setInterval
+    globalThis.setInterval = ((fn: () => void) => {
+      fn()
+      return 1 as unknown as ReturnType<typeof setInterval>
+    }) as typeof setInterval
+    try {
+      // startTimer sets up the interval; the mock fires the callback synchronously
+      // shouldDream will throw because no project memory is set, but catch covers it
+      job.startTimer()
+      // give the async callback time to settle
+      await new Promise((r) => setTimeout(r, 10))
+    } finally {
+      globalThis.setInterval = origSetInterval
+    }
+    job.stopTimer()
+  })
+})
+
+// ─── createDreamJob ──────────────────────────────────────────────────────────
+
+describe("createDreamJob", () => {
+  test("factory creates DreamJob", () => {
+    const job = createDreamJob()
+    expect(job).toBeDefined()
+    expect(job instanceof DreamJob).toBe(true)
   })
 })

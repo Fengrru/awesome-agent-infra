@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { type FileTransaction, GitTransactionManager, threeWayMerge } from "../src/index"
+import { type FileTransaction, GitTransactionManager, createGitTransactionManager, threeWayMerge } from "../src/index"
 
 describe("GitTransactionManager (in-memory)", () => {
   let txm: GitTransactionManager
@@ -143,5 +143,20 @@ describe("GitTransactionManager (in-memory)", () => {
     expect(txm.getActiveTransaction()).toBe(tx)
     txm.rollback(tx)
     expect(txm.getActiveTransaction()).toBeNull()
+  })
+
+  test("merge delegates to threeWayMerge", () => {
+    txm = new GitTransactionManager()
+    const result = txm.merge("base\n", "base\n", "theirs\n")
+    expect(result.hasConflicts).toBe(false)
+    expect(result.content).toBe("theirs\n")
+  })
+})
+
+describe("createGitTransactionManager", () => {
+  test("returns a GitTransactionManager instance", () => {
+    const mgr = createGitTransactionManager()
+    expect(mgr).toBeInstanceOf(GitTransactionManager)
+    expect(mgr.getActiveTransaction()).toBeNull()
   })
 })

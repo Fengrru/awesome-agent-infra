@@ -468,6 +468,28 @@ describe("UnifiedMemoryBridge", () => {
     expect(ctx).toContain("API key rotation")
   })
 
+  // ── Consolidate ──────────────────────────────────────────────────────────
+
+  test("consolidate delegates to engine", () => {
+    const bridge = new UnifiedMemoryBridge()
+    const item = bridge.addMemory("memory to consolidate", 0.5)
+    const result = bridge.consolidate(item.id)
+    expect(typeof result).toBe("boolean")
+  })
+
+  test("consolidate returns false for non-existent id", () => {
+    const bridge = new UnifiedMemoryBridge()
+    expect(bridge.consolidate("nonexistent-id")).toBe(false)
+  })
+
+  // ── Set Max Tokens ────────────────────────────────────────────────────────
+
+  test("setMaxTokens updates the limit", () => {
+    const bridge = new UnifiedMemoryBridge()
+    bridge.setMaxTokens(4000)
+    expect(bridge.getMaxTokens()).toBe(4000)
+  })
+
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   test("reset clears bridge-level state", () => {

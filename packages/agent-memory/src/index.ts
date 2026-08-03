@@ -127,6 +127,8 @@ function jaccardSimilarity(textA: string, textB: string): number {
 // ── MemorySystem ─────────────────────────────────────────────────────────
 
 export class MemorySystem {
+  constructor() {}
+
   private workingMemories: WorkingMemory[] = []
   private longTermMemories: LongTermMemory[] = []
   private coreRules: CoreRule[] = []

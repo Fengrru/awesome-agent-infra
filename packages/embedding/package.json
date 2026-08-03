@@ -20,9 +20,6 @@
   },
   "keywords": ["tfidf", "embedding", "vector-search", "hybrid-search", "code-intelligence", "n-gram"],
   "license": "MIT",
-  "dependencies": {
-    "@fengru/internal-tfidf": "workspace:*"
-  },
   "devDependencies": {
     "typescript": "^5.0.0"
   },

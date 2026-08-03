@@ -122,6 +122,23 @@ describe("MemoryBackend (engine-db × agent-memory)", () => {
     const profiles = backend.getUserProfiles("hash123")
     expect(Array.isArray(profiles)).toBe(true)
   })
+
+  test("searchByTags delegates to engine", () => {
+    const db = new EngineDatabase()
+    db.setDatabase(createMockDB())
+
+    const backend = new MemoryBackend(db)
+    const results = backend.searchByTags(["test"])
+    expect(Array.isArray(results)).toBe(true)
+  })
+
+  test("markSuccessful delegates to engine", () => {
+    const db = new EngineDatabase()
+    db.setDatabase(createMockDB())
+
+    const backend = new MemoryBackend(db)
+    expect(() => backend.markSuccessful("mem-1")).not.toThrow()
+  })
 })
 
 // ── EventArchiveBackend ────────────────────────────────────────────────
@@ -208,6 +225,31 @@ describe("EventArchiveBackend (engine-db × archiver/dreamdistill)", () => {
     const sessions = await backend.getSessionIds(50)
 
     expect(Array.isArray(sessions)).toBe(true)
+  })
+
+  test("queryEvents with string payload parses JSON", async () => {
+    const mockEngine = {
+      queryEvents(_sid: string, _fromSeq?: number, _limit?: number) {
+        return [
+          {
+            event_type: "test",
+            timestamp: 1234567890,
+            session_id: "s1",
+            payload: '{"key":"value"}',
+          },
+        ]
+      },
+      countEvents(_sid: string) {
+        return 1
+      },
+    } as unknown as EngineDatabase
+
+    const backend = new EventArchiveBackend(mockEngine)
+    const events = await backend.queryEvents("s1", 10)
+
+    expect(events.length).toBe(1)
+    expect(events[0]).toHaveProperty("payload")
+    expect(events[0].payload).toEqual({ key: "value" })
   })
 
   // ── Structural typing verification ────────────────────────────────

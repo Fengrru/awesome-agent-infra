@@ -12,6 +12,7 @@ import {
   ParticleFilter,
   QMDPSolver,
   StateHasher,
+  createPOMDPPlanner,
   createState,
   defaultGoalFn,
   defaultRewardFn,
@@ -991,5 +992,12 @@ describe("POMDPPlanner - Step structure", () => {
       expect(step).toHaveProperty("step")
       expect(typeof step.chosenQValue).toBe("number")
     }
+  })
+})
+
+describe("createPOMDPPlanner", () => {
+  test("returns a POMDPPlanner instance", () => {
+    const planner = createPOMDPPlanner([], { maxPlanSteps: 5 })
+    expect(planner).toBeInstanceOf(POMDPPlanner)
   })
 })

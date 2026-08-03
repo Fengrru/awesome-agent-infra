@@ -9,6 +9,7 @@ import {
   type IProjectMemoryWriter,
   type ProviderAdapter,
   type StructuredCheckpoint,
+  createCheckpointWriter,
 } from "../src/index"
 
 async function withTempWriter(fn: (writer: CheckpointWriter, outputDir: string) => Promise<void>): Promise<void> {
@@ -286,5 +287,18 @@ describe("management", () => {
       const path2 = await writer.write("sess1", HISTORY, false, 11)
       expect(path2).toContain("checkpoint_v1_cycle11.json")
     })
+  })
+})
+
+describe("createCheckpointWriter", () => {
+  test("returns a CheckpointWriter instance", () => {
+    const writer = createCheckpointWriter({ maxTokens: 100 })
+    expect(writer).toBeInstanceOf(CheckpointWriter)
+    expect(writer.config.maxTokens).toBe(100)
+  })
+
+  test("works with no arguments", () => {
+    const writer = createCheckpointWriter()
+    expect(writer).toBeInstanceOf(CheckpointWriter)
   })
 })

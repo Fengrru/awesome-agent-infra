@@ -21,6 +21,7 @@ import {
   SleepConsolidation,
   SleepStage,
   WorkingMemory,
+  createMemoryEngine,
   createMemoryItem,
 } from "../src/index"
 
@@ -1256,5 +1257,13 @@ describe("Enums", () => {
 
   test("ConfidenceLevel has 4 levels", () => {
     expect(Object.values(ConfidenceLevel).length).toBe(4)
+  })
+})
+
+describe("createMemoryEngine", () => {
+  test("returns a MemoryEngine instance", () => {
+    const engine = createMemoryEngine()
+    expect(engine).toBeInstanceOf(MemoryEngine)
+    expect(engine.workingMemory).toBeDefined()
   })
 })

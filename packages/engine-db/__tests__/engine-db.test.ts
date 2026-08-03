@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite"
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { EngineDatabase, type ISQLiteDatabase, type ISQLiteStatement } from "../src/index"
+import { EngineDatabase, createEngineDatabase, type ISQLiteDatabase, type ISQLiteStatement } from "../src/index"
 
 // bun:sqlite → ISQLiteDatabase adapter
 function bunAdapter(db: Database): ISQLiteDatabase {
@@ -114,6 +114,43 @@ beforeEach(() => {
       scope TEXT DEFAULT 'session',
       hit_count INTEGER DEFAULT 0,
       created_at INTEGER NOT NULL
+    )
+  `)
+
+  // Create engine_session, agent_self, and user_profile tables
+  db.run(`
+    CREATE TABLE IF NOT EXISTS engine_session (
+      session_id TEXT PRIMARY KEY,
+      title TEXT,
+      status TEXT NOT NULL,
+      workspace_path TEXT,
+      current_checkpoint_id TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS agent_self (
+      rule_id TEXT PRIMARY KEY,
+      category TEXT NOT NULL,
+      content TEXT NOT NULL,
+      token_count INTEGER NOT NULL,
+      importance REAL DEFAULT 0.8,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_profile (
+      profile_id TEXT PRIMARY KEY,
+      user_hash TEXT NOT NULL,
+      category TEXT NOT NULL,
+      content TEXT NOT NULL,
+      token_count INTEGER NOT NULL,
+      importance REAL DEFAULT 0.7,
+      frequency_score INTEGER DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      last_accessed INTEGER NOT NULL
     )
   `)
 
@@ -306,5 +343,279 @@ describe("EngineDatabase", () => {
 
     expect(engineDb.countEvents("session-a")).toBe(1)
     expect(engineDb.countEvents("session-b")).toBe(1)
+  })
+
+  // ─── initialize with factory ───────────────────────────────────
+
+  test("initialize with factory creates tables and connects", async () => {
+    const localDb = new EngineDatabase()
+    const bunDb = new Database(":memory:")
+    await localDb.initialize(() => bunAdapter(bunDb))
+    expect(localDb.isConnected()).toBe(true)
+    localDb.close()
+  })
+
+  // ─── deleteColdEvents ──────────────────────────────────────────
+
+  test("deleteColdEvents removes old events and inserts archive summary", async () => {
+    const now = Date.now()
+    await engineDb.insertEvents([
+      {
+        event_id: "cold-1",
+        session_id: "s-cold",
+        parent_event_id: null,
+        event_type: "log",
+        payload: "{}",
+        status: "success",
+        token_cost: 0,
+        duration_ms: 0,
+        sequence_index: 1,
+        timestamp: now - 10000,
+      },
+      {
+        event_id: "cold-2",
+        session_id: "s-cold",
+        parent_event_id: null,
+        event_type: "log",
+        payload: "{}",
+        status: "success",
+        token_cost: 0,
+        duration_ms: 0,
+        sequence_index: 2,
+        timestamp: now,
+      },
+    ])
+
+    expect(engineDb.countEvents("s-cold")).toBe(2)
+    engineDb.deleteColdEvents("s-cold", 1, "/tmp/archive.json", 1)
+    // Archive summary event should be present, old events deleted
+    const remaining = engineDb.queryEvents("s-cold")
+    expect(remaining.length).toBeGreaterThanOrEqual(1)
+  })
+
+  // ─── searchByTags ──────────────────────────────────────────────
+
+  test("searchByTags finds memories by tag", () => {
+    engineDb.insertMemory({
+      memory_id: "mem-tag-1",
+      content: "TypeScript memory",
+      token_count: 5,
+      importance: 0.8,
+      access_count: 1,
+      created_at: Date.now(),
+      last_accessed: Date.now(),
+      retention_score: 0.9,
+      tags: ["typescript", "coding"],
+    })
+    engineDb.insertMemory({
+      memory_id: "mem-tag-2",
+      content: "Rust memory",
+      token_count: 4,
+      importance: 0.7,
+      access_count: 1,
+      created_at: Date.now(),
+      last_accessed: Date.now(),
+      retention_score: 0.8,
+      tags: ["rust", "coding"],
+    })
+
+    const results = engineDb.searchByTags(["typescript"])
+    expect(results.length).toBeGreaterThanOrEqual(1)
+    expect(results.some((m) => m.content === "TypeScript memory")).toBe(true)
+  })
+
+  test("searchByTags returns empty for empty tags", () => {
+    const results = engineDb.searchByTags([])
+    expect(results).toEqual([])
+  })
+
+  // ─── markSuccessful ────────────────────────────────────────────
+
+  test("markSuccessful increments access_count", () => {
+    engineDb.insertMemory({
+      memory_id: "mem-mark",
+      content: "Mark test",
+      token_count: 3,
+      importance: 0.5,
+      access_count: 0,
+      created_at: Date.now(),
+      last_accessed: Date.now(),
+      retention_score: 1.0,
+    })
+
+    // markSuccessful should not throw
+    expect(() => engineDb.markSuccessful("mem-mark")).not.toThrow()
+  })
+
+  // ─── copyEventLog & copyLatestCheckpoint ──────────────────────
+
+  test("copyEventLog copies events to target session", async () => {
+    await engineDb.insertEvents([
+      {
+        event_id: "src-1",
+        session_id: "src-session",
+        parent_event_id: null,
+        event_type: "log",
+        payload: "{}",
+        status: "success",
+        token_cost: 0,
+        duration_ms: 0,
+        sequence_index: 1,
+        timestamp: Date.now(),
+      },
+    ])
+
+    const copied = engineDb.copyEventLog("src-session", "dst-session")
+    expect(copied).toBe(1)
+    expect(engineDb.countEvents("dst-session")).toBe(1)
+  })
+
+  test("copyEventLog returns 0 for empty source", () => {
+    const copied = engineDb.copyEventLog("nonexistent", "dst")
+    expect(copied).toBe(0)
+  })
+
+  test("copyLatestCheckpoint copies checkpoint to target session", () => {
+    engineDb.insertCheckpoint({
+      checkpoint_id: "cp-src",
+      session_id: "src-session",
+      last_event_id: "evt-1",
+      level: "L1",
+      execution_state: { step: 1 },
+      context_hash: "hash1",
+      created_at: Date.now(),
+    })
+
+    const copied = engineDb.copyLatestCheckpoint("src-session", "dst-session")
+    expect(copied).not.toBeNull()
+    expect(copied!.session_id).toBe("dst-session")
+    expect(copied!.checkpoint_id).toContain("fork_")
+  })
+
+  test("copyLatestCheckpoint returns null when no source checkpoint", () => {
+    const result = engineDb.copyLatestCheckpoint("no-cp-session", "dst")
+    expect(result).toBeNull()
+  })
+
+  // ─── Session CRUD ─────────────────────────────────────────────
+
+  test("upsertSession and getSession round-trip", () => {
+    engineDb.upsertSession({
+      session_id: "sess-1",
+      title: "Test Session",
+      status: "active",
+      workspace_path: "/workspace/test",
+    })
+
+    const sess = engineDb.getSession("sess-1")
+    expect(sess).not.toBeNull()
+    expect((sess as any).title).toBe("Test Session")
+    expect((sess as any).status).toBe("active")
+  })
+
+  test("getSession returns null for nonexistent session", () => {
+    const sess = engineDb.getSession("no-such-session")
+    expect(sess).toBeNull()
+  })
+
+  test("updateSessionStatus updates status without checkpoint", () => {
+    engineDb.upsertSession({
+      session_id: "sess-status",
+      status: "active",
+    })
+
+    engineDb.updateSessionStatus("sess-status", "completed")
+    const sess = engineDb.getSession("sess-status")
+    expect((sess as any).status).toBe("completed")
+  })
+
+  test("updateSessionStatus updates with checkpoint", () => {
+    engineDb.upsertSession({
+      session_id: "sess-cp",
+      status: "active",
+    })
+
+    engineDb.updateSessionStatus("sess-cp", "paused", "cp-123")
+    const sess = engineDb.getSession("sess-cp")
+    expect((sess as any).status).toBe("paused")
+    expect((sess as any).current_checkpoint_id).toBe("cp-123")
+  })
+
+  // ─── Agent Self Rules ─────────────────────────────────────────
+
+  test("upsertAgentSelfRule and getAgentSelfRules round-trip", () => {
+    engineDb.upsertAgentSelfRule({
+      rule_id: "rule-1",
+      category: "safety",
+      content: "Never delete user files without confirmation",
+      token_count: 8,
+      importance: 0.95,
+    })
+
+    const rules = engineDb.getAgentSelfRules()
+    expect(rules.length).toBeGreaterThanOrEqual(1)
+    expect(rules.some((r) => r.rule_id === "rule-1")).toBe(true)
+  })
+
+  // ─── User Profile ─────────────────────────────────────────────
+
+  test("upsertUserProfile and getUserProfiles round-trip", () => {
+    engineDb.upsertUserProfile({
+      profile_id: "prof-1",
+      user_hash: "user123",
+      category: "preference",
+      content: "Prefers dark theme",
+      token_count: 4,
+      importance: 0.6,
+    })
+
+    const profiles = engineDb.getUserProfiles("user123")
+    expect(profiles.length).toBeGreaterThanOrEqual(1)
+    expect(profiles.some((p) => p.profile_id === "prof-1")).toBe(true)
+  })
+
+  test("getUserProfiles without userHash returns all", () => {
+    engineDb.upsertUserProfile({
+      profile_id: "prof-all",
+      user_hash: "user-all",
+      category: "general",
+      content: "All users",
+      token_count: 3,
+      importance: 0.5,
+    })
+
+    const profiles = engineDb.getUserProfiles()
+    expect(profiles.length).toBeGreaterThanOrEqual(1)
+  })
+
+  // ─── close ────────────────────────────────────────────────────
+
+  test("close disconnects non-external database", () => {
+    const localDb = new EngineDatabase()
+    const bunDb = new Database(":memory:")
+    localDb.setDatabase(bunAdapter(bunDb))
+    expect(localDb.isConnected()).toBe(true)
+    localDb.close()
+    expect(localDb.isConnected()).toBe(false)
+  })
+
+  test("close does not close external database", () => {
+    // engineDb is external — closing it should not disconnect
+    expect(engineDb.isConnected()).toBe(true)
+    engineDb.close()
+    expect(engineDb.isConnected()).toBe(true)
+  })
+
+  // ─── createEngineDatabase ─────────────────────────────────────
+
+  test("createEngineDatabase factory creates instance", () => {
+    const edb = createEngineDatabase()
+    expect(edb).toBeInstanceOf(EngineDatabase)
+    expect(edb.isConnected()).toBe(false) // not initialized yet
+  })
+
+  test("createEngineDatabase accepts path argument", () => {
+    const edb = createEngineDatabase(":memory:")
+    expect(edb).toBeInstanceOf(EngineDatabase)
   })
 })

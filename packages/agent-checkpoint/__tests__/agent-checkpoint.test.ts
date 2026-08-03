@@ -3,6 +3,7 @@ import {
   type Checkpoint,
   type CheckpointDatabase,
   CheckpointManager,
+  createCheckpointManager,
   type L1Snapshot,
   type L2Snapshot,
   type L3Snapshot,
@@ -218,5 +219,107 @@ describe("clear and cache accounting", () => {
     mgr.clear()
     expect(mgr.getAllCheckpoints()).toEqual([])
     expect(mgr.getCacheMemoryBytes()).toBe(0)
+  })
+})
+
+describe("factory", () => {
+  test("createCheckpointManager returns a working manager", () => {
+    const mgr = createCheckpointManager()
+    expect(mgr).toBeInstanceOf(CheckpointManager)
+    const cp = mgr.createL1("s1", makeL1(), "ctx", "e1")
+    expect(mgr.getLatest("s1")!.checkpoint_id).toBe(cp.checkpoint_id)
+  })
+})
+
+describe("LRU cache internals", () => {
+  interface LRUView {
+    get(id: string): Checkpoint | undefined
+    set(id: string, cp: Checkpoint, sizeBytes: number, onEvict?: (cp: Checkpoint) => void): void
+    has(id: string): boolean
+    delete(id: string): void
+    clear(): void
+    readonly size: number
+    readonly memoryBytes: number
+  }
+
+  function lruOf(mgr: CheckpointManager): LRUView {
+    return (mgr as unknown as { lruCache: LRUView }).lruCache
+  }
+
+  test("get returns cached entry and refreshes recency", () => {
+    const mgr = new CheckpointManager()
+    const lru = lruOf(mgr)
+    const cp = mgr.createL1("s1", makeL1(), "ctx", "e1")
+    expect(lru.has(cp.checkpoint_id)).toBe(true)
+    expect(lru.get(cp.checkpoint_id)).toBe(cp)
+    expect(lru.get("missing")).toBeUndefined()
+    expect(lru.has("missing")).toBe(false)
+    expect(lru.size).toBe(1)
+    expect(lru.memoryBytes).toBeGreaterThan(0)
+  })
+
+  test("set replaces existing entry and adjusts bytes", () => {
+    const mgr = new CheckpointManager()
+    const lru = lruOf(mgr)
+    const cp = mgr.createL1("s1", makeL1(), "ctx", "e1")
+    lru.set(cp.checkpoint_id, cp, 100)
+    const before = lru.memoryBytes
+    lru.set(cp.checkpoint_id, cp, 200)
+    expect(lru.memoryBytes).toBe(before - 100 + 200)
+    lru.delete(cp.checkpoint_id)
+    expect(lru.has(cp.checkpoint_id)).toBe(false)
+    expect(lru.memoryBytes).toBe(0)
+    lru.delete(cp.checkpoint_id) // deleting a missing key is a no-op
+  })
+
+  test("set evicts oldest entries when over capacity", () => {
+    const mgr = new CheckpointManager()
+    const lru = lruOf(mgr)
+    const cp: Checkpoint = {
+      checkpoint_id: "cp-x",
+      session_id: "s1",
+      last_event_id: "",
+      level: "L1",
+      execution_state: {},
+      context_hash: "h",
+      created_at: 0,
+    }
+    const evicted: Checkpoint[] = []
+    lru.set("a", cp, 4 * 1024 * 1024, (c) => evicted.push(c))
+    lru.set("b", cp, 2 * 1024 * 1024, (c) => evicted.push(c))
+    expect(evicted).toEqual([cp])
+    expect(lru.has("a")).toBe(false)
+    expect(lru.has("b")).toBe(true)
+    expect(lru.size).toBe(1)
+  })
+
+  test("cache eviction triggers manager persistence callback", () => {
+    const mgr = new CheckpointManager()
+    const db = new FakeDB()
+    mgr.setDatabase(db)
+    const lru = lruOf(mgr)
+    const cp: Checkpoint = {
+      checkpoint_id: "cp-y",
+      session_id: "s1",
+      last_event_id: "",
+      level: "L1",
+      execution_state: {},
+      context_hash: "h",
+      created_at: 0,
+    }
+    const onCacheEvict = (mgr as unknown as { onCacheEvict: (c: Checkpoint) => void }).onCacheEvict
+    lru.set("a", cp, 4 * 1024 * 1024, onCacheEvict)
+    lru.set("b", cp, 2 * 1024 * 1024, onCacheEvict)
+    expect(db.inserted).toEqual([cp]) // eviction persists via manager callback
+  })
+
+  test("clear resets map and bytes", () => {
+    const mgr = new CheckpointManager()
+    const lru = lruOf(mgr)
+    const cp = mgr.createL1("s1", makeL1(), "ctx", "e1")
+    lru.clear()
+    expect(lru.size).toBe(0)
+    expect(lru.memoryBytes).toBe(0)
+    expect(lru.has(cp.checkpoint_id)).toBe(false)
   })
 })

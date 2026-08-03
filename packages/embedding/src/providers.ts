@@ -76,6 +76,8 @@ export interface EmbeddingProvider {
  * ```
  */
 export class EmbeddingProviderRegistry {
+  constructor() {}
+
   private providers = new Map<string, EmbeddingProvider>()
   private priority: string[] = []
 

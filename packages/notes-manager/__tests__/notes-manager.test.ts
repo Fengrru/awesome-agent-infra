@@ -218,3 +218,42 @@ describe("NotesManager", () => {
     expect(await largeMgr.shouldCompact(sid2)).toBe(false)
   })
 })
+
+describe("createNotesManager", () => {
+  test("returns a NotesManager instance", () => {
+    const { createNotesManager } = require("../src/index")
+    const mgr = createNotesManager({ notesDir: testDir })
+    expect(mgr).toBeInstanceOf(NotesManager)
+  })
+})
+
+describe("in-memory fallback backend", () => {
+  test("uses in-memory store when forced via env var", async () => {
+    process.env.NOTES_MANAGER_BACKEND = "memory"
+    try {
+      const mgr = new NotesManager({ notesDir: "/tmp/notes-fallback" })
+      const sid = "fb"
+
+      await mgr.append(sid, "note-a", "discovery")
+      await mgr.append(sid, "note-b")
+      expect((await mgr.readAll(sid)).length).toBe(2)
+
+      const grouped = await mgr.readByTag(sid)
+      expect(grouped.discovery.length).toBe(1)
+      expect(grouped.general.length).toBe(1)
+
+      expect(await mgr.shouldCompact(sid)).toBe(false)
+      await mgr.append(sid, "x".repeat(60000), "error")
+      expect(await mgr.shouldCompact(sid)).toBe(true)
+
+      await mgr.clear(sid)
+      expect(await mgr.readAll(sid)).toEqual([])
+
+      await mgr.append(sid, "again")
+      await mgr.deleteSession(sid)
+      expect(await mgr.readAll(sid)).toEqual([])
+    } finally {
+      delete process.env.NOTES_MANAGER_BACKEND
+    }
+  })
+})

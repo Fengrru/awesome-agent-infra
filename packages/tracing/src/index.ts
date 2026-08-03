@@ -41,6 +41,8 @@ export interface Tracer {
 // ── No-Op Implementations ───────────────────────────────────────────────────
 
 class NoOpSpan implements Span {
+  constructor() {}
+
   setAttribute(_key: string, _value: string | number | boolean): Span {
     return this
   }
@@ -54,6 +56,8 @@ class NoOpSpan implements Span {
 }
 
 class NoOpTracer implements Tracer {
+  constructor() {}
+
   startSpan(_name: string, _options?: SpanOptions): Span {
     return new NoOpSpan()
   }

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { DEFAULT_CONFIG, type Discovery, ProjectMemoryManager } from "../src/index"
+import { createProjectMemoryManager, DEFAULT_CONFIG, type Discovery, ProjectMemoryManager } from "../src/index"
 
 async function withTempFile(fn: (filePath: string) => Promise<void>): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), "project-memory-test-"))
@@ -215,6 +215,19 @@ describe("shouldDream / getEntryCount", () => {
       expect(await mgr.shouldDream()).toBe(true)
       expect(await mgr.getEntryCount()).toBe(3)
     })
+  })
+})
+
+describe("factory function", () => {
+  test("createProjectMemoryManager returns a ProjectMemoryManager", () => {
+    const mgr = createProjectMemoryManager()
+    expect(mgr).toBeInstanceOf(ProjectMemoryManager)
+    expect(mgr.config.maxEntries).toBe(500)
+  })
+
+  test("createProjectMemoryManager forwards config args", () => {
+    const mgr = createProjectMemoryManager({ maxEntries: 42 })
+    expect(mgr.config.maxEntries).toBe(42)
   })
 })
 

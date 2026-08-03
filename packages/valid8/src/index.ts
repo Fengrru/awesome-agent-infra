@@ -557,9 +557,8 @@ function spawnAsync(
     proc.on("close", (code) => {
       resolve({ status: code, stdout })
     })
-    proc.on("error", (err) => {
-      reject(err)
-    })
+    const onError = (err: Error): void => reject(err)
+    proc.on("error", onError)
     proc.stdin?.write(input)
     proc.stdin?.end()
   })

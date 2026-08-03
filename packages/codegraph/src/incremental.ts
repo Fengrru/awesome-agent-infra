@@ -108,49 +108,55 @@ export class IncrementalParser {
       return { entities: [], callSites: [], removedEntityIds: [], resolvedMarkers: [], editRange: [0, 0] }
     }
 
+    const prevSource = this.sourceCache.get(relPath)
     this.sourceCache.set(relPath, source)
 
     const prevEntities = this.graph.getNodesForFile(relPath)
     const prevContentHash = this.computeFileContentHash(prevEntities)
 
-    const prevSource = this.sourceCache.get(relPath)
-    if (prevSource) {
-      const newHash = hashString(source)
-      const defaultEditRange: [number, number] = [0, source.length]
-      if (hashesEqual(prevContentHash, newHash)) {
-        return {
-          entities: [],
-          callSites: [],
-          removedEntityIds: [],
-          resolvedMarkers: [],
-          editRange: edit.editRange ?? defaultEditRange,
-        }
+    const newHash = hashString(source)
+    const defaultEditRange: [number, number] = [0, source.length]
+    // Raw source unchanged → skip re-extraction. The entity-hash combo is a
+    // fallback for graphs built by consumers that never populated the cache,
+    // so it must fire even when the source cache is cold (prevSource undefined).
+    if (
+      (prevSource !== undefined && hashesEqual(hashString(prevSource), newHash)) ||
+      hashesEqual(prevContentHash, newHash)
+    ) {
+      return {
+        entities: [],
+        callSites: [],
+        removedEntityIds: [],
+        resolvedMarkers: [],
+        editRange: edit.editRange ?? defaultEditRange,
       }
     }
 
     const mtime = statSync(filePath).mtimeMs
     const extractResult = await extractFromFile(filePath, source, mtime, undefined, this.tokenizerName)
 
-    const removedEntityIds = this.graph.removeFileNodes(relPath)
-    this.callSites.removeByFile(relPath)
-
-    const staleIds = new Set<string>(removedEntityIds)
-
+    // Collect 1-hop neighbors BEFORE removing the old nodes — removeNode
+    // destroys incident edges, so querying after removal returns nothing.
     const neighbors = new Set<string>()
-    for (const entityId of removedEntityIds) {
-      const callers = this.graph.getCallersOf(entityId)
+    for (const entity of prevEntities) {
+      const callers = this.graph.getCallersOf(entity.id)
       for (const caller of callers) {
         neighbors.add(caller.id)
       }
-      const overridden = this.graph.getOverriddenBy(entityId)
+      const overridden = this.graph.getOverriddenBy(entity.id)
       for (const ov of overridden) {
         neighbors.add(ov.id)
       }
-      const typeUsers = this.graph.getTypeUsersOf(entityId)
+      const typeUsers = this.graph.getTypeUsersOf(entity.id)
       for (const tu of typeUsers) {
         neighbors.add(tu.id)
       }
     }
+
+    const removedEntityIds = this.graph.removeFileNodes(relPath)
+    this.callSites.removeByFile(relPath)
+
+    const staleIds = new Set<string>(removedEntityIds)
 
     const editRange: [number, number] = edit.editRange ?? [0, source.length]
     const now = Date.now()
@@ -355,14 +361,16 @@ export class IncrementalParser {
 
   private resolveImportSimple(importSource: string, currentFile: string): string | null {
     if (!importSource.startsWith(".") && !importSource.startsWith("/")) return null
+    // Normalize the leading "./" so "src/" + "./util" resolves like "src/util"
+    const normalized = importSource.startsWith("./") ? importSource.slice(2) : importSource
     const dir = currentFile.includes("/") ? currentFile.substring(0, currentFile.lastIndexOf("/")) : ""
     const extensions = ["", ".ts", ".tsx", ".js", ".jsx", ".mjs"]
     for (const ext of extensions) {
-      const candidate = `${dir ? `${dir}/` : ""}${importSource}${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${normalized}${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
     for (const ext of [".ts", ".js", ".tsx", ".jsx"]) {
-      const candidate = `${dir ? `${dir}/` : ""}${importSource}/index${ext}`
+      const candidate = `${dir ? `${dir}/` : ""}${normalized}/index${ext}`
       if (this.graph.hasNode(`file:${candidate}`)) return candidate
     }
     return null

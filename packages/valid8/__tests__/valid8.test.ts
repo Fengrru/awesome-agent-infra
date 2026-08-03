@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { ValidationNetwork, createDefaultExternalScanner } from "../src/index"
+import { ValidationNetwork, createDefaultExternalScanner, createValidationNetwork } from "../src/index"
 
 describe("ValidationNetwork", () => {
   const valid8 = new ValidationNetwork({ threshold: 0.7, maxRetries: 3 })
@@ -222,5 +222,19 @@ describe("createDefaultExternalScanner", () => {
     const issues = await scanner("")
     expect(Array.isArray(issues)).toBe(true)
     expect(issues.length).toBe(0)
+  })
+})
+
+describe("createValidationNetwork", () => {
+  test("returns a ValidationNetwork instance", () => {
+    const vn = createValidationNetwork({ threshold: 0.5, maxRetries: 2 })
+    expect(vn).toBeInstanceOf(ValidationNetwork)
+    expect(vn.getThreshold()).toBe(0.5)
+    expect(vn.getMaxRetries()).toBe(2)
+  })
+
+  test("works with no arguments", () => {
+    const vn = createValidationNetwork()
+    expect(vn).toBeInstanceOf(ValidationNetwork)
   })
 })

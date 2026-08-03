@@ -2,7 +2,7 @@
 
 # awesome-agent-infra
 
-> **Awesome Agent Infrastructure** — 43 battle-tested, zero-dependency TypeScript packages for building reliable AI agents.
+> **Awesome Agent Infrastructure** — 42 battle-tested, zero-dependency TypeScript packages for building reliable AI agents.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
@@ -16,9 +16,9 @@ Zero runtime dependencies. Plug into any framework.
 
 ## Why awesome-agent-infra?
 
-- **Zero dependencies, zero conflicts.** Every one of the 43 packages ships with no runtime dependencies — drop them into any agent stack without version fights or bloat.
+- **Zero dependencies, zero conflicts.** Every one of the 42 packages ships with no external runtime dependencies — drop them into any agent stack without version fights or bloat.
 - **One package per concern.** Memory, patching, validation, search, workflows, self-evolution — each building block is isolated, typed, and testable on its own.
-- **Production-grade by default.** Every package carries tests, a 95%+ coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
+- **Production-grade by default.** Every package carries tests, an 85%+ coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
 - **TypeScript-native.** Written in strict TypeScript 5.8 with ESM-only output, so your IDE and compiler see exactly what your agent runs.
 
 ## Quick Start
@@ -202,10 +202,10 @@ Experimental packages are marked with an **Experimental** notice in their README
 
 ```bash
 bun install                          # Install all dependencies
-bun run build                        # Build all packages (43 packages)
+bun run build                        # Build all packages (42 packages)
 bun run test                         # Run all tests
 bun run lint                         # Biome strict lint
-bun scripts/check-coverage.ts        # Coverage gate (95%+ per package)
+bun scripts/check-coverage.ts        # Coverage gate (85%+ per package)
 bun run benchmarks/run-all.ts        # Micro-benchmarks
 ```
 

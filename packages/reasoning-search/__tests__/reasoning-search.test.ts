@@ -5,6 +5,7 @@ import {
   type ReasoningScoreFn,
   ReasoningSearch,
   adaptiveFloor,
+  createReasoningSearch,
   isComplete,
   isCompleteCode,
   isCompleteLogic,
@@ -842,5 +843,14 @@ describe("selfConsistencyEvaluate", () => {
 
     const result = await selfConsistencyEvaluate("test", generateFn, 1)
     expect(result.answer).toBe("Final: 42")
+  })
+})
+
+describe("createReasoningSearch", () => {
+  test("returns a ReasoningSearch instance", () => {
+    const generateFn = async (_p: string, _n: number): Promise<string[]> => ["answer"]
+    const rs = createReasoningSearch(generateFn)
+    expect(rs).toBeInstanceOf(ReasoningSearch)
+    expect(rs.getConfig().maxDepth).toBe(15)
   })
 })

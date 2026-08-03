@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { type AgentSkill, DAG_GENERATION_PROMPT, HookPoints, type Skill, SkillManager, SkillSystem } from "../src/index"
+import { type AgentSkill, DAG_GENERATION_PROMPT, HookPoints, type Skill, SkillManager, SkillSystem, createSkillManager, createSkillSystem } from "../src/index"
 
 function makeSkill(id: string, trigger: string, priority = 5): Skill {
   return {
@@ -389,5 +389,20 @@ describe("exports", () => {
   test("DAG_GENERATION_PROMPT exposes goal/capability placeholders", () => {
     expect(DAG_GENERATION_PROMPT).toContain("{{goal}}")
     expect(DAG_GENERATION_PROMPT).toContain("{{capabilities}}")
+  })
+
+  test("createSkillSystem returns a SkillSystem instance", () => {
+    const sys = createSkillSystem()
+    expect(sys).toBeInstanceOf(SkillSystem)
+  })
+
+  test("createSkillManager returns a SkillManager instance", () => {
+    const sys = new SkillSystem()
+    const mgr = createSkillManager(
+      { projectSkillDir: "/tmp/proj", userSkillDir: "/tmp/user" },
+      sys,
+    )
+    expect(mgr).toBeInstanceOf(SkillManager)
+    expect(mgr.skillSystem).toBe(sys)
   })
 })

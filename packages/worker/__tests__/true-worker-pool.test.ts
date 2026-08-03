@@ -335,3 +335,11 @@ describe("TrueWorkerPool", () => {
     await pool.shutdown()
   })
 })
+
+describe("createTrueWorkerPool", () => {
+  test("returns a TrueWorkerPool instance", () => {
+    const { createTrueWorkerPool } = require("../src/index")
+    const pool = createTrueWorkerPool({ workerScript: WORKER_SCRIPT })
+    expect(pool).toBeInstanceOf(TrueWorkerPool)
+  })
+})

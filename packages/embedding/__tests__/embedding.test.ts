@@ -259,3 +259,67 @@ describe("HybridSearch", () => {
     expect(node1!.graphScore).toBe(0.8)
   })
 })
+
+describe("HybridSearch - setCodeGraph", () => {
+  it("setCodeGraph updates the code graph", async () => {
+    const tfidf = new EnhancedTFIDF()
+    tfidf.addDocument("doc1", "function foo(): void")
+    const hybrid = new HybridSearch(tfidf)
+
+    const mockGraph = {
+      getNodeCentrality(id) { return id === "doc1" ? 1.0 : 0 },
+      async searchNeighbors() { return [] },
+    }
+
+    hybrid.setCodeGraph(mockGraph)
+
+    const results = await hybrid.search({ query: "foo", topK: 5 })
+    expect(results.length).toBe(1)
+    expect(results[0].graphScore).toBe(1.0)
+  })
+})
+
+describe("CodeEmbeddingIndexer - getTextVector", () => {
+  it("getTextVector returns the TF-IDF vector for a document", () => {
+    const indexer = new CodeEmbeddingIndexer()
+    indexer.addItem({
+      id: "f1",
+      content: "function helloWorld(): void",
+      type: "function",
+      filePath: "test.ts",
+      startLine: 1,
+      endLine: 3,
+    })
+
+    const vec = indexer.getTextVector("f1")
+    expect(vec).toBeInstanceOf(Map)
+    expect(vec.size).toBeGreaterThan(0)
+  })
+
+  it("getTextVector returns null for unknown id", () => {
+    const indexer = new CodeEmbeddingIndexer()
+    expect(indexer.getTextVector("unknown")).toBeNull()
+  })
+})
+
+describe("createEnhancedTFIDF", () => {
+  it("returns an EnhancedTFIDF instance", () => {
+    const { createEnhancedTFIDF } = require("../src/index")
+    const tfidf = createEnhancedTFIDF()
+    expect(tfidf).toBeInstanceOf(EnhancedTFIDF)
+  })
+
+  it("createEnhancedTFIDF with config", () => {
+    const { createEnhancedTFIDF } = require("../src/index")
+    const tfidf = createEnhancedTFIDF({ ngramMin: 2, ngramMax: 4 })
+    expect(tfidf.vocabularySize).toBe(0)
+  })
+})
+
+describe("createCodeEmbeddingIndexer", () => {
+  it("returns a CodeEmbeddingIndexer instance", () => {
+    const { createCodeEmbeddingIndexer } = require("../src/index")
+    const indexer = createCodeEmbeddingIndexer()
+    expect(indexer).toBeInstanceOf(CodeEmbeddingIndexer)
+  })
+})

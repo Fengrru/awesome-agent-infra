@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type IProjectMemory, type ISkillManager, LearningNudge, type ProviderAdapter } from "../src/index"
+import { type IProjectMemory, type ISkillManager, LearningNudge, type ProviderAdapter, createLearningNudge } from "../src/index"
 
 class FakeMemory implements IProjectMemory {
   entries: Array<{ section: string; content: string; confidence: number }> = []
@@ -219,5 +219,19 @@ describe("state management", () => {
     const stats = nudge.getPatternStats()
     stats.set("cap-x", 999)
     expect(nudge.getPatternStats().get("cap-x")).toBe(1)
+  })
+})
+
+describe("createLearningNudge factory", () => {
+  test("returns a LearningNudge instance", () => {
+    const nudge = createLearningNudge()
+    expect(nudge).toBeInstanceOf(LearningNudge)
+    expect(nudge.getToolCallCount()).toBe(0)
+  })
+
+  test("forwards custom config", () => {
+    const nudge = createLearningNudge({ periodicInterval: 20 })
+    expect(nudge.getToolCallCount()).toBe(0)
+    expect(nudge.hasPending()).toBe(false)
   })
 })

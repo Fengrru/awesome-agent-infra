@@ -105,6 +105,7 @@ export interface DAGGeneratorConfig {
 
 // ── DAGGenerator ───────────────────────────────────────────────────────────
 
+/** Generates task DAGs from a goal and a capability list. */
 export class DAGGenerator {
   private config: DAGGeneratorConfig
   private llmCaller: ((prompt: string) => Promise<string>) | null = null
@@ -283,6 +284,10 @@ Generate an updated DAG that preserves completed node outputs and retries or rep
  * Supports K-parallel variant generation for ensemble selection.
  */
 export class LLMDAGGenerator extends DAGGenerator {
+  constructor(config?: DAGGeneratorConfig) {
+    super(config)
+  }
+
   private provider: ProviderAdapter | null = null
 
   /** Set provider and auto-wire the LLM caller */

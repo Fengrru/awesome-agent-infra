@@ -6,6 +6,17 @@ import {
   ebbinghausRetention,
   nextReviewDays,
 } from "../src/index.js"
+import { createConfidenceCalibrator } from "../src/calibrator.js"
+import {
+  addVectors,
+  dotProduct,
+  matMulVec,
+  subMatrices,
+  subVectors,
+  transpose,
+  vectorNorm,
+  zeros,
+} from "../src/linalg.js"
 
 // ─── Ebbinghaus ─────────────────────────────────────────────────────────────
 
@@ -327,5 +338,102 @@ describe("AgentMetacog", () => {
 
     expect(metacog.getRecentHistory(3).length).toBe(3)
     expect(metacog.getRecentHistory().length).toBe(10)
+  })
+})
+
+// ─── Linear Algebra ─────────────────────────────────────────────────────────
+
+describe("matMulVec", () => {
+  test("multiplies matrix and vector", () => {
+    const M = [
+      [1, 2],
+      [3, 4],
+    ]
+    const v = [5, 6]
+    const result = matMulVec(M, v)
+    expect(result[0]).toBe(1 * 5 + 2 * 6)
+    expect(result[1]).toBe(3 * 5 + 4 * 6)
+  })
+})
+
+describe("transpose", () => {
+  test("transposes a matrix", () => {
+    const M = [
+      [1, 2, 3],
+      [4, 5, 6],
+    ]
+    const result = transpose(M)
+    expect(result).toHaveLength(3)
+    expect(result[0]!).toEqual([1, 4])
+    expect(result[1]!).toEqual([2, 5])
+    expect(result[2]!).toEqual([3, 6])
+  })
+})
+
+describe("addVectors", () => {
+  test("adds two vectors element-wise", () => {
+    const a = [1, 2, 3]
+    const b = [4, 5, 6]
+    const result = addVectors(a, b)
+    expect(result).toEqual([5, 7, 9])
+  })
+})
+
+describe("subVectors", () => {
+  test("subtracts two vectors element-wise", () => {
+    const a = [10, 8, 6]
+    const b = [1, 2, 3]
+    const result = subVectors(a, b)
+    expect(result).toEqual([9, 6, 3])
+  })
+})
+
+describe("dotProduct", () => {
+  test("computes dot product", () => {
+    const a = [1, 2, 3]
+    const b = [4, 5, 6]
+    expect(dotProduct(a, b)).toBe(1 * 4 + 2 * 5 + 3 * 6)
+  })
+})
+
+describe("vectorNorm", () => {
+  test("computes Euclidean norm", () => {
+    expect(vectorNorm([3, 4])).toBeCloseTo(5, 5)
+    expect(vectorNorm([0, 0])).toBe(0)
+  })
+})
+
+describe("zeros", () => {
+  test("creates a zero-filled matrix", () => {
+    const result = zeros(2, 3)
+    expect(result).toHaveLength(2)
+    expect(result[0]!).toEqual([0, 0, 0])
+    expect(result[1]!).toEqual([0, 0, 0])
+  })
+})
+
+describe("subMatrices", () => {
+  test("subtracts two matrices element-wise", () => {
+    const a = [
+      [5, 4],
+      [3, 2],
+    ]
+    const b = [
+      [1, 2],
+      [3, 4],
+    ]
+    const result = subMatrices(a, b)
+    expect(result[0]!).toEqual([4, 2])
+    expect(result[1]!).toEqual([0, -2])
+  })
+})
+
+// ─── Calibrator Factory ─────────────────────────────────────────────────────
+
+describe("createConfidenceCalibrator", () => {
+  test("creates a calibrator from factory", () => {
+    const calibrator = createConfidenceCalibrator(64)
+    expect(calibrator).toBeDefined()
+    expect(calibrator.config.hiddenDim).toBeGreaterThan(0)
   })
 })

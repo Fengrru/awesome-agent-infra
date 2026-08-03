@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type BranchDatabase, BranchManager, type BranchStatus, type SessionBranch } from "../src/index"
+import { type BranchDatabase, BranchManager, createBranchManager, type BranchStatus, type SessionBranch } from "../src/index"
 
 function makeDB(): BranchDatabase & { copyLogCalls: number; copyCheckpointCalls: number } {
   return {
@@ -52,6 +52,32 @@ describe("BranchManager", () => {
     const branch = await manager.fork("main")
     expect(db.copyLogCalls).toBe(1)
     expect(db.copyCheckpointCalls).toBe(1)
+  })
+
+  test("setDatabase wires the database for subsequent forks", async () => {
+    const db = makeDB()
+    const manager = new BranchManager()
+    await manager.fork("main")
+    expect(db.copyLogCalls).toBe(0)
+
+    manager.setDatabase(db)
+    await manager.fork("main")
+    expect(db.copyLogCalls).toBe(1)
+    expect(db.copyCheckpointCalls).toBe(1)
+  })
+
+  test("fork falls back to Math.random when crypto.randomUUID is unavailable", async () => {
+    const original = (crypto as { randomUUID?: unknown }).randomUUID
+    ;(crypto as { randomUUID?: unknown }).randomUUID = undefined
+    try {
+      const manager = new BranchManager()
+      const branch = await manager.fork("main")
+      expect(branch.branchId).toMatch(/^branch_/)
+      const other = await manager.fork("main")
+      expect(other.branchId).not.toBe(branch.branchId)
+    } finally {
+      ;(crypto as { randomUUID?: unknown }).randomUUID = original
+    }
   })
 
   // ── getBranch / listBranches ───────────────────────────────────────────
@@ -168,5 +194,21 @@ describe("BranchManager", () => {
     expect(manager.count()).toBe(1)
     await manager.fork("main")
     expect(manager.count()).toBe(2)
+  })
+})
+
+describe("createBranchManager", () => {
+  test("factory returns a BranchManager instance", async () => {
+    const manager = createBranchManager()
+    expect(manager).toBeInstanceOf(BranchManager)
+    const branch = await manager.fork("main")
+    expect(branch.status).toBe("active")
+  })
+
+  test("factory forwards the database argument", async () => {
+    const db = makeDB()
+    const manager = createBranchManager(db)
+    await manager.fork("main")
+    expect(db.copyLogCalls).toBe(1)
   })
 })

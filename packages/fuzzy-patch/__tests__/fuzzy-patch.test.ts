@@ -187,3 +187,55 @@ describe("FuzzyPatch", () => {
     expect(result.matchCount).toBe(1)
   })
 })
+
+describe("FuzzyPatch - Additional Coverage", () => {
+  test("indentation normalization with successful match returns correct indices", () => {
+    const content = "  const x = 1;\n  const y = 2;"
+    const oldStr = "const x = 1;\nconst y = 2;"
+    const result = fuzzyFindAndReplace(content, oldStr, "const z = 3;")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("head-tail anchor matches when middle differs within threshold", () => {
+    const content = "function authenticateUser(username, password, rememberMe = false) {"
+    const oldStr = "function authenticateUser(username, password, rememberMe = true) {"
+    const result = fuzzyFindAndReplace(content, oldStr, "done")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("head-tail anchor matches when middle is empty", () => {
+    const content = "12345678901234567890END"
+    const oldStr = "12345678901234567890"
+    const result = fuzzyFindAndReplace(content, oldStr, "done")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("line ending normalization with CRLF returns correct indices", () => {
+    const content = "hello\r\nworld\r\nfoo"
+    const oldStr = "hello\nworld\nfoo"
+    const result = fuzzyFindAndReplace(content, oldStr, "replaced")
+    expect(result.matchCount).toBe(1)
+    expect(result.newContent).toBe("replaced")
+  })
+
+  test("context anchor with successful first/last line match", () => {
+    const content = ["## Skills", "This is skill A", "It does things", "It excites users", "## End of Skills"].join("\n")
+    const oldStr = ["## Skills", "This is skill A", "It does things changed", "It excites users", "## End of Skills"].join("\n")
+    const result = fuzzyFindAndReplace(content, oldStr, "replaced section")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("findInOriginalViaAnchors fallback when tail not found", () => {
+    const content = "function start() { return 0; }"
+    const oldStr = "function   start()   {   return   0;   }"
+    const result = fuzzyFindAndReplace(content, oldStr, "done")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("levenshtein fuzzy with moderate drift is patched via canPatch", () => {
+    const content = "const CONFIG = { apiUrl: 'https://api.example.com/v2', timeout: 5000 }"
+    const oldStr = "const CONFIG = { apiUrl: 'https://api.example.com/v1', timeout: 3000 }"
+    const found = canPatch(content, oldStr)
+    expect(found).toBe(true)
+  })
+})

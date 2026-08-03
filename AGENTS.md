@@ -34,7 +34,7 @@ packages/<name>/
 ## Code Conventions
 
 - **Zero runtime dependencies** — never add npm runtime deps. Only use Node.js built-ins (`node:crypto`, `node:vm`, `node:fs`, etc.).
-- **TypeScript strict mode** — no `any`, prefer `interface` over `type` for object shapes, use discriminated unions.
+- **TypeScript strict mode** — prefer `interface` over `type` for object shapes, use discriminated unions, minimize `any`.
 - **JSDoc** — every public export must have `@module`, `@param`, `@returns` tags.
 - **No semicolons** — project uses Biome "asNeeded" semicolon style.
 - **ESM only** — `"type": "module"`, use `.js` extension in relative imports.

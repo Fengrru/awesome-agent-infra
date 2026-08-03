@@ -48,49 +48,26 @@ export interface ReplayDifference {
   severity: "warning" | "error"
 }
 
-// ── Optional Import Helpers ─────────────────────────────────────────────────
+// ── Dependency Injection Interfaces ─────────────────────────────────────────
 
-function tryLoadStateMachine(): {
-  AgentStateMachine: new () => {
-    state: string
-    transition: (to: string) => Promise<void>
-    getSnapshot: () => Record<string, unknown>
-    restore: (s: Record<string, unknown>) => void
-  }
-} | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("@fengru/state-machine") as {
-      AgentStateMachine: new () => {
-        state: string
-        transition: (to: string) => Promise<void>
-        getSnapshot: () => Record<string, unknown>
-        restore: (s: Record<string, unknown>) => void
-      }
-    }
-  } catch {
-    return null
-  }
+/** State machine interface compatible with @fengru/state-machine */
+export interface StateMachineLike {
+  state: string
+  transition: (to: string) => Promise<void>
+  getSnapshot: () => Record<string, unknown>
+  restore: (s: Record<string, unknown>) => void
 }
 
-function tryLoadTaskDag(): {
-  validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
-} | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("@fengru/taskdag") as {
-      validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
-    }
-  } catch {
-    return null
-  }
-}
+/** DAG validator interface compatible with @fengru/taskdag */
+export type DAGValidatorFn = (dag: Record<string, unknown>) => { valid: boolean; error?: string }
 
 // ── Minimal Internal Implementations ────────────────────────────────────────
 
 class MinimalStateMachine {
   private currentState = "IDLE"
   private states: string[] = []
+
+  constructor() {}
 
   get state(): string {
     return this.currentState
@@ -123,27 +100,16 @@ function minimalValidateDAG(_dag: Record<string, unknown>): { valid: boolean; er
 
 export class SessionReplayer {
   private events: ReplayEvent[] = []
-  private stateMachine: {
-    state: string
-    transition: (to: string) => Promise<void>
-    getSnapshot: () => Record<string, unknown>
-    restore: (s: Record<string, unknown>) => void
-  }
-  private validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
+  private stateMachine: StateMachineLike
+  private validateDAG: DAGValidatorFn
 
-  constructor() {
-    const smModule = tryLoadStateMachine()
-    this.stateMachine = smModule
-      ? (new smModule.AgentStateMachine() as unknown as {
-          state: string
-          transition: (to: string) => Promise<void>
-          getSnapshot: () => Record<string, unknown>
-          restore: (s: Record<string, unknown>) => void
-        })
-      : new MinimalStateMachine()
-
-    const dagModule = tryLoadTaskDag()
-    this.validateDAG = dagModule ? dagModule.validateDAG : minimalValidateDAG
+  /**
+   * @param stateMachine - Optional state machine implementation (inject @fengru/state-machine or use built-in minimal).
+   * @param dagValidator - Optional DAG validator (inject @fengru/taskdag's validateDAG or use built-in minimal).
+   */
+  constructor(stateMachine?: StateMachineLike, dagValidator?: DAGValidatorFn) {
+    this.stateMachine = stateMachine ?? new MinimalStateMachine()
+    this.validateDAG = dagValidator ?? minimalValidateDAG
   }
 
   loadEvents(events: ReplayEvent[]): void {

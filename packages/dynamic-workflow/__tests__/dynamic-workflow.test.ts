@@ -5,6 +5,7 @@ import { join } from "node:path"
 import {
   DEFAULT_WORKFLOW_CONFIG,
   DynamicWorkflowEngine,
+  createDynamicWorkflowEngine,
   type IAgentDispatcher,
   type WorkflowContext,
 } from "../src/index"
@@ -187,6 +188,23 @@ describe("state persistence", () => {
     await withTempEngine(async (engine) => {
       await expect(engine.resume("wf_missing")).rejects.toThrow("No state found")
     })
+  })
+})
+
+describe("log primitive", () => {
+  test("log writes to console without error", async () => {
+    await withTempEngine(async (engine) => {
+      const result = await engine.execute("s1", "await log('hello from sandbox')\n42")
+      expect(result).toBe(42)
+    })
+  })
+})
+
+describe("factory function", () => {
+  test("createDynamicWorkflowEngine returns a DynamicWorkflowEngine", () => {
+    const engine = createDynamicWorkflowEngine()
+    expect(engine).toBeInstanceOf(DynamicWorkflowEngine)
+    expect(engine.config.executionTimeoutMs).toBe(DEFAULT_WORKFLOW_CONFIG.executionTimeoutMs)
   })
 })
 
