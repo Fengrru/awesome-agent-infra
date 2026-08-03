@@ -6,6 +6,7 @@ import {
   type ArchiveConfig,
   type ArchiveDatabase,
   type ArchiveResult,
+  createEventArchiver,
   DEFAULT_ARCHIVE_CONFIG,
   EventArchiver,
 } from "../src/index"
@@ -334,13 +335,11 @@ describe("EventArchiver - database fallback", () => {
 
 describe("createEventArchiver", () => {
   test("returns an EventArchiver instance", () => {
-    const { createEventArchiver } = require("../src/index")
     const archiver = createEventArchiver()
     expect(archiver).toBeInstanceOf(EventArchiver)
   })
 
   test("createEventArchiver with custom config", () => {
-    const { createEventArchiver } = require("../src/index")
     const archiver = createEventArchiver({ maxHotEvents: 500 })
     expect(archiver.config.maxHotEvents).toBe(500)
   })

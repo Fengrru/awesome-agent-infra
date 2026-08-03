@@ -146,9 +146,11 @@ export class EventArchiver {
     const gzPath = path.join(this.config.storageDir, `${archiveId}.json.gz`)
 
     let fileData: Buffer
+    let isCompressed = false
 
     try {
       fileData = await fs.readFile(gzPath)
+      isCompressed = true
     } catch {
       try {
         fileData = await fs.readFile(jsonPath)
@@ -165,8 +167,8 @@ export class EventArchiver {
       }
     }
 
-    // Try decompression
-    if (archiveId.endsWith("_gz") || this.config.compress) {
+    // Try decompression if the file was read from .json.gz
+    if (isCompressed) {
       const decompressed = tryGunzipSync(fileData)
       if (decompressed) {
         fileData = decompressed
@@ -205,8 +207,12 @@ export class EventArchiver {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare let Bun: any
+interface BunGlobal {
+  gzipSync?(data: Uint8Array | Buffer): Uint8Array | null
+  gunzipSync?(data: Uint8Array | Buffer): Uint8Array | null
+}
+
+declare let Bun: BunGlobal | undefined
 
 /**
  * Create a {@link EventArchiver} instance.

@@ -122,7 +122,7 @@ export class ValidationNetwork {
 
     if (LIKELY_TS_JS.test(filePath)) {
       try {
-        const astIssues = tryParseWithTypeScript(code, filePath)
+        const astIssues = await tryParseWithTypeScript(code, filePath)
         issues.push(...astIssues)
       } catch {
         // TypeScript not installed — fallback to regex
@@ -336,11 +336,11 @@ interface WalkContext {
   source: unknown // ts.SourceFile (avoids direct ts import for optional dep)
 }
 
-function tryParseWithTypeScript(code: string, filePath: string): string[] {
+async function tryParseWithTypeScript(code: string, filePath: string): Promise<string[]> {
   // Lazy-load TypeScript — it's an optional peer dependency
   let ts: typeof import("typescript") | undefined
   try {
-    ts = require("typescript") as typeof import("typescript")
+    ts = await import("typescript")
   } catch {
     return []
   }

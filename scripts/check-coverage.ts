@@ -113,36 +113,45 @@ function parseLcov(content: string): LcovRecord[] {
   return records
 }
 
+async function runWithLimit<T>(items: T[], limit: number, fn: (item: T) => Promise<void>): Promise<void> {
+  const queue = [...items]
+  const workers = Array.from({ length: limit }, async () => {
+    while (queue.length > 0) {
+      const item = queue.shift()!
+      await fn(item)
+    }
+  })
+  await Promise.all(workers)
+}
+
 async function main(): Promise<void> {
   const names = Object.keys(THRESHOLDS)
   const results: Array<{ pkg: string; covered: number; total: number; percent: number; failed: boolean }> = []
 
-  // Run all packages in parallel
-  await Promise.all(
-    names.map(async (pkg) => {
-      const { ok } = await runTest(pkg)
-      if (!ok) {
-        results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true })
-        return
-      }
-      const lcovPath = join(PKG_DIR, pkg, ".coverage", "lcov.info")
-      if (!existsSync(lcovPath)) {
-        results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true })
-        return
-      }
-      const records = parseLcov(readFileSync(lcovPath, "utf-8")).filter(isSrcFile)
-      const covered = records.reduce((s, r) => s + r.linesHit, 0)
-      const total = records.reduce((s, r) => s + r.linesFound, 0)
-      const percent = total > 0 ? (covered / total) * 100 : 0
-      results.push({
-        pkg,
-        covered,
-        total,
-        percent,
-        failed: false,
-      })
-    }),
-  )
+  // Run packages with a concurrency limit to avoid resource contention
+  await runWithLimit(names, 4, async (pkg) => {
+    const { ok } = await runTest(pkg)
+    if (!ok) {
+      results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true })
+      return
+    }
+    const lcovPath = join(PKG_DIR, pkg, ".coverage", "lcov.info")
+    if (!existsSync(lcovPath)) {
+      results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true })
+      return
+    }
+    const records = parseLcov(readFileSync(lcovPath, "utf-8")).filter(isSrcFile)
+    const covered = records.reduce((s, r) => s + r.linesHit, 0)
+    const total = records.reduce((s, r) => s + r.linesFound, 0)
+    const percent = total > 0 ? (covered / total) * 100 : 0
+    results.push({
+      pkg,
+      covered,
+      total,
+      percent,
+      failed: false,
+    })
+  })
 
   results.sort((a, b) => a.percent - b.percent)
   const width = Math.max(...results.map((r) => r.pkg.length), 16)
