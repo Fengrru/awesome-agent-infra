@@ -19,6 +19,7 @@ interface LcovRecord {
   file: string
   linesFound: number
   linesHit: number
+  uncovered: number[]
 }
 
 /** package name -> minimum line coverage (%) */
@@ -102,12 +103,15 @@ function parseLcov(content: string): LcovRecord[] {
   let current: LcovRecord | null = null
   for (const line of content.split("\n")) {
     if (line.startsWith("SF:")) {
-      current = { file: line.slice(3).trim(), linesFound: 0, linesHit: 0 }
+      current = { file: line.slice(3).trim(), linesFound: 0, linesHit: 0, uncovered: [] }
       records.push(current)
     } else if (current && line.startsWith("LF:")) {
       current.linesFound = Number(line.slice(3))
     } else if (current && line.startsWith("LH:")) {
       current.linesHit = Number(line.slice(3))
+    } else if (current && line.startsWith("DA:")) {
+      const [lineNo, hits] = line.slice(3).split(",")
+      if (Number(hits) === 0) current.uncovered.push(Number(lineNo))
     }
   }
   return records
@@ -126,30 +130,41 @@ async function runWithLimit<T>(items: T[], limit: number, fn: (item: T) => Promi
 
 async function main(): Promise<void> {
   const names = Object.keys(THRESHOLDS)
-  const results: Array<{ pkg: string; covered: number; total: number; percent: number; failed: boolean }> = []
+  const results: Array<{
+    pkg: string
+    covered: number
+    total: number
+    percent: number
+    failed: boolean
+    uncovered: Array<{ file: string; lines: number[] }>
+  }> = []
 
   // Run packages with a concurrency limit to avoid resource contention
   await runWithLimit(names, 4, async (pkg) => {
     const { ok } = await runTest(pkg)
     if (!ok) {
-      results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true })
+      results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true, uncovered: [] })
       return
     }
     const lcovPath = join(PKG_DIR, pkg, ".coverage", "lcov.info")
     if (!existsSync(lcovPath)) {
-      results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true })
+      results.push({ pkg, covered: 0, total: 0, percent: 0, failed: true, uncovered: [] })
       return
     }
     const records = parseLcov(readFileSync(lcovPath, "utf-8")).filter(isSrcFile)
     const covered = records.reduce((s, r) => s + r.linesHit, 0)
     const total = records.reduce((s, r) => s + r.linesFound, 0)
     const percent = total > 0 ? (covered / total) * 100 : 0
+    const uncovered = records
+      .filter((r) => r.uncovered.length > 0)
+      .map((r) => ({ file: r.file.replace(/\\/g, "/"), lines: r.uncovered }))
     results.push({
       pkg,
       covered,
       total,
       percent,
       failed: false,
+      uncovered,
     })
   })
 
@@ -170,6 +185,13 @@ async function main(): Promise<void> {
     return
   }
   if (below.length > 0) {
+    for (const b of below) {
+      for (const u of b.uncovered) {
+        console.error(`  ${b.pkg}/${u.file}: uncovered lines ${u.lines.join(", ")}`)
+        // GitHub Actions annotation so failures are visible without downloading logs
+        console.error(`::error file=${u.file},title=${b.pkg} uncovered lines::${u.lines.join(", ")}`)
+      }
+    }
     console.error(`\nFAIL: ${below.map((b) => b.pkg).join(", ")} below coverage threshold`)
     process.exit(1)
   }
