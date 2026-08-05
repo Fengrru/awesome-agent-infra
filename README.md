@@ -103,7 +103,7 @@ More runnable examples live in [examples/](./examples).
 
 ## Performance
 
-Micro-benchmarks for hot paths run in CI-adjacent local runs (single machine, Bun runtime; median over measured iterations via `bun run benchmarks/run-all.ts`):
+Micro-benchmarks for hot paths were measured on a single machine using the Bun runtime (median over measured iterations via `bun run benchmarks/run-all.ts`):
 
 | Hot path | Package | Throughput |
 |---|---|---|
@@ -138,8 +138,12 @@ graph TB
 
 - **Core Engines** — fuzzy-patch, valid8, txn-fs, taskdag, state-machine, event-bus, engine-db, worker
 - **Memory & Knowledge** — agent-memory, memory-engine-v2, memory-graph, embedding, project-memory, checkpoints
-- **Safety & Repair** — guardrail, healix, goal-verifier, confidence-gate
+- **Search & Code Intelligence** — codegraph, agentic-search, reasoning-search
+- **Workflow & Execution** — taskdag, state-machine, dynamic-workflow, lifecycle-manager, cycle-controller
+- **Safety & Repair** — guardrail, healix, goal-verifier, confidence-gate, hallucination-detector, code-sandbox
+- **Reasoning & Calibration** — pomdp-planner, reasoning-search
 - **Self-Evolution** — skillforge, skill-curator, dreamdistill, learning-nudge, agent-metacog, process-reward
+- **Infrastructure** — tracing, replay, archiver, branch, event-bus
 
 ## How to choose a package
 
@@ -148,9 +152,9 @@ graph TB
 | Apply reliable edits to files | `fuzzy-patch`, `txn-fs`, `codegraph` |
 | Validate / verify agent output | `valid8`, `confidence-gate`, `goal-verifier` |
 | Give my agent memory | `agent-memory`, `memory-graph`, `memory-engine-v2`, `embedding`, `project-memory` |
-| Keep the agent safe | `guardrail`, `healix`, `hallucination-detector` |
+| Keep the agent safe | `guardrail`, `healix`, `hallucination-detector`, `code-sandbox` |
 | Orchestrate multi-step work | `taskdag`, `state-machine`, `dynamic-workflow` |
-| Search and reason | `agentic-search`, `reasoning-search`, `code-sandbox` |
+| Search and reason | `agentic-search`, `reasoning-search`, `codegraph` |
 | Observe and replay sessions | `tracing`, `replay`, `archiver`, `event-bus` |
 | Let the agent improve itself | `skillforge`, `skill-curator`, `dreamdistill`, `learning-nudge` |
 

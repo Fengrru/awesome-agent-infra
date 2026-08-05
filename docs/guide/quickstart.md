@@ -4,17 +4,20 @@ Agent Kit is a collection of 42 independent packages. **You don't install a whol
 
 ## Installation
 
+Install only the packages you need. For example, to add fuzzy patching and code graph capabilities:
+
 ```bash
-# Install on demand (example: fuzzy patching + code graph)
+npm install @fengrru/fuzzy-patch @fengrru/codegraph
+```
+
+Or install one at a time:
+
+```bash
 npm install @fengrru/fuzzy-patch
 npm install @fengrru/codegraph
 ```
 
-Bun and pnpm work too:
-
-```bash
-bun add @fengrru/event-bus
-```
+Bun and pnpm work too — just replace `npm install` with `bun add` or `pnpm add`.
 
 ## First example: agent file editing
 

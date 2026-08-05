@@ -21,12 +21,12 @@
 |---------|-------------|-----------|
 | [agent-memory](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agent-memory) | 4-tier memory + Ebbinghaus forgetting curve | Evolving |
 | [memory-engine-v2](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/memory-engine-v2) | 5-tier memory + sleep consolidation + attention retrieval | Evolving |
+| [memory-graph](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/memory-graph) | Causal dependency graph with CoW versioning + BFS cascade invalidation | Evolving |
 | [project-memory](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/project-memory) | MEMORY.md-based project knowledge | Evolving |
 | [agent-checkpoint](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agent-checkpoint) | 3-level checkpoints (L1/L2/L3) | Experimental |
 | [checkpoint-writer](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/checkpoint-writer) | LLM-driven 11-field state extraction | Experimental |
 | [notes-manager](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/notes-manager) | Session notes (notes.md) | Evolving |
 | [embedding](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/embedding) | TF-IDF vector index + 3-signal hybrid retrieval | Stable |
-| [engine-db](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/engine-db) | Session event storage (relational tables + checkpoints + branching) | Stable |
 
 ## Safety & Repair
 

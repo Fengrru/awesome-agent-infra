@@ -13,17 +13,26 @@ npm install @fengrru/agent-memory
 ## Quick Start
 
 ```typescript
-import { MemorySystem } from "@fengrru/agent-memory"
+import { createMemorySystem } from "@fengrru/agent-memory"
 
-const memory = new MemorySystem()
+const memory = createMemorySystem()
 
 // Add memories
 memory.addCoreRule({ rule_id: "r1", category: "style", content: "Use TypeScript", token_count: 4, importance: 1.0 })
 memory.addWorkingMemory({ id: "w1", content: "Current task: fix bug", token_count: 5, priority: 1.0 })
-memory.addLongTermMemory({ memory_id: "lt1", content: "User prefers dark mode", token_count: 6 })
+memory.addLongTermMemory({
+  memory_id: "lt1",
+  content: "User prefers dark mode",
+  token_count: 6,
+  importance: 0.8,
+  access_count: 2,
+  created_at: Date.now() - 86_400_000,
+  last_accessed: Date.now() - 3_600_000,
+  retention_score: 0.7,
+})
 
 // Retrieve
-const context = memory.assembleContext("fix the login bug", { maxTokens: 1000 })
+const context = memory.assembleContext("fix the login bug")
 ```
 
 ## Memory Tiers
