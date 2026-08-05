@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/project-memory",
+  "name": "@fengrru/project-memory",
   "version": "0.1.0",
   "description": "File-based project memory with MEMORY.md persistence, Markdown parsing, fact promotion from stable checkpoints, and full-text search",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/project-memory"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

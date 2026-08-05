@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/max-mode-sampler",
+  "name": "@fengrru/max-mode-sampler",
   "version": "0.1.0",
   "description": "Best-of-N parallel plan sampling  generate N candidates with high temperature, judge with low temperature, select the winner. Blue ocean: no TypeScript npm equivalent",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/max-mode-sampler"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

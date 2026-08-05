@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/lifecycle-manager",
+  "name": "@fengrru/lifecycle-manager",
   "version": "0.1.0",
   "description": "Declarative module lifecycle manager  hot-pluggable modules with priority-based state and phase hooks",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/lifecycle-manager"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

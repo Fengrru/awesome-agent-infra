@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/agent-checkpoint",
+  "name": "@fengrru/agent-checkpoint",
   "version": "0.1.0",
   "description": "3-tier checkpoint system for AI agents — L1 lightweight snapshot, L2 context summary, L3 archive reference with LRU cache",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/agent-checkpoint"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

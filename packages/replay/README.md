@@ -1,19 +1,19 @@
-# @fengru/replay
+# @fengrru/replay
 
-[![npm version](https://img.shields.io/npm/v/@fengru/replay)](https://www.npmjs.com/package/@fengru/replay) [![npm downloads](https://img.shields.io/npm/dm/@fengru/replay)](https://www.npmjs.com/package/@fengru/replay) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/replay)](https://www.npmjs.com/package/@fengrru/replay) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/replay)](https://www.npmjs.com/package/@fengrru/replay) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Session event replay engine for AI agent sessions.
 
 ## Install
 
 ```bash
-npm install @fengru/replay
+npm install @fengrru/replay
 ```
 
 ## Quick Start
 
 ```typescript
-import { SessionReplayer, type ReplayEvent } from "@fengru/replay"
+import { SessionReplayer, type ReplayEvent } from "@fengrru/replay"
 
 const replayer = new SessionReplayer()
 
@@ -50,7 +50,7 @@ const fullResult = await replayer.replay("full", async (event) => {
 - **Three replay modes**: dry-run, read-only, full
 - **State trajectory tracking**: captures every state transition during replay
 - **Differences detection**: records mismatches between expected and actual results
-- **Optional dependencies**: integrates with `@fengru/state-machine` and `@fengru/taskdag` when available
+- **Optional dependencies**: integrates with `@fengrru/state-machine` and `@fengrru/taskdag` when available
 
 
 ## Documentation

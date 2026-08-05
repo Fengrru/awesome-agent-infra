@@ -8,16 +8,16 @@
 
 | 包 | 关键 API |
 |----|----------|
-| `@fengru/txn-fs` | `TransactionFS`、`merge3`、`TxContext` |
-| `@fengru/event-bus` | `createSimpleEventBus`、`EventBus`、`PersistedEventBus` |
-| `@fengru/state-machine` | `AgentStateMachine`、`states`、`transitions` |
-| `@fengru/engine-db` | `EngineDatabase`、`SQLiteEngineDatabase` |
-| `@fengru/embedding` | `EnhancedTFIDF`、`CodeEmbeddingIndex`、`HybridSearchEngine` |
-| `@fengru/fuzzy-patch` | `patch`、8 种匹配策略 |
-| `@fengru/valid8` | `ValidationNetwork`、`evaluate`、`walkAST` |
-| `@fengru/tracing` | `createTracer`、`withSpan`、`TraceProvider` |
-| `@fengru/archiver` | `EventArchiver`、`loadArchive`、`shouldArchive` |
-| `@fengru/worker` | `StatelessWorkerPool`、`TrueWorkerPool` |
+| `@fengrru/txn-fs` | `TransactionFS`、`merge3`、`TxContext` |
+| `@fengrru/event-bus` | `createSimpleEventBus`、`EventBus`、`PersistedEventBus` |
+| `@fengrru/state-machine` | `AgentStateMachine`、`states`、`transitions` |
+| `@fengrru/engine-db` | `EngineDatabase`、`SQLiteEngineDatabase` |
+| `@fengrru/embedding` | `EnhancedTFIDF`、`CodeEmbeddingIndex`、`HybridSearchEngine` |
+| `@fengrru/fuzzy-patch` | `patch`、8 种匹配策略 |
+| `@fengrru/valid8` | `ValidationNetwork`、`evaluate`、`walkAST` |
+| `@fengrru/tracing` | `createTracer`、`withSpan`、`TraceProvider` |
+| `@fengrru/archiver` | `EventArchiver`、`loadArchive`、`shouldArchive` |
+| `@fengrru/worker` | `StatelessWorkerPool`、`TrueWorkerPool` |
 
 ### Evolving — 小版本可能调整
 
@@ -33,7 +33,7 @@
 
 ### Internal — 勿直接使用
 
-`@fengru/internal-tfidf`：私有工作区包，不对外发布，仅被内部消费。
+`@fengrru/internal-tfidf`：私有工作区包，不对外发布，仅被内部消费。
 
 ## 版本策略
 
@@ -46,8 +46,8 @@
 ## 升级路径
 
 ```bash
-npm view @fengru/event-bus versions   # 查看版本
-npm install @fengru/event-bus@latest  # 升级
+npm view @fengrru/event-bus versions   # 查看版本
+npm install @fengrru/event-bus@latest  # 升级
 ```
 
 每次发布都会自动生成 CHANGELOG（Changesets），破坏性变更会在 changelog 中明确标注 `BREAKING CHANGE`。

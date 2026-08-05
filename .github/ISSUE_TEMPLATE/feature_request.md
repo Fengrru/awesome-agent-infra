@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a feature for a @fengru package
+about: Suggest a feature for a @fengrru package
 title: "[feat] "
 labels: enhancement
 assignees: ""
@@ -8,7 +8,7 @@ assignees: ""
 
 ## Package
 
-Which package is this feature for? (e.g. `@fengru/codegraph`)
+Which package is this feature for? (e.g. `@fengrru/codegraph`)
 
 ## Problem / Motivation
 

@@ -1,6 +1,6 @@
-# @fengru/skill-curator
+# @fengrru/skill-curator
 
-[![npm version](https://img.shields.io/npm/v/@fengru/skill-curator)](https://www.npmjs.com/package/@fengru/skill-curator) [![npm downloads](https://img.shields.io/npm/dm/@fengru/skill-curator)](https://www.npmjs.com/package/@fengru/skill-curator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/skill-curator)](https://www.npmjs.com/package/@fengrru/skill-curator) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/skill-curator)](https://www.npmjs.com/package/@fengrru/skill-curator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ Automated skill library curation for AI agent skills.
 ## Install
 
 ```bash
-npm install @fengru/skill-curator
+npm install @fengrru/skill-curator
 ```
 
 ## Quick Start
 
 ```typescript
-import { SkillCurator } from "@fengru/skill-curator"
+import { SkillCurator } from "@fengrru/skill-curator"
 
 const curator = new SkillCurator({
   provider: llmProvider,

@@ -1,13 +1,13 @@
-# @fengru/embedding
+# @fengrru/embedding
 
-[![npm version](https://img.shields.io/npm/v/@fengru/embedding)](https://www.npmjs.com/package/@fengru/embedding) [![npm downloads](https://img.shields.io/npm/dm/@fengru/embedding)](https://www.npmjs.com/package/@fengru/embedding) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/embedding)](https://www.npmjs.com/package/@fengrru/embedding) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/embedding)](https://www.npmjs.com/package/@fengrru/embedding) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 TF-IDF vector indexing and hybrid search for code intelligence.
 
 ## Quick Start
 
 ```ts
-import { EnhancedTFIDF, CodeEmbeddingIndexer, HybridSearch } from "@fengru/embedding"
+import { EnhancedTFIDF, CodeEmbeddingIndexer, HybridSearch } from "@fengrru/embedding"
 
 // TF-IDF search with n-gram expansion
 const tfidf = new EnhancedTFIDF({ ngramMin: 2, ngramMax: 4 })

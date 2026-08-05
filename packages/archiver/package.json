@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/archiver",
-  "version": "0.1.0",
+  "name": "@fengrru/archiver",
+  "version": "0.2.0",
   "description": "Event archiver with hot/cold tiering — archive events to cold storage with optional gzip compression",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,22 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["archive", "tiering", "storage", "event", "agent"],
+  "keywords": [
+    "archive",
+    "tiering",
+    "storage",
+    "event",
+    "agent"
+  ],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
@@ -29,7 +37,6 @@
     "directory": "packages/archiver"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

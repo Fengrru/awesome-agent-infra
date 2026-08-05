@@ -5,7 +5,7 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "paths": {
-      "@fengru/*": ["../packages/*/src/index.ts"]
+      "@fengrru/*": ["../packages/*/src/index.ts"]
     }
   }
 }

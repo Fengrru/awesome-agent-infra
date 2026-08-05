@@ -1,19 +1,19 @@
-# @fengru/reasoning-search
+# @fengrru/reasoning-search
 
-[![npm version](https://img.shields.io/npm/v/@fengru/reasoning-search)](https://www.npmjs.com/package/@fengru/reasoning-search) [![npm downloads](https://img.shields.io/npm/dm/@fengru/reasoning-search)](https://www.npmjs.com/package/@fengru/reasoning-search) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/reasoning-search)](https://www.npmjs.com/package/@fengrru/reasoning-search) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/reasoning-search)](https://www.npmjs.com/package/@fengrru/reasoning-search) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 MCTS tree search reasoning engine for AI agents.
 
 ## Install
 
 ```bash
-npm install @fengru/reasoning-search
+npm install @fengrru/reasoning-search
 ```
 
 ## Quick Start
 
 ```typescript
-import { ReasoningSearch } from "@fengru/reasoning-search"
+import { ReasoningSearch } from "@fengrru/reasoning-search"
 
 const search = new ReasoningSearch({
   provider: llmProvider,

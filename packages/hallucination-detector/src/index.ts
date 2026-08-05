@@ -37,7 +37,7 @@ export const DEFAULT_DETECTOR_CONFIG: DetectorConfig = {
   hallucinationThreshold: 0.3,
 }
 
-import { buildTFIDFVectors, computeCosineSimilarity, tokenize } from "@fengru/internal-tfidf"
+import { buildTFIDFVectors, computeCosineSimilarity, tokenize } from "@fengrru/internal-tfidf"
 
 function splitSentences(text: string): string[] {
   if (!text.trim()) return []

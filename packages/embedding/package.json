@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/embedding",
-  "version": "0.1.0",
+  "name": "@fengrru/embedding",
+  "version": "0.1.1",
   "description": "TF-IDF vector indexing and hybrid search for code intelligence ?n-gram expansion, CamelCase/snake_case splitting, vector + graph + text fusion",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,23 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["tfidf", "embedding", "vector-search", "hybrid-search", "code-intelligence", "n-gram"],
+  "keywords": [
+    "tfidf",
+    "embedding",
+    "vector-search",
+    "hybrid-search",
+    "code-intelligence",
+    "n-gram"
+  ],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
@@ -29,7 +38,6 @@
     "directory": "packages/embedding"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

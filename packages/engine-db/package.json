@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/engine-db",
+  "name": "@fengrru/engine-db",
   "version": "0.1.0",
   "description": "Pluggable SQLite engine database  session, event, checkpoint, capability, memory, skill, and repair persistence",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/engine-db"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

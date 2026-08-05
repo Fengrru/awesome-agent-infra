@@ -1,5 +1,5 @@
 /**
- * @fengru/archiver — Event Archiver with Hot/Cold Tiering
+ * @fengrru/archiver — Event Archiver with Hot/Cold Tiering
  *
  * Manages event archiving with hot/cold tiering. When the number of hot
  * events exceeds maxHotEvents (default 10000), events are archived to

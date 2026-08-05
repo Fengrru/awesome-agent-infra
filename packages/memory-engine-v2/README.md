@@ -1,13 +1,13 @@
-# @fengru/memory-engine-v2
+# @fengrru/memory-engine-v2
 
-[![npm version](https://img.shields.io/npm/v/@fengru/memory-engine-v2)](https://www.npmjs.com/package/@fengru/memory-engine-v2) [![npm downloads](https://img.shields.io/npm/dm/@fengru/memory-engine-v2)](https://www.npmjs.com/package/@fengru/memory-engine-v2) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/memory-engine-v2)](https://www.npmjs.com/package/@fengrru/memory-engine-v2) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/memory-engine-v2)](https://www.npmjs.com/package/@fengrru/memory-engine-v2) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Zero-dependency 5-layer memory engine with sleep consolidation, meta-memory, and attention retrieval for AI agents.
 
 ## Quick Start
 
 ```ts
-import { MemoryEngine, MemoryType } from "@fengru/memory-engine-v2"
+import { MemoryEngine, MemoryType } from "@fengrru/memory-engine-v2"
 
 const engine = new MemoryEngine()
 

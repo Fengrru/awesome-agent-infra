@@ -1,19 +1,19 @@
-# @fengru/state-machine
+# @fengrru/state-machine
 
-[![npm version](https://img.shields.io/npm/v/@fengru/state-machine)](https://www.npmjs.com/package/@fengru/state-machine) [![npm downloads](https://img.shields.io/npm/dm/@fengru/state-machine)](https://www.npmjs.com/package/@fengru/state-machine) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/state-machine)](https://www.npmjs.com/package/@fengrru/state-machine) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/state-machine)](https://www.npmjs.com/package/@fengrru/state-machine) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 15-state typed FSM for agent sessions.
 
 ## Install
 
 ```bash
-npm install @fengru/state-machine
+npm install @fengrru/state-machine
 ```
 
 ## Quick Start
 
 ```typescript
-import { AgentStateMachine } from "@fengru/state-machine"
+import { AgentStateMachine } from "@fengrru/state-machine"
 
 const sm = new AgentStateMachine()
 

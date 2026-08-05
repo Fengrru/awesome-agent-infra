@@ -1,12 +1,12 @@
-# @fengru/internal-tfidf
+# @fengrru/internal-tfidf
 
 > **Internal package** — not published to npm.
 
 Shared TF-IDF utilities — tokenization, IDF computation, vectorization, and cosine similarity.
 
 > **Internal package** — marked `"private": true` and never published to npm. It is consumed via
-> `workspace:*` by [`@fengru/embedding`](../embedding), [`@fengru/memory-engine-v2`](../memory-engine-v2),
-> and [`@fengru/hallucination-detector`](../hallucination-detector) to avoid duplicating TF-IDF logic.
+> `workspace:*` by [`@fengrru/embedding`](../embedding), [`@fengrru/memory-engine-v2`](../memory-engine-v2),
+> and [`@fengrru/hallucination-detector`](../hallucination-detector) to avoid duplicating TF-IDF logic.
 
 ## API
 
@@ -29,7 +29,7 @@ Shared TF-IDF utilities — tokenization, IDF computation, vectorization, and co
 ## Usage
 
 ```ts
-import { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "@fengru/internal-tfidf"
+import { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "@fengrru/internal-tfidf"
 
 const docs = ["agents remember things", "agents forget things"]
 const tokenized = docs.map(tokenize)

@@ -1,6 +1,6 @@
-# @fengru/checkpoint-writer
+# @fengrru/checkpoint-writer
 
-[![npm version](https://img.shields.io/npm/v/@fengru/checkpoint-writer)](https://www.npmjs.com/package/@fengru/checkpoint-writer) [![npm downloads](https://img.shields.io/npm/dm/@fengru/checkpoint-writer)](https://www.npmjs.com/package/@fengru/checkpoint-writer) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/checkpoint-writer)](https://www.npmjs.com/package/@fengrru/checkpoint-writer) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/checkpoint-writer)](https://www.npmjs.com/package/@fengrru/checkpoint-writer) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ LLM-driven 11-field structured state extraction for agent checkpoints.
 ## Install
 
 ```bash
-npm install @fengru/checkpoint-writer
+npm install @fengrru/checkpoint-writer
 ```
 
 ## Quick Start
 
 ```typescript
-import { CheckpointWriter } from "@fengru/checkpoint-writer"
+import { CheckpointWriter } from "@fengrru/checkpoint-writer"
 
 const writer = new CheckpointWriter({
   provider: llmProvider,

@@ -1,6 +1,6 @@
-# @fengru/agent-checkpoint
+# @fengrru/agent-checkpoint
 
-[![npm version](https://img.shields.io/npm/v/@fengru/agent-checkpoint)](https://www.npmjs.com/package/@fengru/agent-checkpoint) [![npm downloads](https://img.shields.io/npm/dm/@fengru/agent-checkpoint)](https://www.npmjs.com/package/@fengru/agent-checkpoint) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/agent-checkpoint)](https://www.npmjs.com/package/@fengrru/agent-checkpoint) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/agent-checkpoint)](https://www.npmjs.com/package/@fengrru/agent-checkpoint) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@
 ## Install
 
 ```bash
-npm install @fengru/agent-checkpoint
+npm install @fengrru/agent-checkpoint
 ```
 
 ## Quick Start
 
 ```typescript
-import { CheckpointManager } from "@fengru/agent-checkpoint"
+import { CheckpointManager } from "@fengrru/agent-checkpoint"
 
 const manager = new CheckpointManager({ outputDir: "./checkpoints" })
 

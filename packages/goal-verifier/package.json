@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/goal-verifier",
+  "name": "@fengrru/goal-verifier",
   "version": "0.1.0",
   "description": "Independent goal completion verification  prevents false completions with LLM-based review, gap analysis, and dead-loop protection",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/goal-verifier"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

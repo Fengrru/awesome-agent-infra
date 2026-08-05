@@ -1,20 +1,20 @@
-# @fengru/valid8
+# @fengrru/valid8
 
-[![npm version](https://img.shields.io/npm/v/@fengru/valid8)](https://www.npmjs.com/package/@fengru/valid8) [![npm downloads](https://img.shields.io/npm/dm/@fengru/valid8)](https://www.npmjs.com/package/@fengru/valid8) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/valid8)](https://www.npmjs.com/package/@fengrru/valid8) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/valid8)](https://www.npmjs.com/package/@fengrru/valid8) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 4-layer output validation for AI agents: syntax, semantic, runtime, security.
 
 ## Install
 
 ```bash
-npm install @fengru/valid8
+npm install @fengrru/valid8
 # Optional: npm install typescript (for AST-based syntax validation)
 ```
 
 ## Quick Start
 
 ```typescript
-import { ValidationNetwork } from "@fengru/valid8"
+import { ValidationNetwork } from "@fengrru/valid8"
 
 const validator = new ValidationNetwork()
 

@@ -1,6 +1,6 @@
-# @fengru/cycle-controller
+# @fengrru/cycle-controller
 
-[![npm version](https://img.shields.io/npm/v/@fengru/cycle-controller)](https://www.npmjs.com/package/@fengru/cycle-controller) [![npm downloads](https://img.shields.io/npm/dm/@fengru/cycle-controller)](https://www.npmjs.com/package/@fengru/cycle-controller) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/cycle-controller)](https://www.npmjs.com/package/@fengrru/cycle-controller) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/cycle-controller)](https://www.npmjs.com/package/@fengrru/cycle-controller) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,7 +9,7 @@ Context window cycle manager for AI agents. Monitors token utilization and trigg
 ## Quick Start
 
 ```ts
-import { CycleController } from "@fengru/cycle-controller"
+import { CycleController } from "@fengrru/cycle-controller"
 
 const controller = new CycleController()
 
@@ -36,8 +36,8 @@ const controller = new CycleController({
     minStepsBetweenCheckpoints: 5,
     maxCycles: 20,
   },
-  eventBus: myEventBus,         // optional @fengru/event-bus instance
-  stateMachine: myStateMachine, // optional @fengru/state-machine instance
+  eventBus: myEventBus,         // optional @fengrru/event-bus instance
+  stateMachine: myStateMachine, // optional @fengrru/state-machine instance
   checkpointWriter: myWriter,   // optional ICheckpointWriter
   callbacks: {
     onRebuild: async (id, index) => { /* ... */ },

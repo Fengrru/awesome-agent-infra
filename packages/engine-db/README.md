@@ -1,19 +1,19 @@
-# @fengru/engine-db
+# @fengrru/engine-db
 
-[![npm version](https://img.shields.io/npm/v/@fengru/engine-db)](https://www.npmjs.com/package/@fengru/engine-db) [![npm downloads](https://img.shields.io/npm/dm/@fengru/engine-db)](https://www.npmjs.com/package/@fengru/engine-db) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/engine-db)](https://www.npmjs.com/package/@fengrru/engine-db) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/engine-db)](https://www.npmjs.com/package/@fengrru/engine-db) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Pluggable SQLite engine with 13 tables for agent state persistence.
 
 ## Install
 
 ```bash
-npm install @fengru/engine-db
+npm install @fengrru/engine-db
 ```
 
 ## Quick Start
 
 ```typescript
-import { EngineDatabase } from "@fengru/engine-db"
+import { EngineDatabase } from "@fengrru/engine-db"
 
 const db = new EngineDatabase(":memory:") // or "./agent.db"
 

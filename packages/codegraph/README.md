@@ -1,20 +1,20 @@
-# @fengru/codegraph
+# @fengrru/codegraph
 
-[![npm version](https://img.shields.io/npm/v/@fengru/codegraph)](https://www.npmjs.com/package/@fengru/codegraph) [![npm downloads](https://img.shields.io/npm/dm/@fengru/codegraph)](https://www.npmjs.com/package/@fengru/codegraph) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/codegraph)](https://www.npmjs.com/package/@fengrru/codegraph) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/codegraph)](https://www.npmjs.com/package/@fengrru/codegraph) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 In-memory heterogeneous code graph with PageRank centrality ranking. Build a knowledge graph from your codebase and search it with multi-signal fusion.
 
 ## Install
 
 ```bash
-npm install @fengru/codegraph
+npm install @fengrru/codegraph
 # Optional: npm install web-tree-sitter (for AST parsing)
 ```
 
 ## Quick Start
 
 ```typescript
-import { CodeGraph, CodeGraphSearcher, CodeGraphRanker } from "@fengru/codegraph"
+import { CodeGraph, CodeGraphSearcher, CodeGraphRanker } from "@fengrru/codegraph"
 
 // Build graph from codebase
 const graph = new CodeGraph()

@@ -6,7 +6,7 @@
 
 <!-- List the concrete changes, grouped by package or subsystem. -->
 
-- `@fengru/foo`:
+- `@fengrru/foo`:
   - 
 - `docs`:
   - 

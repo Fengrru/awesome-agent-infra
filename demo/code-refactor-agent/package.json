@@ -1,7 +1,7 @@
 {
   "name": "code-refactor-agent-demo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "End-to-end demo showcasing awesome-agent-infra packages in a code refactoring scenario",
   "type": "module",
   "scripts": {
@@ -9,17 +9,17 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@fengru/project-memory": "workspace:*",
-    "@fengru/codegraph": "workspace:*",
-    "@fengru/embedding": "workspace:*",
-    "@fengru/taskdag": "workspace:*",
-    "@fengru/llm-dag-generator": "workspace:*",
-    "@fengru/valid8": "workspace:*",
-    "@fengru/fuzzy-patch": "workspace:*",
-    "@fengru/event-bus": "workspace:*",
-    "@fengru/archiver": "workspace:*",
-    "@fengru/state-machine": "workspace:*",
-    "@fengru/confidence-gate": "workspace:*"
+    "@fengrru/project-memory": "workspace:*",
+    "@fengrru/codegraph": "workspace:*",
+    "@fengrru/embedding": "workspace:*",
+    "@fengrru/taskdag": "workspace:*",
+    "@fengrru/llm-dag-generator": "workspace:*",
+    "@fengrru/valid8": "workspace:*",
+    "@fengrru/fuzzy-patch": "workspace:*",
+    "@fengrru/event-bus": "workspace:*",
+    "@fengrru/archiver": "workspace:*",
+    "@fengrru/state-machine": "workspace:*",
+    "@fengrru/confidence-gate": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.0",

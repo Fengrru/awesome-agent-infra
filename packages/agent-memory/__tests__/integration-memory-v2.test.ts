@@ -9,7 +9,7 @@
 
 import { describe, expect, test } from "bun:test"
 
-import { MemoryEngine, MemoryType } from "@fengru/memory-engine-v2"
+import { MemoryEngine, MemoryType } from "@fengrru/memory-engine-v2"
 import { UnifiedMemoryBridge } from "../src/bridge"
 import { MemorySystem } from "../src/index"
 import type { LongTermMemory } from "../src/index"

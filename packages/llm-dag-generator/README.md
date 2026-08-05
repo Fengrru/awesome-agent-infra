@@ -1,6 +1,6 @@
-# @fengru/llm-dag-generator
+# @fengrru/llm-dag-generator
 
-[![npm version](https://img.shields.io/npm/v/@fengru/llm-dag-generator)](https://www.npmjs.com/package/@fengru/llm-dag-generator) [![npm downloads](https://img.shields.io/npm/dm/@fengru/llm-dag-generator)](https://www.npmjs.com/package/@fengru/llm-dag-generator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/llm-dag-generator)](https://www.npmjs.com/package/@fengrru/llm-dag-generator) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/llm-dag-generator)](https://www.npmjs.com/package/@fengrru/llm-dag-generator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ LLM-driven task DAG generation with K-parallel variants.
 ## Install
 
 ```bash
-npm install @fengru/llm-dag-generator
+npm install @fengrru/llm-dag-generator
 ```
 
 ## Quick Start
 
 ```typescript
-import { LLMDAGGenerator } from "@fengru/llm-dag-generator"
+import { LLMDAGGenerator } from "@fengrru/llm-dag-generator"
 
 const generator = new LLMDAGGenerator({
   provider: llmProvider,

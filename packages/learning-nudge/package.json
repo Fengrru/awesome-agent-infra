@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/learning-nudge",
+  "name": "@fengrru/learning-nudge",
   "version": "0.1.0",
   "description": "Self-reflection trigger for continuous agent learning  periodic reflection, pattern detection, session-end summaries, user declarations",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/learning-nudge"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

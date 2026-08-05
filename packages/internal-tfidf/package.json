@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/internal-tfidf",
+  "name": "@fengrru/internal-tfidf",
   "version": "0.1.0",
   "description": "Shared TF-IDF utilities — tokenization, IDF computation, vectorization, and cosine similarity. Internal package used by embedding, memory-engine-v2, and hallucination-detector.",
   "private": true,

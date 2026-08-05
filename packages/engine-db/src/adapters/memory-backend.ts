@@ -86,8 +86,8 @@ export interface MemoryDatabase {
  *
  * Usage:
  * ```ts
- * import { MemorySystem } from "@fengru/agent-memory"
- * import { EngineDatabase, MemoryBackend } from "@fengru/engine-db"
+ * import { MemorySystem } from "@fengrru/agent-memory"
+ * import { EngineDatabase, MemoryBackend } from "@fengrru/engine-db"
  *
  * const db = new EngineDatabase()
  * const backend = new MemoryBackend(db)

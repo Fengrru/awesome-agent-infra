@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/dreamdistill",
+  "name": "@fengrru/dreamdistill",
   "version": "0.1.0",
   "description": "AI memory consolidation (Dream) and workflow crystallization (Distill)  7-day and 30-day self-improvement cycles",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/dreamdistill"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

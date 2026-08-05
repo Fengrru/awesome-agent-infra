@@ -11,7 +11,7 @@
 
 import { describe, expect, test } from "bun:test"
 
-import { MemoryType } from "@fengru/memory-engine-v2"
+import { MemoryType } from "@fengrru/memory-engine-v2"
 import { UnifiedMemoryBridge } from "../src/bridge"
 import type { CoreRule, LongTermMemory } from "../src/bridge"
 

@@ -1,6 +1,6 @@
-# @fengru/agent-metacog
+# @fengrru/agent-metacog
 
-[![npm version](https://img.shields.io/npm/v/@fengru/agent-metacog)](https://www.npmjs.com/package/@fengru/agent-metacog) [![npm downloads](https://img.shields.io/npm/dm/@fengru/agent-metacog)](https://www.npmjs.com/package/@fengru/agent-metacog) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/agent-metacog)](https://www.npmjs.com/package/@fengrru/agent-metacog) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/agent-metacog)](https://www.npmjs.com/package/@fengrru/agent-metacog) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -8,18 +8,18 @@ Metacognitive monitoring and confidence calibration for AI agents. Tracks knowle
 
 > Scope note: this package covers metacognitive *training-time* monitoring and calibration.
 > For runtime output gating (accept/reject decisions on live LLM outputs), use
-> [`@fengru/confidence-gate`](../confidence-gate).
+> [`@fengrru/confidence-gate`](../confidence-gate).
 
 ## Install
 
 ```bash
-npm install @fengru/agent-metacog
+npm install @fengrru/agent-metacog
 ```
 
 ## Quick Start
 
 ```typescript
-import { AgentMetacog } from "@fengru/agent-metacog"
+import { AgentMetacog } from "@fengrru/agent-metacog"
 
 const metacog = new AgentMetacog()
 
@@ -50,7 +50,7 @@ import {
   FeatureExtractor,
   CalibrationBaselines,
   DEFAULT_BASE_HIDDEN_SIZE,
-} from "@fengru/agent-metacog"
+} from "@fengrru/agent-metacog"
 
 // Create calibrator (base model hidden size, optional config)
 const calibrator = new ConfidenceCalibrator(DEFAULT_BASE_HIDDEN_SIZE)

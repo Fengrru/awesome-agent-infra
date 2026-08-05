@@ -1,6 +1,6 @@
-# @fengru/guardrail
+# @fengrru/guardrail
 
-[![npm version](https://img.shields.io/npm/v/@fengru/guardrail)](https://www.npmjs.com/package/@fengru/guardrail) [![npm downloads](https://img.shields.io/npm/dm/@fengru/guardrail)](https://www.npmjs.com/package/@fengru/guardrail) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/guardrail)](https://www.npmjs.com/package/@fengrru/guardrail) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/guardrail)](https://www.npmjs.com/package/@fengrru/guardrail) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ Runtime safety guard with risk classification for AI agent operations.
 ## Install
 
 ```bash
-npm install @fengru/guardrail
+npm install @fengrru/guardrail
 ```
 
 ## Quick Start
 
 ```typescript
-import { GuardRail, EntropyController } from "@fengru/guardrail"
+import { GuardRail, EntropyController } from "@fengrru/guardrail"
 
 const guard = new GuardRail()
 

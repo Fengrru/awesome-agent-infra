@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/worker",
+  "name": "@fengrru/worker",
   "version": "0.1.0",
   "description": "Zero-dependency stateless worker pool for parallel task execution with capability routing, concurrency control, and metrics",
   "type": "module",
@@ -26,7 +26,6 @@
     "directory": "packages/worker"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

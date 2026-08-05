@@ -88,7 +88,7 @@ export interface EventBus {
 }
 
 export class EventBusService {
-  static readonly key = "@fengru/EventBus"
+  static readonly key = "@fengrru/EventBus"
   private readonly bus: EventBus
   constructor(bus: EventBus) {
     this.bus = bus

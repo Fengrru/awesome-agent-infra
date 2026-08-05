@@ -12,7 +12,7 @@
  */
 
 import { describe, test } from "bun:test"
-import { buildTFIDFVectors } from "@fengru/internal-tfidf"
+import { buildTFIDFVectors } from "@fengrru/internal-tfidf"
 import { HallucinationDetector, SpectralHallucinationDetector } from "../src/index"
 import type { FactClaim } from "../src/index"
 

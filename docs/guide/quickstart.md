@@ -6,20 +6,20 @@ Agent Kit 是 42 个独立包的集合。**不需要安装整个框架**——�
 
 ```bash
 # 按需安装（示例：模糊补丁 + 代码图谱）
-npm install @fengru/fuzzy-patch
-npm install @fengru/codegraph
+npm install @fengrru/fuzzy-patch
+npm install @fengrru/codegraph
 ```
 
 也可以使用 Bun 或 pnpm：
 
 ```bash
-bun add @fengru/event-bus
+bun add @fengrru/event-bus
 ```
 
 ## 第一个示例：智能体文件编辑
 
 ```ts
-import { fuzzyFindAndReplace } from "@fengru/fuzzy-patch"
+import { fuzzyFindAndReplace } from "@fengrru/fuzzy-patch"
 
 const source = readFileSync("config.ts", "utf8")
 const result = fuzzyFindAndReplace(source, "port = 3000", "port = 8080")
@@ -33,14 +33,14 @@ if (result.success) {
 
 | 场景 | 推荐包 |
 |------|--------|
-| 记忆与状态 | `@fengru/agent-memory`、`@fengru/agent-checkpoint` |
-| 文件操作安全 | `@fengru/txn-fs`、`@fengru/fuzzy-patch` |
-| 输出校验 | `@fengru/valid8`、`@fengru/confidence-gate` |
-| 代码理解 | `@fengru/codegraph`、`@fengru/agentic-search` |
-| 任务编排 | `@fengru/taskdag`、`@fengru/state-machine` |
-| 推理与规划 | `@fengru/reasoning-search`、`@fengru/pomdp-planner` |
-| 安全护栏 | `@fengru/guardrail`、`@fengru/code-sandbox` |
-| 自我进化 | `@fengru/skillforge`、`@fengru/dreamdistill` |
+| 记忆与状态 | `@fengrru/agent-memory`、`@fengrru/agent-checkpoint` |
+| 文件操作安全 | `@fengrru/txn-fs`、`@fengrru/fuzzy-patch` |
+| 输出校验 | `@fengrru/valid8`、`@fengrru/confidence-gate` |
+| 代码理解 | `@fengrru/codegraph`、`@fengrru/agentic-search` |
+| 任务编排 | `@fengrru/taskdag`、`@fengrru/state-machine` |
+| 推理与规划 | `@fengrru/reasoning-search`、`@fengrru/pomdp-planner` |
+| 安全护栏 | `@fengrru/guardrail`、`@fengrru/code-sandbox` |
+| 自我进化 | `@fengrru/skillforge`、`@fengrru/dreamdistill` |
 
 ## 完整示例
 

@@ -1,6 +1,6 @@
-# @fengru/learning-nudge
+# @fengrru/learning-nudge
 
-[![npm version](https://img.shields.io/npm/v/@fengru/learning-nudge)](https://www.npmjs.com/package/@fengru/learning-nudge) [![npm downloads](https://img.shields.io/npm/dm/@fengru/learning-nudge)](https://www.npmjs.com/package/@fengru/learning-nudge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/learning-nudge)](https://www.npmjs.com/package/@fengrru/learning-nudge) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/learning-nudge)](https://www.npmjs.com/package/@fengrru/learning-nudge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ Self-reflection trigger for continuous learning in AI agents.
 ## Install
 
 ```bash
-npm install @fengru/learning-nudge
+npm install @fengrru/learning-nudge
 ```
 
 ## Quick Start
 
 ```typescript
-import { LearningNudge } from "@fengru/learning-nudge"
+import { LearningNudge } from "@fengrru/learning-nudge"
 
 const nudge = new LearningNudge({
   minToolCalls: 10,

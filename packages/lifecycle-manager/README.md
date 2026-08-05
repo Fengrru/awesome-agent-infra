@@ -1,19 +1,19 @@
-# @fengru/lifecycle-manager
+# @fengrru/lifecycle-manager
 
-[![npm version](https://img.shields.io/npm/v/@fengru/lifecycle-manager)](https://www.npmjs.com/package/@fengru/lifecycle-manager) [![npm downloads](https://img.shields.io/npm/dm/@fengru/lifecycle-manager)](https://www.npmjs.com/package/@fengru/lifecycle-manager) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/lifecycle-manager)](https://www.npmjs.com/package/@fengrru/lifecycle-manager) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/lifecycle-manager)](https://www.npmjs.com/package/@fengrru/lifecycle-manager) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Declarative module lifecycle manager for AI agent systems.
 
 ## Install
 
 ```bash
-npm install @fengru/lifecycle-manager
+npm install @fengrru/lifecycle-manager
 ```
 
 ## Quick Start
 
 ```typescript
-import { LifecycleManager } from "@fengru/lifecycle-manager"
+import { LifecycleManager } from "@fengrru/lifecycle-manager"
 
 const manager = new LifecycleManager()
 

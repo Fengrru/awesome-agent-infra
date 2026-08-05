@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/skill-curator",
+  "name": "@fengrru/skill-curator",
   "version": "0.1.0",
   "description": "Automated skill library curation  archive stale skills, pin popular ones, quality review with LLM or heuristics",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/skill-curator"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

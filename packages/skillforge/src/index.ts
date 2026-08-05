@@ -100,7 +100,7 @@ export interface SkillManagerConfig {
 
 /**
  * Pluggable fuzzy find-and-replace function.
- * Replace with @fengru/fuzzy-patch for advanced matching (8 strategies).
+ * Replace with @fengrru/fuzzy-patch for advanced matching (8 strategies).
  */
 export type FuzzyPatchFn = (
   content: string,
@@ -169,7 +169,7 @@ ${body}`
 /**
  * Default exact-match fuzzy patch. Simple but reliable.
  * Override with `setFuzzyPatcher()` for advanced strategies (whitespace normalization,
- * token matching, Levenshtein fuzzy, etc. — see @fengru/fuzzy-patch).
+ * token matching, Levenshtein fuzzy, etc. — see @fengrru/fuzzy-patch).
  */
 function defaultFuzzyPatch(
   content: string,
@@ -373,7 +373,7 @@ export class SkillManager {
 
   /**
    * Override the default fuzzy patch implementation.
-   * Use @fengru/fuzzy-patch for 8-strategy advanced matching.
+   * Use @fengrru/fuzzy-patch for 8-strategy advanced matching.
    */
   setFuzzyPatcher(fn: FuzzyPatchFn): void {
     this._fuzzyPatch = fn

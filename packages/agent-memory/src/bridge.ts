@@ -21,8 +21,14 @@
  * @module agent-memory/bridge
  */
 
-import { MemoryEngine, type MemoryType } from "@fengru/memory-engine-v2"
-import type { AttentionConfig, MemoryConfig, MemoryItem, MetaMemoryConfig, SleepConfig } from "@fengru/memory-engine-v2"
+import { MemoryEngine, type MemoryType } from "@fengrru/memory-engine-v2"
+import type {
+  AttentionConfig,
+  MemoryConfig,
+  MemoryItem,
+  MetaMemoryConfig,
+  SleepConfig,
+} from "@fengrru/memory-engine-v2"
 
 // ── 兼容类型 (re-export from agent-memory) ──────────────────────────────
 

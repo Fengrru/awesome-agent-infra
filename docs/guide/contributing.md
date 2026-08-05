@@ -38,7 +38,7 @@ bunx biome format --write .
 ## 新增包流程
 
 1. 复制现有包结构
-2. `package.json`：`@fengru/<name>`、更新 description、补 `repository` + `publishConfig` 字段
+2. `package.json`：`@fengrru/<name>`、更新 description、补 `repository` + `publishConfig` 字段
 3. `tsconfig.json` 继承 `../../tsconfig.base.json`
 4. 加入 `typedoc.json` entryPoints
 5. 根目录 `bun install`

@@ -1,5 +1,5 @@
 /**
- * @fengru/branch — Session Forking & Branching Manager
+ * @fengrru/branch — Session Forking & Branching Manager
  *
  * Manages session branches for AI agent sessions. Supports forking a session
  * to create parallel exploration branches, merging successful branches back,

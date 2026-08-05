@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/confidence-gate",
+  "name": "@fengrru/confidence-gate",
   "version": "0.1.0",
   "description": "LLM output confidence calibration — ECE scoring, temperature scaling, hallucination risk gating, and dynamic answer thresholds",
   "type": "module",
@@ -38,7 +38,6 @@
     "directory": "packages/confidence-gate"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

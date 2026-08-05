@@ -1,19 +1,19 @@
-# @fengru/taskdag
+# @fengrru/taskdag
 
-[![npm version](https://img.shields.io/npm/v/@fengru/taskdag)](https://www.npmjs.com/package/@fengru/taskdag) [![npm downloads](https://img.shields.io/npm/dm/@fengru/taskdag)](https://www.npmjs.com/package/@fengru/taskdag) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/taskdag)](https://www.npmjs.com/package/@fengrru/taskdag) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/taskdag)](https://www.npmjs.com/package/@fengrru/taskdag) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 DAG execution engine with incremental replanning for AI agent task orchestration.
 
 ## Install
 
 ```bash
-npm install @fengru/taskdag
+npm install @fengrru/taskdag
 ```
 
 ## Quick Start
 
 ```typescript
-import { createDAG, validateDAG, getReadyNodes, markNodeFailed, replaceSubtree } from "@fengru/taskdag"
+import { createDAG, validateDAG, getReadyNodes, markNodeFailed, replaceSubtree } from "@fengrru/taskdag"
 
 const dag = createDAG({
   nodes: [

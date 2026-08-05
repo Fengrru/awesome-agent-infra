@@ -45,7 +45,7 @@ export { estimateConfidence, estimateQueryComplexity, isComputationQuery, estima
 export { AgentMetacog, createAgentMetacog } from "./metacog"
 export { SleepConsolidator, monitorMemoryHealth, getOptimizationRecommendations } from "./health"
 
-// ─── Confidence calibration (merged from @fengru/metacog-calibrator) ──────
+// ─── Confidence calibration (merged from @fengrru/metacog-calibrator) ──────
 export type {
   CalibratorConfig,
   StreamFeatures,

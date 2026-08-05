@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/hallucination-detector",
-  "version": "0.1.0",
+  "name": "@fengrru/hallucination-detector",
+  "version": "0.1.1",
   "description": "Zero-dependency spectral clustering hallucination detection with self-consistency verification",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,17 +11,25 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["hallucination-detection", "spectral-clustering", "self-consistency", "ai-agent", "fact-checking"],
+  "keywords": [
+    "hallucination-detection",
+    "spectral-clustering",
+    "self-consistency",
+    "ai-agent",
+    "fact-checking"
+  ],
   "license": "MIT",
   "dependencies": {
-    "@fengru/internal-tfidf": "workspace:*"
+    "@fengrru/internal-tfidf": "workspace:*"
   },
   "repository": {
     "type": "git",
@@ -29,7 +37,6 @@
     "directory": "packages/hallucination-detector"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

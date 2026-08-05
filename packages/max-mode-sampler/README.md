@@ -1,6 +1,6 @@
-# @fengru/max-mode-sampler
+# @fengrru/max-mode-sampler
 
-[![npm version](https://img.shields.io/npm/v/@fengru/max-mode-sampler)](https://www.npmjs.com/package/@fengru/max-mode-sampler) [![npm downloads](https://img.shields.io/npm/dm/@fengru/max-mode-sampler)](https://www.npmjs.com/package/@fengru/max-mode-sampler) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/max-mode-sampler)](https://www.npmjs.com/package/@fengrru/max-mode-sampler) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/max-mode-sampler)](https://www.npmjs.com/package/@fengrru/max-mode-sampler) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ Best-of-N parallel plan sampling for AI agent reasoning.
 ## Install
 
 ```bash
-npm install @fengru/max-mode-sampler
+npm install @fengrru/max-mode-sampler
 ```
 
 ## Quick Start
 
 ```typescript
-import { MaxModeSampler } from "@fengru/max-mode-sampler"
+import { MaxModeSampler } from "@fengrru/max-mode-sampler"
 
 const sampler = new MaxModeSampler({
   candidateCount: 5,

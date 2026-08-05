@@ -1,6 +1,6 @@
 # Benchmarks
 
-Micro-benchmarks for the core `@fengru/*` packages. Each benchmark imports the
+Micro-benchmarks for the core `@fengrru/*` packages. Each benchmark imports the
 package **source directly** (`../packages/<name>/src/index.ts`) — no build step,
 measuring the exact code that ships.
 

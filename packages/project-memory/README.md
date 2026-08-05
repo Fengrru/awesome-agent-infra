@@ -1,19 +1,19 @@
-# @fengru/project-memory
+# @fengrru/project-memory
 
-[![npm version](https://img.shields.io/npm/v/@fengru/project-memory)](https://www.npmjs.com/package/@fengru/project-memory) [![npm downloads](https://img.shields.io/npm/dm/@fengru/project-memory)](https://www.npmjs.com/package/@fengru/project-memory) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/project-memory)](https://www.npmjs.com/package/@fengrru/project-memory) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/project-memory)](https://www.npmjs.com/package/@fengrru/project-memory) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 File-based MEMORY.md project knowledge persistence.
 
 ## Install
 
 ```bash
-npm install @fengru/project-memory
+npm install @fengrru/project-memory
 ```
 
 ## Quick Start
 
 ```typescript
-import { ProjectMemoryManager } from "@fengru/project-memory"
+import { ProjectMemoryManager } from "@fengrru/project-memory"
 
 const manager = new ProjectMemoryManager({
   filePath: "./MEMORY.md",

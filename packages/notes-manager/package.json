@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/notes-manager",
+  "name": "@fengrru/notes-manager",
   "version": "0.1.0",
   "description": "Session scratchpad manager for AI agents — append, read, filter, compact JSONL notes with fs or in-memory fallback",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/notes-manager"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

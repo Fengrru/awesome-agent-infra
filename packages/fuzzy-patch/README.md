@@ -1,19 +1,19 @@
-# @fengru/fuzzy-patch
+# @fengrru/fuzzy-patch
 
-[![npm version](https://img.shields.io/npm/v/@fengru/fuzzy-patch)](https://www.npmjs.com/package/@fengru/fuzzy-patch) [![npm downloads](https://img.shields.io/npm/dm/@fengru/fuzzy-patch)](https://www.npmjs.com/package/@fengru/fuzzy-patch) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/fuzzy-patch)](https://www.npmjs.com/package/@fengrru/fuzzy-patch) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/fuzzy-patch)](https://www.npmjs.com/package/@fengrru/fuzzy-patch) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 8-strategy fuzzy file patching for AI agents. When exact string matching fails, this module provides progressively-degraded strategies to find and replace content reliably.
 
 ## Install
 
 ```bash
-npm install @fengru/fuzzy-patch
+npm install @fengrru/fuzzy-patch
 ```
 
 ## Quick Start
 
 ```typescript
-import { fuzzyFindAndReplace, canPatch, availableStrategies } from "@fengru/fuzzy-patch"
+import { fuzzyFindAndReplace, canPatch, availableStrategies } from "@fengrru/fuzzy-patch"
 
 const result = fuzzyFindAndReplace(fileContent, oldText, newText)
 console.log(result.strategy) // "exact" | "whitespace_normalized" | ...

@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/skillforge",
-  "version": "0.1.0",
+  "name": "@fengrru/skillforge",
+  "version": "0.1.1",
   "description": "Agent-writeable skill creation, curation, and management system  SKILL.md format with progressive L0/L1/L2 loading",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,9 +11,18 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
-  "keywords": ["skill", "agent", "ai", "skill-management", "skilled", "agent-skills"],
+  "keywords": [
+    "skill",
+    "agent",
+    "ai",
+    "skill-management",
+    "skilled",
+    "agent-skills"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -29,7 +38,6 @@
     "directory": "packages/skillforge"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

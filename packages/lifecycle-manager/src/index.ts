@@ -35,7 +35,7 @@ export const AgentState = {
 
 export type AgentState = (typeof AgentState)[keyof typeof AgentState]
 
-/** Minimal state machine interface — implement with @fengru/state-machine or your own */
+/** Minimal state machine interface — implement with @fengrru/state-machine or your own */
 export interface IStateMachine {
   onEnter(state: string, callback: (prev: string, next: string, reason?: string) => Promise<void>): void
   readonly state: string

@@ -1,6 +1,6 @@
-# @fengru/skillforge
+# @fengrru/skillforge
 
-[![npm version](https://img.shields.io/npm/v/@fengru/skillforge)](https://www.npmjs.com/package/@fengru/skillforge) [![npm downloads](https://img.shields.io/npm/dm/@fengru/skillforge)](https://www.npmjs.com/package/@fengru/skillforge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/skillforge)](https://www.npmjs.com/package/@fengrru/skillforge) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/skillforge)](https://www.npmjs.com/package/@fengrru/skillforge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ Agent-writeable skill creation and management system.
 ## Install
 
 ```bash
-npm install @fengru/skillforge
+npm install @fengrru/skillforge
 ```
 
 ## Quick Start
 
 ```typescript
-import { SkillManager } from "@fengru/skillforge"
+import { SkillManager } from "@fengrru/skillforge"
 
 const manager = new SkillManager({ skillsDir: "./skills" })
 

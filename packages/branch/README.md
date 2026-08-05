@@ -1,19 +1,19 @@
-# @fengru/branch
+# @fengrru/branch
 
-[![npm version](https://img.shields.io/npm/v/@fengru/branch)](https://www.npmjs.com/package/@fengru/branch) [![npm downloads](https://img.shields.io/npm/dm/@fengru/branch)](https://www.npmjs.com/package/@fengru/branch) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/branch)](https://www.npmjs.com/package/@fengrru/branch) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/branch)](https://www.npmjs.com/package/@fengrru/branch) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Session forking and branching manager for AI agent sessions.
 
 ## Install
 
 ```bash
-npm install @fengru/branch
+npm install @fengrru/branch
 ```
 
 ## Quick Start
 
 ```typescript
-import { BranchManager } from "@fengru/branch"
+import { BranchManager } from "@fengrru/branch"
 
 const manager = new BranchManager()
 

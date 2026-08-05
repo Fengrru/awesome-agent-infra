@@ -1,19 +1,19 @@
-# @fengru/agentic-search
+# @fengrru/agentic-search
 
-[![npm version](https://img.shields.io/npm/v/@fengru/agentic-search)](https://www.npmjs.com/package/@fengru/agentic-search) [![npm downloads](https://img.shields.io/npm/dm/@fengru/agentic-search)](https://www.npmjs.com/package/@fengru/agentic-search) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/agentic-search)](https://www.npmjs.com/package/@fengrru/agentic-search) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/agentic-search)](https://www.npmjs.com/package/@fengrru/agentic-search) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 4-layer intent-driven search orchestrator for AI agents.
 
 ## Install
 
 ```bash
-npm install @fengru/agentic-search
+npm install @fengrru/agentic-search
 ```
 
 ## Quick Start
 
 ```typescript
-import { AgenticSearchOrchestrator } from "@fengru/agentic-search"
+import { AgenticSearchOrchestrator } from "@fengrru/agentic-search"
 
 const orchestrator = new AgenticSearchOrchestrator({
   codeGraph: codeGraphInstance,

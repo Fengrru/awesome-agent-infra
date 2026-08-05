@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/taskdag",
+  "name": "@fengrru/taskdag",
   "version": "0.1.0",
   "description": "TypeScript DAG execution engine for AI agent task orchestration — topology sort, incremental replan, failure cascade",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/taskdag"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

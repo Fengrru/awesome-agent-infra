@@ -1,5 +1,5 @@
 /**
- * Comprehensive tests for @fengru/memory-graph.
+ * Comprehensive tests for @fengrru/memory-graph.
  *
  * Covers all algorithms from the paper:
  * - Algorithm 1: CoW Node Update

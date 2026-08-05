@@ -1,6 +1,6 @@
-# @fengru/pomdp-planner
+# @fengrru/pomdp-planner
 
-[![npm version](https://img.shields.io/npm/v/@fengru/pomdp-planner)](https://www.npmjs.com/package/@fengru/pomdp-planner) [![npm downloads](https://img.shields.io/npm/dm/@fengru/pomdp-planner)](https://www.npmjs.com/package/@fengru/pomdp-planner) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/pomdp-planner)](https://www.npmjs.com/package/@fengrru/pomdp-planner) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/pomdp-planner)](https://www.npmjs.com/package/@fengrru/pomdp-planner) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,7 +9,7 @@ Zero-dependency POMDP LLM planner with particle filter belief tracking and itera
 ## Quick Start
 
 ```ts
-import { POMDPPlanner, ParticleFilter, QMDPSolver, createState, defaultGoalFn, defaultRewardFn } from "@fengru/pomdp-planner"
+import { POMDPPlanner, ParticleFilter, QMDPSolver, createState, defaultGoalFn, defaultRewardFn } from "@fengrru/pomdp-planner"
 
 const actions = [
   { id: "up", name: "Move Up", description: "Move up", cost: 1 },

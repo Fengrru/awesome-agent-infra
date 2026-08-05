@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/memory-graph",
-  "version": "0.1.0",
+  "name": "@fengrru/memory-graph",
+  "version": "0.1.1",
   "description": "Zero-dependency causal dependency graph for AI agent memory revision with CoW versioning, BFS cascade invalidation, and consistency-aware retrieval",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -34,7 +36,6 @@
     "directory": "packages/memory-graph"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

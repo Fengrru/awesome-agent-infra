@@ -39,15 +39,15 @@ If you already run an orchestration framework, these packages slot into the gaps
 ## Quick Start
 
 ```bash
-npm install @fengru/fuzzy-patch
-npm install @fengru/valid8
-npm install @fengru/event-bus
+npm install @fengrru/fuzzy-patch
+npm install @fengrru/valid8
+npm install @fengrru/event-bus
 ```
 
 **Fix code with fuzzy patching** — 8 strategies that survive LLM whitespace drift:
 
 ```ts
-import { fuzzyFindAndReplace, canPatch } from "@fengru/fuzzy-patch"
+import { fuzzyFindAndReplace, canPatch } from "@fengrru/fuzzy-patch"
 
 const source = `const config = {
   port:   3000,
@@ -64,7 +64,7 @@ if (canPatch(source, "port: 3000")) {
 **Validate LLM output** — 4-layer validation network (syntax / semantic / runtime / security):
 
 ```ts
-import { createValidationNetwork } from "@fengru/valid8"
+import { createValidationNetwork } from "@fengrru/valid8"
 
 const network = createValidationNetwork()
 
@@ -77,7 +77,7 @@ console.log("confidence:", network.calculateConfidence([syntax, security]).score
 **Wire up agent events** — typed priority event bus with batch persistence:
 
 ```ts
-import { createSimpleEventBus, EventPriority, EventType } from "@fengru/event-bus"
+import { createSimpleEventBus, EventPriority, EventType } from "@fengrru/event-bus"
 
 const bus = createSimpleEventBus()
 
@@ -157,82 +157,82 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [fuzzy-patch](./packages/fuzzy-patch) | 8-strategy fuzzy file patching for AI agents | `@fengru/fuzzy-patch` |
-| [valid8](./packages/valid8) | 4-layer output validation (syntax/semantic/runtime/security) | `@fengru/valid8` |
-| [engine-db](./packages/engine-db) | Pluggable SQLite engine with 13 tables | `@fengru/engine-db` |
-| [txn-fs](./packages/txn-fs) | Transactional filesystem with 3-way merge | `@fengru/txn-fs` |
-| [taskdag](./packages/taskdag) | DAG execution engine with incremental replanning | `@fengru/taskdag` |
-| [state-machine](./packages/state-machine) | 15-state typed FSM for agent sessions | `@fengru/state-machine` |
-| [event-bus](./packages/event-bus) | Priority event bus with batch persistence | `@fengru/event-bus` |
-| [worker](./packages/worker) | Stateless worker pool with concurrency control | `@fengru/worker` |
+| [fuzzy-patch](./packages/fuzzy-patch) | 8-strategy fuzzy file patching for AI agents | `@fengrru/fuzzy-patch` |
+| [valid8](./packages/valid8) | 4-layer output validation (syntax/semantic/runtime/security) | `@fengrru/valid8` |
+| [engine-db](./packages/engine-db) | Pluggable SQLite engine with 13 tables | `@fengrru/engine-db` |
+| [txn-fs](./packages/txn-fs) | Transactional filesystem with 3-way merge | `@fengrru/txn-fs` |
+| [taskdag](./packages/taskdag) | DAG execution engine with incremental replanning | `@fengrru/taskdag` |
+| [state-machine](./packages/state-machine) | 15-state typed FSM for agent sessions | `@fengrru/state-machine` |
+| [event-bus](./packages/event-bus) | Priority event bus with batch persistence | `@fengrru/event-bus` |
+| [worker](./packages/worker) | Stateless worker pool with concurrency control | `@fengrru/worker` |
 
 ### Memory & Knowledge
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [agent-memory](./packages/agent-memory) | 4-tier memory with Ebbinghaus forgetting curve | `@fengru/agent-memory` |
-| [memory-graph](./packages/memory-graph) | Causal dependency graph with CoW versioning + BFS cascade invalidation | `@fengru/memory-graph` |
-| [project-memory](./packages/project-memory) | File-based MEMORY.md project knowledge | `@fengru/project-memory` |
-| [agent-checkpoint](./packages/agent-checkpoint) | 3-level checkpoint system (L1/L2/L3) | `@fengru/agent-checkpoint` |
-| [checkpoint-writer](./packages/checkpoint-writer) | LLM-driven 11-field state extraction | `@fengru/checkpoint-writer` |
-| [notes-manager](./packages/notes-manager) | Session scratchpad (notes.md) for MiMo Code | `@fengru/notes-manager` |
-| [embedding](./packages/embedding) | TF-IDF vector indexing + 3-signal hybrid search | `@fengru/embedding` |
+| [agent-memory](./packages/agent-memory) | 4-tier memory with Ebbinghaus forgetting curve | `@fengrru/agent-memory` |
+| [memory-graph](./packages/memory-graph) | Causal dependency graph with CoW versioning + BFS cascade invalidation | `@fengrru/memory-graph` |
+| [project-memory](./packages/project-memory) | File-based MEMORY.md project knowledge | `@fengrru/project-memory` |
+| [agent-checkpoint](./packages/agent-checkpoint) | 3-level checkpoint system (L1/L2/L3) | `@fengrru/agent-checkpoint` |
+| [checkpoint-writer](./packages/checkpoint-writer) | LLM-driven 11-field state extraction | `@fengrru/checkpoint-writer` |
+| [notes-manager](./packages/notes-manager) | Session scratchpad (notes.md) for MiMo Code | `@fengrru/notes-manager` |
+| [embedding](./packages/embedding) | TF-IDF vector indexing + 3-signal hybrid search | `@fengrru/embedding` |
 
 ### Safety & Repair
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [guardrail](./packages/guardrail) | Runtime safety guard with risk classification | `@fengru/guardrail` |
-| [healix](./packages/healix) | Self-healing error classifier with Hamming distance matching | `@fengru/healix` |
-| [goal-verifier](./packages/goal-verifier) | Independent goal completion verification | `@fengru/goal-verifier` |
-| [confidence-gate](./packages/confidence-gate) | LLM output confidence calibration | `@fengru/confidence-gate` |
+| [guardrail](./packages/guardrail) | Runtime safety guard with risk classification | `@fengrru/guardrail` |
+| [healix](./packages/healix) | Self-healing error classifier with Hamming distance matching | `@fengrru/healix` |
+| [goal-verifier](./packages/goal-verifier) | Independent goal completion verification | `@fengrru/goal-verifier` |
+| [confidence-gate](./packages/confidence-gate) | LLM output confidence calibration | `@fengrru/confidence-gate` |
 
 ### Search & Code Intelligence
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [codegraph](./packages/codegraph) | In-memory code graph with PageRank centrality | `@fengru/codegraph` |
-| [agentic-search](./packages/agentic-search) | 4-layer intent-driven search orchestrator | `@fengru/agentic-search` |
-| [reasoning-search](./packages/reasoning-search) | MCTS tree search reasoning engine | `@fengru/reasoning-search` |
+| [codegraph](./packages/codegraph) | In-memory code graph with PageRank centrality | `@fengrru/codegraph` |
+| [agentic-search](./packages/agentic-search) | 4-layer intent-driven search orchestrator | `@fengrru/agentic-search` |
+| [reasoning-search](./packages/reasoning-search) | MCTS tree search reasoning engine | `@fengrru/reasoning-search` |
 
 ### Workflow & Execution
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [dynamic-workflow](./packages/dynamic-workflow) | VM-sandboxed workflow engine | `@fengru/dynamic-workflow` |
-| [llm-dag-generator](./packages/llm-dag-generator) | LLM-driven task DAG generation | `@fengru/llm-dag-generator` |
-| [lifecycle-manager](./packages/lifecycle-manager) | Declarative module lifecycle manager | `@fengru/lifecycle-manager` |
+| [dynamic-workflow](./packages/dynamic-workflow) | VM-sandboxed workflow engine | `@fengrru/dynamic-workflow` |
+| [llm-dag-generator](./packages/llm-dag-generator) | LLM-driven task DAG generation | `@fengrru/llm-dag-generator` |
+| [lifecycle-manager](./packages/lifecycle-manager) | Declarative module lifecycle manager | `@fengrru/lifecycle-manager` |
 
 ### Self-Evolution
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [dreamdistill](./packages/dreamdistill) | 7-day Dream + 30-day Distill self-improvement cycles | `@fengru/dreamdistill` |
-| [learning-nudge](./packages/learning-nudge) | Self-reflection trigger for continuous learning | `@fengru/learning-nudge` |
-| [max-mode-sampler](./packages/max-mode-sampler) | Best-of-N parallel plan sampling | `@fengru/max-mode-sampler` |
-| [skillforge](./packages/skillforge) | Agent-writeable skill creation and management | `@fengru/skillforge` |
-| [skill-curator](./packages/skill-curator) | Automated skill library curation | `@fengru/skill-curator` |
-| [agent-metacog](./packages/agent-metacog) | Metacognitive monitoring with knowledge boundary detection | `@fengru/agent-metacog` |
-| [process-reward](./packages/process-reward) | Process Reward Model (PRM) — MC rollout, heuristic scoring, step labeling, training | `@fengru/process-reward` |
+| [dreamdistill](./packages/dreamdistill) | 7-day Dream + 30-day Distill self-improvement cycles | `@fengrru/dreamdistill` |
+| [learning-nudge](./packages/learning-nudge) | Self-reflection trigger for continuous learning | `@fengrru/learning-nudge` |
+| [max-mode-sampler](./packages/max-mode-sampler) | Best-of-N parallel plan sampling | `@fengrru/max-mode-sampler` |
+| [skillforge](./packages/skillforge) | Agent-writeable skill creation and management | `@fengrru/skillforge` |
+| [skill-curator](./packages/skill-curator) | Automated skill library curation | `@fengrru/skill-curator` |
+| [agent-metacog](./packages/agent-metacog) | Metacognitive monitoring with knowledge boundary detection | `@fengrru/agent-metacog` |
+| [process-reward](./packages/process-reward) | Process Reward Model (PRM) — MC rollout, heuristic scoring, step labeling, training | `@fengrru/process-reward` |
 
 ### Infrastructure
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [cycle-controller](./packages/cycle-controller) | Context window cycle manager (MiMo Code) | `@fengru/cycle-controller` |
-| [tracing](./packages/tracing) | OpenTelemetry tracing abstraction (no-op fallback) | `@fengru/tracing` |
-| [replay](./packages/replay) | Session event replay (dry-run/read-only/full) | `@fengru/replay` |
-| [branch](./packages/branch) | Session forking and branching manager | `@fengru/branch` |
-| [archiver](./packages/archiver) | Event archiver with hot/cold tiering + gzip | `@fengru/archiver` |
+| [cycle-controller](./packages/cycle-controller) | Context window cycle manager (MiMo Code) | `@fengrru/cycle-controller` |
+| [tracing](./packages/tracing) | OpenTelemetry tracing abstraction (no-op fallback) | `@fengrru/tracing` |
+| [replay](./packages/replay) | Session event replay (dry-run/read-only/full) | `@fengrru/replay` |
+| [branch](./packages/branch) | Session forking and branching manager | `@fengrru/branch` |
+| [archiver](./packages/archiver) | Event archiver with hot/cold tiering + gzip | `@fengrru/archiver` |
 
 ### Reasoning & Calibration
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [pomdp-planner](./packages/pomdp-planner) | POMDP LLM planner (particle filter + QMDP + iterative rollout) | `@fengru/pomdp-planner` |
-| [hallucination-detector](./packages/hallucination-detector) | Spectral clustering hallucination detection + self-consistency | `@fengru/hallucination-detector` |
-| [code-sandbox](./packages/code-sandbox) | Secure code execution sandbox with VerifierPool | `@fengru/code-sandbox` |
-| [memory-engine-v2](./packages/memory-engine-v2) | 5-layer memory engine with sleep consolidation + attention retrieval | `@fengru/memory-engine-v2` |
+| [pomdp-planner](./packages/pomdp-planner) | POMDP LLM planner (particle filter + QMDP + iterative rollout) | `@fengrru/pomdp-planner` |
+| [hallucination-detector](./packages/hallucination-detector) | Spectral clustering hallucination detection + self-consistency | `@fengrru/hallucination-detector` |
+| [code-sandbox](./packages/code-sandbox) | Secure code execution sandbox with VerifierPool | `@fengrru/code-sandbox` |
+| [memory-engine-v2](./packages/memory-engine-v2) | 5-layer memory engine with sleep consolidation + attention retrieval | `@fengrru/memory-engine-v2` |
 
 ## Documentation
 

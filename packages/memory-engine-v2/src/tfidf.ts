@@ -1,1 +1,1 @@
-export { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "@fengru/internal-tfidf"
+export { tokenize, computeIDF, computeTFIDFVector, cosineSimilarity } from "@fengrru/internal-tfidf"

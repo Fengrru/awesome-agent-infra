@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/reasoning-search",
-  "version": "0.1.0",
+  "name": "@fengrru/reasoning-search",
+  "version": "0.1.1",
   "description": "MCTS tree search reasoning engine with guided beam search and importance sampling — model-agnostic search over reasoning trajectories",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "mcts",
     "monte-carlo-tree-search",
@@ -39,7 +41,6 @@
     "directory": "packages/reasoning-search"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

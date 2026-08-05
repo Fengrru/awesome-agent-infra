@@ -1,6 +1,6 @@
 {
-  "name": "@fengru/txn-fs",
-  "version": "0.1.0",
+  "name": "@fengrru/txn-fs",
+  "version": "0.1.1",
   "description": "Transactional filesystem  Git-style transactions with three-way merge, TOCTOU validation, and rollback",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,9 +11,17 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
-  "keywords": ["filesystem", "transaction", "git", "merge", "rollback"],
+  "keywords": [
+    "filesystem",
+    "transaction",
+    "git",
+    "merge",
+    "rollback"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -29,7 +37,6 @@
     "directory": "packages/txn-fs"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

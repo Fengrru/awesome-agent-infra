@@ -15,7 +15,7 @@ import type { EngineDatabase, PersistentEvent } from "../index"
 
 // ─── ArchiveDatabase Interface ──────────────────────────────────────────────
 
-/** Interface matching @fengru/archiver's ArchiveDatabase (structural typing) */
+/** Interface matching @fengrru/archiver's ArchiveDatabase (structural typing) */
 export interface ArchiveDatabase {
   getEventCount(): Promise<number>
   getEventsOlderThan(timestamp: number, limit: number): Promise<Record<string, unknown>[]>
@@ -25,7 +25,7 @@ export interface ArchiveDatabase {
 
 // ─── IEventArchiver Interface ────────────────────────────────────────────────
 
-/** Interface matching @fengru/dreamdistill's IEventArchiver (structural typing) */
+/** Interface matching @fengrru/dreamdistill's IEventArchiver (structural typing) */
 export interface IEventArchiver {
   queryEvents(
     sessionId: string,
@@ -49,9 +49,9 @@ export interface IEventArchiver {
  *
  * Usage:
  * ```ts
- * import { EngineDatabase, EventArchiveBackend } from "@fengru/engine-db"
- * import { EventArchiver } from "@fengru/archiver"
- * import { DistillJob } from "@fengru/dreamdistill"
+ * import { EngineDatabase, EventArchiveBackend } from "@fengrru/engine-db"
+ * import { EventArchiver } from "@fengrru/archiver"
+ * import { DistillJob } from "@fengrru/dreamdistill"
  *
  * const db = new EngineDatabase()
  * const backend = new EventArchiveBackend(db)

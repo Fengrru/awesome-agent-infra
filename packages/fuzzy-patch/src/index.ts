@@ -8,7 +8,7 @@
  *
  * ## Quick Start
  * ```ts
- * import { fuzzyFindAndReplace, canPatch } from "@fengru/fuzzy-patch"
+ * import { fuzzyFindAndReplace, canPatch } from "@fengrru/fuzzy-patch"
  *
  * const result = fuzzyFindAndReplace(fileContent, oldText, newText)
  * console.log(result.strategy) // "exact" | "whitespace_normalized" | ...

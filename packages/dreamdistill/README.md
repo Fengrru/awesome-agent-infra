@@ -1,6 +1,6 @@
-# @fengru/dreamdistill
+# @fengrru/dreamdistill
 
-[![npm version](https://img.shields.io/npm/v/@fengru/dreamdistill)](https://www.npmjs.com/package/@fengru/dreamdistill) [![npm downloads](https://img.shields.io/npm/dm/@fengru/dreamdistill)](https://www.npmjs.com/package/@fengru/dreamdistill) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/dreamdistill)](https://www.npmjs.com/package/@fengrru/dreamdistill) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/dreamdistill)](https://www.npmjs.com/package/@fengrru/dreamdistill) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@
 ## Install
 
 ```bash
-npm install @fengru/dreamdistill
+npm install @fengrru/dreamdistill
 ```
 
 ## Quick Start
 
 ```typescript
-import { DreamJob, DistillJob } from "@fengru/dreamdistill"
+import { DreamJob, DistillJob } from "@fengrru/dreamdistill"
 
 // Dream: consolidate memory every 7 days
 const dream = new DreamJob({

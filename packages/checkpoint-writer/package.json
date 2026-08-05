@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/checkpoint-writer",
+  "name": "@fengrru/checkpoint-writer",
   "version": "0.1.0",
   "description": "LLM-driven structured checkpoint writer  11-field state extraction, discovery stability tracking with fact promotion to project memory",
   "type": "module",
@@ -29,7 +29,6 @@
     "directory": "packages/checkpoint-writer"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

@@ -1,6 +1,6 @@
-# @fengru/code-sandbox
+# @fengrru/code-sandbox
 
-[![npm version](https://img.shields.io/npm/v/@fengru/code-sandbox)](https://www.npmjs.com/package/@fengru/code-sandbox) [![npm downloads](https://img.shields.io/npm/dm/@fengru/code-sandbox)](https://www.npmjs.com/package/@fengru/code-sandbox) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/code-sandbox)](https://www.npmjs.com/package/@fengrru/code-sandbox) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/code-sandbox)](https://www.npmjs.com/package/@fengrru/code-sandbox) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Secure code execution sandbox with math, code, and logic verification.
 
@@ -23,7 +23,7 @@ import {
   CodeVerifier,
   LogicVerifier,
   VerifierPool,
-} from "@fengru/code-sandbox"
+} from "@fengrru/code-sandbox"
 
 // ── SecureExecutor ────────────────────────────────────────
 const executor = new SecureExecutor({ timeoutMs: 5000 })

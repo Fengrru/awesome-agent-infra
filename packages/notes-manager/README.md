@@ -1,13 +1,13 @@
-# @fengru/notes-manager
+# @fengrru/notes-manager
 
-[![npm version](https://img.shields.io/npm/v/@fengru/notes-manager)](https://www.npmjs.com/package/@fengru/notes-manager) [![npm downloads](https://img.shields.io/npm/dm/@fengru/notes-manager)](https://www.npmjs.com/package/@fengru/notes-manager) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/notes-manager)](https://www.npmjs.com/package/@fengrru/notes-manager) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/notes-manager)](https://www.npmjs.com/package/@fengrru/notes-manager) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Session scratchpad manager for AI agents. Stores notes as JSONL files with full Node.js `fs/promises` support and automatic in-memory fallback.
 
 ## Quick Start
 
 ```ts
-import { NotesManager } from "@fengru/notes-manager";
+import { NotesManager } from "@fengrru/notes-manager";
 
 const notes = new NotesManager({ notesDir: "./agent-notes" });
 

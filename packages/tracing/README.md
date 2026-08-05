@@ -1,19 +1,19 @@
-# @fengru/tracing
+# @fengrru/tracing
 
-[![npm version](https://img.shields.io/npm/v/@fengru/tracing)](https://www.npmjs.com/package/@fengru/tracing) [![npm downloads](https://img.shields.io/npm/dm/@fengru/tracing)](https://www.npmjs.com/package/@fengru/tracing) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/tracing)](https://www.npmjs.com/package/@fengrru/tracing) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/tracing)](https://www.npmjs.com/package/@fengrru/tracing) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Lightweight OpenTelemetry tracing abstraction with zero runtime dependencies.
 
 ## Install
 
 ```bash
-npm install @fengru/tracing
+npm install @fengrru/tracing
 ```
 
 ## Quick Start
 
 ```typescript
-import { getTracer, withSpan } from "@fengru/tracing"
+import { getTracer, withSpan } from "@fengrru/tracing"
 
 const tracer = getTracer()
 

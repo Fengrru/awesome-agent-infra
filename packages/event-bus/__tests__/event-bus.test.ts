@@ -535,7 +535,7 @@ describe("EventBusService", () => {
   })
 
   test("EventBusService has correct static key", () => {
-    expect(EventBusService.key).toBe("@fengru/EventBus")
+    expect(EventBusService.key).toBe("@fengrru/EventBus")
   })
 })
 

@@ -4,7 +4,7 @@ This file provides instructions for AI coding agents (Claude Code, Codex, Cursor
 
 ## Project Overview
 
-**awesome-agent-infra** is a TypeScript monorepo of 42 zero-dependency packages for building AI agent infrastructure. Scope: `@fengru/*` on npm. Runtime: Bun. Monorepo tool: Turborepo. Testing: Bun test. Linting: Biome.
+**awesome-agent-infra** is a TypeScript monorepo of 42 zero-dependency packages for building AI agent infrastructure. Scope: `@fengrru/*` on npm. Runtime: Bun. Monorepo tool: Turborepo. Testing: Bun test. Linting: Biome.
 
 ## Commands
 
@@ -27,7 +27,7 @@ packages/<name>/
   src/index.ts          # Entry point — only export public API here
   src/...               # Internal modules
   __tests__/            # Test files (bun:test)
-  package.json          # Name: @fengru/<name>, type: module
+  package.json          # Name: @fengrru/<name>, type: module
   tsconfig.json         # Extends ../../tsconfig.base.json
 ```
 
@@ -45,7 +45,7 @@ packages/<name>/
 ## Adding a New Package
 
 1. Copy an existing package's structure
-2. `package.json`: set `"name": "@fengru/<name>"`, update `"description"`
+2. `package.json`: set `"name": "@fengrru/<name>"`, update `"description"`
 3. `tsconfig.json`: extend `../../tsconfig.base.json`
 4. Add `typecheck`, `test`, `build` scripts (use `bun run build` for prepublishOnly)
 5. Add the package to `typedoc.json` entry points

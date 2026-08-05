@@ -49,7 +49,7 @@ Agent Kit 不是单一框架，而是**按能力分层**的 42 个独立包。�
 公共构造器统一为 `createX()` 工厂函数，而非 `new X()`：
 
 ```ts
-import { createEventBus } from "@fengru/event-bus"
+import { createEventBus } from "@fengrru/event-bus"
 
 const bus = createEventBus({ maxQueueSize: 1000 })
 ```
@@ -59,7 +59,7 @@ const bus = createEventBus({ maxQueueSize: 1000 })
 需要外部资源（文件系统、LLM、解析器）的包通过接口注入，便于测试与替换：
 
 ```ts
-import { createCodeGraphBuilder } from "@fengru/codegraph"
+import { createCodeGraphBuilder } from "@fengrru/codegraph"
 
 const builder = createCodeGraphBuilder({
   fs: myFileSystem, // 注入自定义实现

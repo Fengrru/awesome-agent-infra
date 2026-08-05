@@ -16,7 +16,7 @@
  * ## Unified bridge (v2)
  * `UnifiedMemoryBridge` wraps memory-engine-v2's 5-tier bio-inspired architecture
  * and adds CoreRules + Ebbinghaus decay + token-budget context assembly.
- * Use `import { UnifiedMemoryBridge } from "@fengru/agent-memory"`.
+ * Use `import { UnifiedMemoryBridge } from "@fengrru/agent-memory"`.
  */
 
 // ── Unified bridge (memory-engine-v2 integration) ─────────────────────────

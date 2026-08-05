@@ -1,5 +1,5 @@
 {
-  "name": "@fengru/valid8",
+  "name": "@fengrru/valid8",
   "version": "0.1.0",
   "description": "Multi-layer AI output validation  syntax, semantic, runtime, security  with LLM reviewer and external scanner support",
   "type": "module",
@@ -37,7 +37,6 @@
     "directory": "packages/valid8"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }

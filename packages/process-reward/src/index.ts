@@ -1,7 +1,7 @@
 /**
  * Process Reward Model — unified PRM package.
  *
- * Merges @fengru/process-reward and @fengru/prm-trainer into a single
+ * Merges @fengrru/process-reward and @fengrru/prm-trainer into a single
  * cohesive package for step-level reasoning quality scoring, labeling,
  * verification, training, and guided inference.
  *

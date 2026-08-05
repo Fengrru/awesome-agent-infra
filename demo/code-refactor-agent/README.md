@@ -6,17 +6,17 @@ End-to-end demo that showcases 11 key awesome-agent-infra packages working toget
 
 | Step | Package | Role |
 |------|---------|------|
-| 1 | `@fengru/project-memory` | Load and persist project context (MEMORY.md) |
-| 2a | `@fengru/codegraph` | Build heterogeneous code graph, search symbols |
-| 2b | `@fengru/embedding` | Index code items with TF-IDF, semantic search |
-| 3a | `@fengru/llm-dag-generator` | Generate refactoring execution plan DAG |
-| 3b | `@fengru/taskdag` | Validate DAG structure, execute & track nodes |
-| 4 | `@fengru/valid8` | 4-layer validation (syntax, semantic, runtime, security) |
-| 5 | `@fengru/fuzzy-patch` | Fuzzy match & apply code patches (8 strategies) |
-| 6a | `@fengru/event-bus` | Publish/subscribe events throughout the workflow |
-| 6b | `@fengru/archiver` | Hot/cold tiering for event persistence |
-| 7 | `@fengru/state-machine` | Lifecycle state tracking (IDLE → ... → COMPLETED) |
-| 8 | `@fengru/confidence-gate` | Calibrate confidence, detect overconfidence |
+| 1 | `@fengrru/project-memory` | Load and persist project context (MEMORY.md) |
+| 2a | `@fengrru/codegraph` | Build heterogeneous code graph, search symbols |
+| 2b | `@fengrru/embedding` | Index code items with TF-IDF, semantic search |
+| 3a | `@fengrru/llm-dag-generator` | Generate refactoring execution plan DAG |
+| 3b | `@fengrru/taskdag` | Validate DAG structure, execute & track nodes |
+| 4 | `@fengrru/valid8` | 4-layer validation (syntax, semantic, runtime, security) |
+| 5 | `@fengrru/fuzzy-patch` | Fuzzy match & apply code patches (8 strategies) |
+| 6a | `@fengrru/event-bus` | Publish/subscribe events throughout the workflow |
+| 6b | `@fengrru/archiver` | Hot/cold tiering for event persistence |
+| 7 | `@fengrru/state-machine` | Lifecycle state tracking (IDLE → ... → COMPLETED) |
+| 8 | `@fengrru/confidence-gate` | Calibrate confidence, detect overconfidence |
 
 ## Quick Start
 

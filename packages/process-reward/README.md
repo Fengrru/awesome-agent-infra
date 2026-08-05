@@ -1,6 +1,6 @@
-# @fengru/process-reward
+# @fengrru/process-reward
 
-[![npm version](https://img.shields.io/npm/v/@fengru/process-reward)](https://www.npmjs.com/package/@fengru/process-reward) [![npm downloads](https://img.shields.io/npm/dm/@fengru/process-reward)](https://www.npmjs.com/package/@fengru/process-reward) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/process-reward)](https://www.npmjs.com/package/@fengrru/process-reward) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/process-reward)](https://www.npmjs.com/package/@fengrru/process-reward) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ Process Reward Model with MC rollout labeling for AI agent reasoning.
 ## Install
 
 ```bash
-npm install @fengru/process-reward
+npm install @fengrru/process-reward
 ```
 
 ## Quick Start
 
 ```typescript
-import { ProcessRewardModel } from "@fengru/process-reward"
+import { ProcessRewardModel } from "@fengrru/process-reward"
 
 const prm = new ProcessRewardModel()
 

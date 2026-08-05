@@ -1,5 +1,5 @@
 /**
- * @fengru/tracing — Lightweight OpenTelemetry Tracing Abstraction
+ * @fengrru/tracing — Lightweight OpenTelemetry Tracing Abstraction
  *
  * Provides a zero-dependency tracing facade. When OpenTelemetry is installed,
  * spans are bridged to real OTel spans. When OTel is absent, no-op spans
@@ -135,7 +135,7 @@ export function getTracer(): Tracer {
 
   const otel = loadOTel()
   if (otel) {
-    const otelTracer = otel.trace.getTracer("@fengru/tracing", "0.1.0")
+    const otelTracer = otel.trace.getTracer("@fengrru/tracing", "0.1.0")
     _tracer = new OTelTracerWrapper(otelTracer, otel)
   } else {
     _tracer = new NoOpTracer()

@@ -1,17 +1,17 @@
-import { EventArchiver } from "@fengru/archiver"
-import { CodeGraph, CodeGraphSearcher } from "@fengru/codegraph"
-import type { CodeGraphNode, SymbolMetadata } from "@fengru/codegraph"
-import { ConfidenceGate } from "@fengru/confidence-gate"
-import { CodeEmbeddingIndexer } from "@fengru/embedding"
-import type { CodeEmbeddingItem } from "@fengru/embedding"
-import { EventPriority, EventType, createSimpleEventBus } from "@fengru/event-bus"
-import type { EventBus } from "@fengru/event-bus"
-import { fuzzyFindAndReplace } from "@fengru/fuzzy-patch"
-import type { Capability, DAG } from "@fengru/llm-dag-generator"
-import { ProjectMemoryManager } from "@fengru/project-memory"
-import { AgentState, AgentStateMachine } from "@fengru/state-machine"
-import { allSucceeded, getReadyNodes, isComplete, validateDAG } from "@fengru/taskdag"
-import { ValidationNetwork } from "@fengru/valid8"
+import { EventArchiver } from "@fengrru/archiver"
+import { CodeGraph, CodeGraphSearcher } from "@fengrru/codegraph"
+import type { CodeGraphNode, SymbolMetadata } from "@fengrru/codegraph"
+import { ConfidenceGate } from "@fengrru/confidence-gate"
+import { CodeEmbeddingIndexer } from "@fengrru/embedding"
+import type { CodeEmbeddingItem } from "@fengrru/embedding"
+import { EventPriority, EventType, createSimpleEventBus } from "@fengrru/event-bus"
+import type { EventBus } from "@fengrru/event-bus"
+import { fuzzyFindAndReplace } from "@fengrru/fuzzy-patch"
+import type { Capability, DAG } from "@fengrru/llm-dag-generator"
+import { ProjectMemoryManager } from "@fengrru/project-memory"
+import { AgentState, AgentStateMachine } from "@fengrru/state-machine"
+import { allSucceeded, getReadyNodes, isComplete, validateDAG } from "@fengrru/taskdag"
+import { ValidationNetwork } from "@fengrru/valid8"
 
 // ---------------------------------------------------------------------------
 // Sample data: a synthetic "mini crm" project we pretend to refactor
@@ -396,7 +396,7 @@ export class CodeRefactorScenario {
       },
     ]
 
-    const { DAGGenerator } = await import("@fengru/llm-dag-generator")
+    const { DAGGenerator } = await import("@fengrru/llm-dag-generator")
     const gen = new DAGGenerator()
     const dag = await gen.generateDAG("Refactor saveUser to accept optional Transaction parameter", capabilities)
 

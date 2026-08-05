@@ -1,12 +1,12 @@
 /**
- * @fengru/replay — Session Event Replay Engine
+ * @fengrru/replay — Session Event Replay Engine
  *
  * Replays recorded session events in three modes:
  *   - dry-run: compute state trajectory without any execution
  *   - read-only: state + non-destructive operations only
  *   - full: execute all events including side-effectful operations
  *
- * Depends on @fengru/state-machine and @fengru/taskdag for rich DAG and
+ * Depends on @fengrru/state-machine and @fengrru/taskdag for rich DAG and
  * state-machine integration. When those packages are absent, minimal internal
  * implementations preserve functionality without external deps.
  *
@@ -50,7 +50,7 @@ export interface ReplayDifference {
 
 // ── Dependency Injection Interfaces ─────────────────────────────────────────
 
-/** State machine interface compatible with @fengru/state-machine */
+/** State machine interface compatible with @fengrru/state-machine */
 export interface StateMachineLike {
   state: string
   transition: (to: string) => Promise<void>
@@ -58,7 +58,7 @@ export interface StateMachineLike {
   restore: (s: Record<string, unknown>) => void
 }
 
-/** DAG validator interface compatible with @fengru/taskdag */
+/** DAG validator interface compatible with @fengrru/taskdag */
 export type DAGValidatorFn = (dag: Record<string, unknown>) => { valid: boolean; error?: string }
 
 // ── Minimal Internal Implementations ────────────────────────────────────────
@@ -102,8 +102,8 @@ export class SessionReplayer {
   private validateDAG: DAGValidatorFn
 
   /**
-   * @param stateMachine - Optional state machine implementation (inject @fengru/state-machine or use built-in minimal).
-   * @param dagValidator - Optional DAG validator (inject @fengru/taskdag's validateDAG or use built-in minimal).
+   * @param stateMachine - Optional state machine implementation (inject @fengrru/state-machine or use built-in minimal).
+   * @param dagValidator - Optional DAG validator (inject @fengrru/taskdag's validateDAG or use built-in minimal).
    */
   constructor(stateMachine?: StateMachineLike, dagValidator?: DAGValidatorFn) {
     this.stateMachine = stateMachine ?? new MinimalStateMachine()

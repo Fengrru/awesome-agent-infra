@@ -1,6 +1,6 @@
-# @fengru/confidence-gate
+# @fengrru/confidence-gate
 
-[![npm version](https://img.shields.io/npm/v/@fengru/confidence-gate)](https://www.npmjs.com/package/@fengru/confidence-gate) [![npm downloads](https://img.shields.io/npm/dm/@fengru/confidence-gate)](https://www.npmjs.com/package/@fengru/confidence-gate) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/confidence-gate)](https://www.npmjs.com/package/@fengrru/confidence-gate) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/confidence-gate)](https://www.npmjs.com/package/@fengrru/confidence-gate) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 > **Experimental** — API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
@@ -9,13 +9,13 @@ LLM output confidence calibration with ECE scoring and temperature scaling.
 ## Install
 
 ```bash
-npm install @fengru/confidence-gate
+npm install @fengrru/confidence-gate
 ```
 
 ## Quick Start
 
 ```typescript
-import { ConfidenceGate } from "@fengru/confidence-gate"
+import { ConfidenceGate } from "@fengrru/confidence-gate"
 
 const gate = new ConfidenceGate()
 

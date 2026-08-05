@@ -1,13 +1,13 @@
-# @fengru/event-bus
+# @fengrru/event-bus
 
-[![npm version](https://img.shields.io/npm/v/@fengru/event-bus)](https://www.npmjs.com/package/@fengru/event-bus) [![npm downloads](https://img.shields.io/npm/dm/@fengru/event-bus)](https://www.npmjs.com/package/@fengru/event-bus) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/event-bus)](https://www.npmjs.com/package/@fengrru/event-bus) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/event-bus)](https://www.npmjs.com/package/@fengrru/event-bus) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Zero-dependency typed event bus for AI agents.
 
 ## Quick Start
 
 ```ts
-import { createSimpleEventBus, EventPriority, EventType } from "@fengru/event-bus"
+import { createSimpleEventBus, EventPriority, EventType } from "@fengrru/event-bus"
 
 const bus = createSimpleEventBus()
 

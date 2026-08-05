@@ -18,17 +18,17 @@
       "name": "code-refactor-agent-demo",
       "version": "0.1.0",
       "dependencies": {
-        "@fengru/archiver": "workspace:*",
-        "@fengru/codegraph": "workspace:*",
-        "@fengru/confidence-gate": "workspace:*",
-        "@fengru/embedding": "workspace:*",
-        "@fengru/event-bus": "workspace:*",
-        "@fengru/fuzzy-patch": "workspace:*",
-        "@fengru/llm-dag-generator": "workspace:*",
-        "@fengru/project-memory": "workspace:*",
-        "@fengru/state-machine": "workspace:*",
-        "@fengru/taskdag": "workspace:*",
-        "@fengru/valid8": "workspace:*",
+        "@fengrru/archiver": "workspace:*",
+        "@fengrru/codegraph": "workspace:*",
+        "@fengrru/confidence-gate": "workspace:*",
+        "@fengrru/embedding": "workspace:*",
+        "@fengrru/event-bus": "workspace:*",
+        "@fengrru/fuzzy-patch": "workspace:*",
+        "@fengrru/llm-dag-generator": "workspace:*",
+        "@fengrru/project-memory": "workspace:*",
+        "@fengrru/state-machine": "workspace:*",
+        "@fengrru/taskdag": "workspace:*",
+        "@fengrru/valid8": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "^26.1.2",
@@ -37,63 +37,63 @@
       },
     },
     "packages/agent-checkpoint": {
-      "name": "@fengru/agent-checkpoint",
+      "name": "@fengrru/agent-checkpoint",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/agent-memory": {
-      "name": "@fengru/agent-memory",
+      "name": "@fengrru/agent-memory",
       "version": "0.1.0",
       "dependencies": {
-        "@fengru/memory-engine-v2": "workspace:*",
+        "@fengrru/memory-engine-v2": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/agent-metacog": {
-      "name": "@fengru/agent-metacog",
+      "name": "@fengrru/agent-metacog",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/agentic-search": {
-      "name": "@fengru/agentic-search",
+      "name": "@fengrru/agentic-search",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/archiver": {
-      "name": "@fengru/archiver",
+      "name": "@fengrru/archiver",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/branch": {
-      "name": "@fengru/branch",
+      "name": "@fengrru/branch",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/checkpoint-writer": {
-      "name": "@fengru/checkpoint-writer",
+      "name": "@fengrru/checkpoint-writer",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/code-sandbox": {
-      "name": "@fengru/code-sandbox",
+      "name": "@fengrru/code-sandbox",
       "version": "0.1.0",
     },
     "packages/codegraph": {
-      "name": "@fengru/codegraph",
+      "name": "@fengrru/codegraph",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
@@ -106,223 +106,220 @@
       ],
     },
     "packages/confidence-gate": {
-      "name": "@fengru/confidence-gate",
+      "name": "@fengrru/confidence-gate",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/cycle-controller": {
-      "name": "@fengru/cycle-controller",
+      "name": "@fengrru/cycle-controller",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
       "peerDependencies": {
-        "@fengru/event-bus": ">=0.1.0",
-        "@fengru/state-machine": ">=0.1.0",
+        "@fengrru/event-bus": "workspace:*",
+        "@fengrru/state-machine": "workspace:*",
       },
       "optionalPeers": [
-        "@fengru/event-bus",
-        "@fengru/state-machine",
+        "@fengrru/event-bus",
+        "@fengrru/state-machine",
       ],
     },
     "packages/dreamdistill": {
-      "name": "@fengru/dreamdistill",
+      "name": "@fengrru/dreamdistill",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/dynamic-workflow": {
-      "name": "@fengru/dynamic-workflow",
+      "name": "@fengrru/dynamic-workflow",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/embedding": {
-      "name": "@fengru/embedding",
+      "name": "@fengrru/embedding",
       "version": "0.1.0",
-      "dependencies": {
-        "@fengru/internal-tfidf": "workspace:*",
-      },
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/engine-db": {
-      "name": "@fengru/engine-db",
+      "name": "@fengrru/engine-db",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/event-bus": {
-      "name": "@fengru/event-bus",
+      "name": "@fengrru/event-bus",
       "version": "0.1.0",
     },
     "packages/fuzzy-patch": {
-      "name": "@fengru/fuzzy-patch",
+      "name": "@fengrru/fuzzy-patch",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/goal-verifier": {
-      "name": "@fengru/goal-verifier",
+      "name": "@fengrru/goal-verifier",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/guardrail": {
-      "name": "@fengru/guardrail",
+      "name": "@fengrru/guardrail",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/hallucination-detector": {
-      "name": "@fengru/hallucination-detector",
+      "name": "@fengrru/hallucination-detector",
       "version": "0.1.0",
       "dependencies": {
-        "@fengru/internal-tfidf": "workspace:*",
+        "@fengrru/internal-tfidf": "workspace:*",
       },
     },
     "packages/healix": {
-      "name": "@fengru/healix",
+      "name": "@fengrru/healix",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/internal-tfidf": {
-      "name": "@fengru/internal-tfidf",
+      "name": "@fengrru/internal-tfidf",
       "version": "0.1.0",
     },
     "packages/learning-nudge": {
-      "name": "@fengru/learning-nudge",
+      "name": "@fengrru/learning-nudge",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/lifecycle-manager": {
-      "name": "@fengru/lifecycle-manager",
+      "name": "@fengrru/lifecycle-manager",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/llm-dag-generator": {
-      "name": "@fengru/llm-dag-generator",
+      "name": "@fengrru/llm-dag-generator",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/max-mode-sampler": {
-      "name": "@fengru/max-mode-sampler",
+      "name": "@fengrru/max-mode-sampler",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/memory-engine-v2": {
-      "name": "@fengru/memory-engine-v2",
+      "name": "@fengrru/memory-engine-v2",
       "version": "0.1.0",
       "dependencies": {
-        "@fengru/internal-tfidf": "workspace:*",
+        "@fengrru/internal-tfidf": "workspace:*",
       },
     },
     "packages/memory-graph": {
-      "name": "@fengru/memory-graph",
+      "name": "@fengrru/memory-graph",
       "version": "0.1.0",
     },
     "packages/notes-manager": {
-      "name": "@fengru/notes-manager",
+      "name": "@fengrru/notes-manager",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/pomdp-planner": {
-      "name": "@fengru/pomdp-planner",
+      "name": "@fengrru/pomdp-planner",
       "version": "0.1.0",
     },
     "packages/process-reward": {
-      "name": "@fengru/process-reward",
+      "name": "@fengrru/process-reward",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/project-memory": {
-      "name": "@fengru/project-memory",
+      "name": "@fengrru/project-memory",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/reasoning-search": {
-      "name": "@fengru/reasoning-search",
+      "name": "@fengrru/reasoning-search",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/replay": {
-      "name": "@fengru/replay",
+      "name": "@fengrru/replay",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/skill-curator": {
-      "name": "@fengru/skill-curator",
+      "name": "@fengrru/skill-curator",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/skillforge": {
-      "name": "@fengru/skillforge",
+      "name": "@fengrru/skillforge",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/state-machine": {
-      "name": "@fengru/state-machine",
+      "name": "@fengrru/state-machine",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/taskdag": {
-      "name": "@fengru/taskdag",
+      "name": "@fengrru/taskdag",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/tracing": {
-      "name": "@fengru/tracing",
+      "name": "@fengrru/tracing",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/txn-fs": {
-      "name": "@fengru/txn-fs",
+      "name": "@fengrru/txn-fs",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/valid8": {
-      "name": "@fengru/valid8",
+      "name": "@fengrru/valid8",
       "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.0.0",
@@ -335,7 +332,7 @@
       ],
     },
     "packages/worker": {
-      "name": "@fengru/worker",
+      "name": "@fengrru/worker",
       "version": "0.1.0",
     },
   },
@@ -394,89 +391,89 @@
 
     "@changesets/write": ["@changesets/write@0.4.0", "", { "dependencies": { "@changesets/types": "^6.1.0", "fs-extra": "^7.0.1", "human-id": "^4.1.1", "prettier": "^2.7.1" } }, "sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q=="],
 
-    "@fengru/agent-checkpoint": ["@fengru/agent-checkpoint@workspace:packages/agent-checkpoint"],
+    "@fengrru/agent-checkpoint": ["@fengrru/agent-checkpoint@workspace:packages/agent-checkpoint"],
 
-    "@fengru/agent-memory": ["@fengru/agent-memory@workspace:packages/agent-memory"],
+    "@fengrru/agent-memory": ["@fengrru/agent-memory@workspace:packages/agent-memory"],
 
-    "@fengru/agent-metacog": ["@fengru/agent-metacog@workspace:packages/agent-metacog"],
+    "@fengrru/agent-metacog": ["@fengrru/agent-metacog@workspace:packages/agent-metacog"],
 
-    "@fengru/agentic-search": ["@fengru/agentic-search@workspace:packages/agentic-search"],
+    "@fengrru/agentic-search": ["@fengrru/agentic-search@workspace:packages/agentic-search"],
 
-    "@fengru/archiver": ["@fengru/archiver@workspace:packages/archiver"],
+    "@fengrru/archiver": ["@fengrru/archiver@workspace:packages/archiver"],
 
-    "@fengru/branch": ["@fengru/branch@workspace:packages/branch"],
+    "@fengrru/branch": ["@fengrru/branch@workspace:packages/branch"],
 
-    "@fengru/checkpoint-writer": ["@fengru/checkpoint-writer@workspace:packages/checkpoint-writer"],
+    "@fengrru/checkpoint-writer": ["@fengrru/checkpoint-writer@workspace:packages/checkpoint-writer"],
 
-    "@fengru/code-sandbox": ["@fengru/code-sandbox@workspace:packages/code-sandbox"],
+    "@fengrru/code-sandbox": ["@fengrru/code-sandbox@workspace:packages/code-sandbox"],
 
-    "@fengru/codegraph": ["@fengru/codegraph@workspace:packages/codegraph"],
+    "@fengrru/codegraph": ["@fengrru/codegraph@workspace:packages/codegraph"],
 
-    "@fengru/confidence-gate": ["@fengru/confidence-gate@workspace:packages/confidence-gate"],
+    "@fengrru/confidence-gate": ["@fengrru/confidence-gate@workspace:packages/confidence-gate"],
 
-    "@fengru/cycle-controller": ["@fengru/cycle-controller@workspace:packages/cycle-controller"],
+    "@fengrru/cycle-controller": ["@fengrru/cycle-controller@workspace:packages/cycle-controller"],
 
-    "@fengru/dreamdistill": ["@fengru/dreamdistill@workspace:packages/dreamdistill"],
+    "@fengrru/dreamdistill": ["@fengrru/dreamdistill@workspace:packages/dreamdistill"],
 
-    "@fengru/dynamic-workflow": ["@fengru/dynamic-workflow@workspace:packages/dynamic-workflow"],
+    "@fengrru/dynamic-workflow": ["@fengrru/dynamic-workflow@workspace:packages/dynamic-workflow"],
 
-    "@fengru/embedding": ["@fengru/embedding@workspace:packages/embedding"],
+    "@fengrru/embedding": ["@fengrru/embedding@workspace:packages/embedding"],
 
-    "@fengru/engine-db": ["@fengru/engine-db@workspace:packages/engine-db"],
+    "@fengrru/engine-db": ["@fengrru/engine-db@workspace:packages/engine-db"],
 
-    "@fengru/event-bus": ["@fengru/event-bus@workspace:packages/event-bus"],
+    "@fengrru/event-bus": ["@fengrru/event-bus@workspace:packages/event-bus"],
 
-    "@fengru/fuzzy-patch": ["@fengru/fuzzy-patch@workspace:packages/fuzzy-patch"],
+    "@fengrru/fuzzy-patch": ["@fengrru/fuzzy-patch@workspace:packages/fuzzy-patch"],
 
-    "@fengru/goal-verifier": ["@fengru/goal-verifier@workspace:packages/goal-verifier"],
+    "@fengrru/goal-verifier": ["@fengrru/goal-verifier@workspace:packages/goal-verifier"],
 
-    "@fengru/guardrail": ["@fengru/guardrail@workspace:packages/guardrail"],
+    "@fengrru/guardrail": ["@fengrru/guardrail@workspace:packages/guardrail"],
 
-    "@fengru/hallucination-detector": ["@fengru/hallucination-detector@workspace:packages/hallucination-detector"],
+    "@fengrru/hallucination-detector": ["@fengrru/hallucination-detector@workspace:packages/hallucination-detector"],
 
-    "@fengru/healix": ["@fengru/healix@workspace:packages/healix"],
+    "@fengrru/healix": ["@fengrru/healix@workspace:packages/healix"],
 
-    "@fengru/internal-tfidf": ["@fengru/internal-tfidf@workspace:packages/internal-tfidf"],
+    "@fengrru/internal-tfidf": ["@fengrru/internal-tfidf@workspace:packages/internal-tfidf"],
 
-    "@fengru/learning-nudge": ["@fengru/learning-nudge@workspace:packages/learning-nudge"],
+    "@fengrru/learning-nudge": ["@fengrru/learning-nudge@workspace:packages/learning-nudge"],
 
-    "@fengru/lifecycle-manager": ["@fengru/lifecycle-manager@workspace:packages/lifecycle-manager"],
+    "@fengrru/lifecycle-manager": ["@fengrru/lifecycle-manager@workspace:packages/lifecycle-manager"],
 
-    "@fengru/llm-dag-generator": ["@fengru/llm-dag-generator@workspace:packages/llm-dag-generator"],
+    "@fengrru/llm-dag-generator": ["@fengrru/llm-dag-generator@workspace:packages/llm-dag-generator"],
 
-    "@fengru/max-mode-sampler": ["@fengru/max-mode-sampler@workspace:packages/max-mode-sampler"],
+    "@fengrru/max-mode-sampler": ["@fengrru/max-mode-sampler@workspace:packages/max-mode-sampler"],
 
-    "@fengru/memory-engine-v2": ["@fengru/memory-engine-v2@workspace:packages/memory-engine-v2"],
+    "@fengrru/memory-engine-v2": ["@fengrru/memory-engine-v2@workspace:packages/memory-engine-v2"],
 
-    "@fengru/memory-graph": ["@fengru/memory-graph@workspace:packages/memory-graph"],
+    "@fengrru/memory-graph": ["@fengrru/memory-graph@workspace:packages/memory-graph"],
 
-    "@fengru/notes-manager": ["@fengru/notes-manager@workspace:packages/notes-manager"],
+    "@fengrru/notes-manager": ["@fengrru/notes-manager@workspace:packages/notes-manager"],
 
-    "@fengru/pomdp-planner": ["@fengru/pomdp-planner@workspace:packages/pomdp-planner"],
+    "@fengrru/pomdp-planner": ["@fengrru/pomdp-planner@workspace:packages/pomdp-planner"],
 
-    "@fengru/process-reward": ["@fengru/process-reward@workspace:packages/process-reward"],
+    "@fengrru/process-reward": ["@fengrru/process-reward@workspace:packages/process-reward"],
 
-    "@fengru/project-memory": ["@fengru/project-memory@workspace:packages/project-memory"],
+    "@fengrru/project-memory": ["@fengrru/project-memory@workspace:packages/project-memory"],
 
-    "@fengru/reasoning-search": ["@fengru/reasoning-search@workspace:packages/reasoning-search"],
+    "@fengrru/reasoning-search": ["@fengrru/reasoning-search@workspace:packages/reasoning-search"],
 
-    "@fengru/replay": ["@fengru/replay@workspace:packages/replay"],
+    "@fengrru/replay": ["@fengrru/replay@workspace:packages/replay"],
 
-    "@fengru/skill-curator": ["@fengru/skill-curator@workspace:packages/skill-curator"],
+    "@fengrru/skill-curator": ["@fengrru/skill-curator@workspace:packages/skill-curator"],
 
-    "@fengru/skillforge": ["@fengru/skillforge@workspace:packages/skillforge"],
+    "@fengrru/skillforge": ["@fengrru/skillforge@workspace:packages/skillforge"],
 
-    "@fengru/state-machine": ["@fengru/state-machine@workspace:packages/state-machine"],
+    "@fengrru/state-machine": ["@fengrru/state-machine@workspace:packages/state-machine"],
 
-    "@fengru/taskdag": ["@fengru/taskdag@workspace:packages/taskdag"],
+    "@fengrru/taskdag": ["@fengrru/taskdag@workspace:packages/taskdag"],
 
-    "@fengru/tracing": ["@fengru/tracing@workspace:packages/tracing"],
+    "@fengrru/tracing": ["@fengrru/tracing@workspace:packages/tracing"],
 
-    "@fengru/txn-fs": ["@fengru/txn-fs@workspace:packages/txn-fs"],
+    "@fengrru/txn-fs": ["@fengrru/txn-fs@workspace:packages/txn-fs"],
 
-    "@fengru/valid8": ["@fengru/valid8@workspace:packages/valid8"],
+    "@fengrru/valid8": ["@fengrru/valid8@workspace:packages/valid8"],
 
-    "@fengru/worker": ["@fengru/worker@workspace:packages/worker"],
+    "@fengrru/worker": ["@fengrru/worker@workspace:packages/worker"],
 
     "@gerrit0/mini-shiki": ["@gerrit0/mini-shiki@3.23.0", "", { "dependencies": { "@shikijs/engine-oniguruma": "^3.23.0", "@shikijs/langs": "^3.23.0", "@shikijs/themes": "^3.23.0", "@shikijs/types": "^3.23.0", "@shikijs/vscode-textmate": "^10.0.2" } }, "sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg=="],
 

@@ -1,13 +1,13 @@
-# @fengru/memory-graph
+# @fengrru/memory-graph
 
-[![npm version](https://img.shields.io/npm/v/@fengru/memory-graph)](https://www.npmjs.com/package/@fengru/memory-graph) [![npm downloads](https://img.shields.io/npm/dm/@fengru/memory-graph)](https://www.npmjs.com/package/@fengru/memory-graph) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/memory-graph)](https://www.npmjs.com/package/@fengrru/memory-graph) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/memory-graph)](https://www.npmjs.com/package/@fengrru/memory-graph) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Zero-dependency causal dependency graph for AI agent memory revision with CoW versioning, BFS cascade invalidation, and consistency-aware retrieval.
 
 ## Quick Start
 
 ```ts
-import { createMemoryGraph, RelationType, RetrievalMode, createConsistencyRetriever } from "@fengru/memory-graph"
+import { createMemoryGraph, RelationType, RetrievalMode, createConsistencyRetriever } from "@fengrru/memory-graph"
 
 const graph = createMemoryGraph()
 

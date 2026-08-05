@@ -1,19 +1,19 @@
-# @fengru/txn-fs
+# @fengrru/txn-fs
 
-[![npm version](https://img.shields.io/npm/v/@fengru/txn-fs)](https://www.npmjs.com/package/@fengru/txn-fs) [![npm downloads](https://img.shields.io/npm/dm/@fengru/txn-fs)](https://www.npmjs.com/package/@fengru/txn-fs) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/txn-fs)](https://www.npmjs.com/package/@fengrru/txn-fs) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/txn-fs)](https://www.npmjs.com/package/@fengrru/txn-fs) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Transactional filesystem with 3-way merge for AI agent file operations.
 
 ## Install
 
 ```bash
-npm install @fengru/txn-fs
+npm install @fengrru/txn-fs
 ```
 
 ## Quick Start
 
 ```typescript
-import { TransactionalFS } from "@fengru/txn-fs"
+import { TransactionalFS } from "@fengrru/txn-fs"
 
 const fs = new TransactionalFS()
 

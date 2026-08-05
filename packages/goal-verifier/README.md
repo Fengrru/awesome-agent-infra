@@ -1,19 +1,19 @@
-# @fengru/goal-verifier
+# @fengrru/goal-verifier
 
-[![npm version](https://img.shields.io/npm/v/@fengru/goal-verifier)](https://www.npmjs.com/package/@fengru/goal-verifier) [![npm downloads](https://img.shields.io/npm/dm/@fengru/goal-verifier)](https://www.npmjs.com/package/@fengru/goal-verifier) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/goal-verifier)](https://www.npmjs.com/package/@fengrru/goal-verifier) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/goal-verifier)](https://www.npmjs.com/package/@fengrru/goal-verifier) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Independent goal completion verification for AI agents.
 
 ## Install
 
 ```bash
-npm install @fengru/goal-verifier
+npm install @fengrru/goal-verifier
 ```
 
 ## Quick Start
 
 ```typescript
-import { GoalVerifier } from "@fengru/goal-verifier"
+import { GoalVerifier } from "@fengrru/goal-verifier"
 
 const verifier = new GoalVerifier({
   provider: llmProvider,

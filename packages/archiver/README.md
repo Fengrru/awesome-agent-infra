@@ -1,19 +1,19 @@
-# @fengru/archiver
+# @fengrru/archiver
 
-[![npm version](https://img.shields.io/npm/v/@fengru/archiver)](https://www.npmjs.com/package/@fengru/archiver) [![npm downloads](https://img.shields.io/npm/dm/@fengru/archiver)](https://www.npmjs.com/package/@fengru/archiver) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/archiver)](https://www.npmjs.com/package/@fengrru/archiver) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/archiver)](https://www.npmjs.com/package/@fengrru/archiver) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Event archiver with hot/cold tiering for AI agent sessions.
 
 ## Install
 
 ```bash
-npm install @fengru/archiver
+npm install @fengrru/archiver
 ```
 
 ## Quick Start
 
 ```typescript
-import { EventArchiver, type ArchiveDatabase } from "@fengru/archiver"
+import { EventArchiver, type ArchiveDatabase } from "@fengrru/archiver"
 
 const archiver = new EventArchiver({
   maxHotEvents: 10000,

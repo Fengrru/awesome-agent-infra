@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug in one of the @fengru packages
+about: Report a bug in one of the @fengrru packages
 title: "[bug] "
 labels: bug
 assignees: ""
@@ -8,7 +8,7 @@ assignees: ""
 
 ## Package
 
-Which package is affected? (e.g. `@fengru/fuzzy-patch`)
+Which package is affected? (e.g. `@fengrru/fuzzy-patch`)
 
 ## Describe the bug
 

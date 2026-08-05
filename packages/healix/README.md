@@ -1,19 +1,19 @@
-# @fengru/healix
+# @fengrru/healix
 
-[![npm version](https://img.shields.io/npm/v/@fengru/healix)](https://www.npmjs.com/package/@fengru/healix) [![npm downloads](https://img.shields.io/npm/dm/@fengru/healix)](https://www.npmjs.com/package/@fengru/healix) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@fengrru/healix)](https://www.npmjs.com/package/@fengrru/healix) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/healix)](https://www.npmjs.com/package/@fengrru/healix) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
 Self-healing error classifier with dual hash matching and Hamming distance fuzzy matching.
 
 ## Install
 
 ```bash
-npm install @fengru/healix
+npm install @fengrru/healix
 ```
 
 ## Quick Start
 
 ```typescript
-import { ErrorClassifier, RepairMemoryEngine } from "@fengru/healix"
+import { ErrorClassifier, RepairMemoryEngine } from "@fengrru/healix"
 
 // Classify errors
 const classifier = new ErrorClassifier()

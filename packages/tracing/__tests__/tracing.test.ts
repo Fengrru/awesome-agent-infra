@@ -152,7 +152,7 @@ describe("OTel bridge", () => {
     resetTracer()
     const tracer = getTracer()
     const span = tracer.startSpan("op", { attributes: { a: 1 } })
-    expect(tracedName).toBe("@fengru/tracing")
+    expect(tracedName).toBe("@fengrru/tracing")
     expect(tracedVersion).toBe("0.1.0")
     expect(span).toBeDefined()
   })

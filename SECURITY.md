@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability in awesome-agent-infra, please **do not** open a public issue.
 
-Instead, report it via [GitHub Security Advisories](https://github.com/fengru/awesome-agent-infra/security/advisories/new) or email `security@fengru.dev`.
+Instead, report it via [GitHub Security Advisories](https://github.com/fengru/awesome-agent-infra/security/advisories/new) or email `security@fengrru.dev`.
 
 You should receive a response within 48 hours. If the issue is confirmed, we will release a patch as soon as possible.
 
