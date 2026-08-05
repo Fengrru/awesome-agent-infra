@@ -95,17 +95,15 @@ jobs:
       - name: Build all packages
         run: bun turbo build
 
-      - name: Create Release Pull Request or Publish to npm
+      - name: Create Release Pull Request
         id: changesets
         uses: changesets/action@v1
         with:
           version: bun changeset version
-          # publish is only enabled when NPM_TOKEN is configured. Without it the
-          # action still runs `bun changeset publish` on every push even with no
-          # pending changesets, failing the workflow (changesets/action#1152).
-          publish: ${{ secrets.NPM_TOKEN != '' && 'bun changeset publish' || '' }}
+          # npm publishing is intentionally MANUAL: this action only opens the
+          # "Version Packages" PR. Publish from a local machine after logging
+          # in to npm (see release notes / CONTRIBUTING for the steps).
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
