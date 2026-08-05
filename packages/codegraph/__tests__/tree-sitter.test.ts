@@ -864,6 +864,34 @@ describe("extractFromFile (tree-sitter path)", () => {
     }
   })
 
+  test("wasm path resolution falls back when file:// URL host is invalid", async () => {
+    // fileURLToPath throws ERR_INVALID_FILE_URL_HOST for non-empty hosts on
+    // POSIX, exercising the catch fallback in resolveWasmPath.
+    const origCreate = URL.createObjectURL
+    URL.createObjectURL = () => "file://badhost/fake/tree.wasm" as unknown as string
+    try {
+      setExtractorDependencies({ Parser: MockParser, Language: MockLanguage })
+      registerTree("function c() {}", {
+        type: "program",
+        text: "function c() {}",
+        children: [
+          {
+            type: "function_declaration",
+            text: "function c() {}",
+            fields: {
+              name: { type: "identifier", text: "c" },
+              parameters: { type: "formal_parameters", text: "()", children: [] },
+            },
+          },
+        ],
+      })
+      const result = await extractFromFile("src/wasm3.ts", "function c() {}", MOCK_TIME)
+      expect(result.symbols.some((s) => s.name === "c")).toBe(true)
+    } finally {
+      URL.createObjectURL = origCreate
+    }
+  })
+
   test("parser init failure falls back to the regex parser", async () => {
     class FailInitParser {
       static init(): void {
