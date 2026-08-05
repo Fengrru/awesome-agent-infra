@@ -44,7 +44,7 @@ Install only what you need — every package is independent:
 npm install @fengrru/fuzzy-patch
 ```
 
-The examples below also use `@fengrru/valid8` and `@fengrru/event-bus`.
+The examples below also use `@fengrru/valid8` and `@fengrru/agent-memory`.
 
 **Fix code with fuzzy patching** — 8 strategies that survive LLM whitespace drift:
 
@@ -76,24 +76,27 @@ const security = await network.runSecurityValidation(code)
 console.log("confidence:", network.calculateConfidence([syntax, security]).score)
 ```
 
-**Wire up agent events** — typed priority event bus with batch persistence:
+**Give your agent memory** — 4-tier memory with the Ebbinghaus forgetting curve:
 
 ```ts
-import { createSimpleEventBus, EventPriority, EventType } from "@fengrru/event-bus"
+import { createMemorySystem } from "@fengrru/agent-memory"
 
-const bus = createSimpleEventBus()
+const mem = createMemorySystem()
 
-bus.subscribe(EventType.TOOL_RESULT, (event) => {
-  console.log(`tool ${event.data.toolName} -> ${event.data.status}`)
+mem.addLongTermMemory({
+  memory_id: "ltm-1",
+  content: "project uses a zero-dependency policy",
+  token_count: 30,
+  importance: 0.9,
+  access_count: 3,
+  created_at: Date.now() - 86_400_000,
+  last_accessed: Date.now(),
+  retention_score: 0.8,
 })
 
-bus.publish({
-  type: EventType.TOOL_RESULT,
-  source: "agent",
-  session_id: "session-1",
-  data: { toolName: "read_file", status: "ok" },
-  priority: EventPriority.NORMAL,
-})
+// token-budgeted context assembly across all tiers
+const ctx = mem.assembleContext("refactor the config module")
+console.log(`${ctx.l3.length} long-term memories assembled, ${ctx.totalTokens} tokens`)
 ```
 
 More runnable examples live in [examples/](./examples).
