@@ -11,9 +11,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "keywords": [
     "mcts",
     "monte-carlo-tree-search",
@@ -42,5 +40,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

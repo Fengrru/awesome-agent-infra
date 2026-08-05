@@ -11,10 +11,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "keywords": [
     "fuzzy-match",
     "fuzzy-patch",
@@ -44,5 +41,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

@@ -11,22 +11,14 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": [
-    "event-bus",
-    "pubsub",
-    "ai-agent",
-    "priority-queue",
-    "batch-processing"
-  ],
+  "keywords": ["event-bus", "pubsub", "ai-agent", "priority-queue", "batch-processing"],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -35,5 +27,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

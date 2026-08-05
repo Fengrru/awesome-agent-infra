@@ -11,23 +11,14 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": [
-    "tfidf",
-    "embedding",
-    "vector-search",
-    "hybrid-search",
-    "code-intelligence",
-    "n-gram"
-  ],
+  "keywords": ["tfidf", "embedding", "vector-search", "hybrid-search", "code-intelligence", "n-gram"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
@@ -39,5 +30,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

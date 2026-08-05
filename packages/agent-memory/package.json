@@ -11,17 +11,8 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "ai-agent",
-    "memory",
-    "ebbinghaus",
-    "forgetting-curve",
-    "agent-memory",
-    "vector-retrieval"
-  ],
+  "files": ["dist"],
+  "keywords": ["ai-agent", "memory", "ebbinghaus", "forgetting-curve", "agent-memory", "vector-retrieval"],
   "license": "MIT",
   "scripts": {
     "test": "bun test",
@@ -42,5 +33,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

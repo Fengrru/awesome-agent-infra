@@ -11,9 +11,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -28,13 +26,7 @@
       "optional": true
     }
   },
-  "keywords": [
-    "code-graph",
-    "pagerank",
-    "symbol-search",
-    "ego-graph",
-    "code-analysis"
-  ],
+  "keywords": ["code-graph", "pagerank", "symbol-search", "ego-graph", "code-analysis"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
@@ -46,5 +38,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

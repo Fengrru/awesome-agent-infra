@@ -11,9 +11,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -23,14 +21,7 @@
   "dependencies": {
     "@fengrru/internal-tfidf": "workspace:*"
   },
-  "keywords": [
-    "memory",
-    "memory-engine",
-    "ai-agent",
-    "sleep-consolidation",
-    "meta-memory",
-    "attention-retrieval"
-  ],
+  "keywords": ["memory", "memory-engine", "ai-agent", "sleep-consolidation", "meta-memory", "attention-retrieval"],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,5 +30,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

@@ -11,18 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "license": "MIT",
-  "keywords": [
-    "skill",
-    "agent",
-    "ai",
-    "skill-management",
-    "skilled",
-    "agent-skills"
-  ],
+  "keywords": ["skill", "agent", "ai", "skill-management", "skilled", "agent-skills"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -39,5 +30,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
+  "bugs": {
+    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }
