@@ -1,6 +1,6 @@
 {
   "name": "@fengru/cycle-controller",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Context window cycle manager for AI agents — token utilization monitoring, checkpoint thresholds, and context rebuild triggers",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,22 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["cycle-controller", "context-window", "token-tracking", "checkpoint", "agent"],
+  "keywords": [
+    "cycle-controller",
+    "context-window",
+    "token-tracking",
+    "checkpoint",
+    "agent"
+  ],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"

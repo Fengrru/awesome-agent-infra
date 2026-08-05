@@ -1,6 +1,6 @@
 {
   "name": "@fengru/replay",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Session event replay engine — replay events across dry-run, read-only and full modes with state trajectory tracking",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,22 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["replay", "session", "event", "recovery", "agent"],
+  "keywords": [
+    "replay",
+    "session",
+    "event",
+    "recovery",
+    "agent"
+  ],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"

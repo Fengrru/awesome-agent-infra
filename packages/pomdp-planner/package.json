@@ -1,6 +1,6 @@
 {
   "name": "@fengru/pomdp-planner",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency POMDP LLM planner with particle filter belief tracking and iterative rollout",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,22 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["pomdp", "planner", "particle-filter", "llm", "ai-agent"],
+  "keywords": [
+    "pomdp",
+    "planner",
+    "particle-filter",
+    "llm",
+    "ai-agent"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

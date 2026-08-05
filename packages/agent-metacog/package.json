@@ -1,6 +1,6 @@
 {
   "name": "@fengru/agent-metacog",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agent metacognitive monitoring and calibration — knowledge boundary detection, Ebbinghaus forgetting alerts, consolidation triggers, self-reflection, and 3-stream transformer confidence calibration (ECE + Brier)",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "metacognition",
     "self-awareness",

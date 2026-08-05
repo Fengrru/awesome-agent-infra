@@ -1,6 +1,6 @@
 {
   "name": "@fengru/fuzzy-patch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Multi-strategy fuzzy matching engine for AI agent file patching ?8 progressively-degraded strategies from exact match to Levenshtein fuzzy",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "keywords": [
     "fuzzy-match",
     "fuzzy-patch",

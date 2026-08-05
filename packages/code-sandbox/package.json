@@ -1,6 +1,6 @@
 {
   "name": "@fengru/code-sandbox",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Secure code execution sandbox with math/code/logic verification — zero-dependency, subprocess isolation, verifier pool",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,23 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["code-sandbox", "secure-execution", "math-verifier", "code-verifier", "logic-verifier", "ai-agent"],
+  "keywords": [
+    "code-sandbox",
+    "secure-execution",
+    "math-verifier",
+    "code-verifier",
+    "logic-verifier",
+    "ai-agent"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 {
   "name": "@fengru/process-reward",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unified Process Reward Model — step-level reasoning quality scoring, 3-tier MC/heuristic/weak-supervision labeling, confidence-weighted MSE training, step segmentation, multi-domain verification, and PRM-guided inference",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "process-reward-model",
     "prm",

@@ -1,6 +1,6 @@
 {
   "name": "@fengru/branch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Session forking/branching manager for AI agent sessions — fork, merge, abandon branches with zero dependencies",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,14 +11,22 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "keywords": ["branch", "fork", "session", "merge", "agent"],
+  "keywords": [
+    "branch",
+    "fork",
+    "session",
+    "merge",
+    "agent"
+  ],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"

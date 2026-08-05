@@ -1,7 +1,7 @@
 {
   "name": "code-refactor-agent-demo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "End-to-end demo showcasing awesome-agent-infra packages in a code refactoring scenario",
   "type": "module",
   "scripts": {

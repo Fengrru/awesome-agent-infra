@@ -1,6 +1,6 @@
 {
   "name": "@fengru/agentic-search",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Four-layer agentic search orchestrator  Intent Parsing  Strategy Planning  Parallel Execution  Result Fusion",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,9 +11,17 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "MIT",
-  "keywords": ["search", "rag", "agent", "code-search", "orchestrator"],
+  "keywords": [
+    "search",
+    "rag",
+    "agent",
+    "code-search",
+    "orchestrator"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",

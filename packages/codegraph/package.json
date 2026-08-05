@@ -1,6 +1,6 @@
 {
   "name": "@fengru/codegraph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "In-memory heterogeneous code graph  symbol extraction, PageRank centrality, k-hop ego-graph search, incremental file watcher",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
@@ -26,7 +28,13 @@
       "optional": true
     }
   },
-  "keywords": ["code-graph", "pagerank", "symbol-search", "ego-graph", "code-analysis"],
+  "keywords": [
+    "code-graph",
+    "pagerank",
+    "symbol-search",
+    "ego-graph",
+    "code-analysis"
+  ],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
