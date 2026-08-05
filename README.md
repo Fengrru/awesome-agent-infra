@@ -38,11 +38,13 @@ If you already run an orchestration framework, these packages slot into the gaps
 
 ## Quick Start
 
+Install only what you need — every package is independent:
+
 ```bash
 npm install @fengrru/fuzzy-patch
-npm install @fengrru/valid8
-npm install @fengrru/event-bus
 ```
+
+The examples below also use `@fengrru/valid8` and `@fengrru/event-bus`.
 
 **Fix code with fuzzy patching** — 8 strategies that survive LLM whitespace drift:
 
