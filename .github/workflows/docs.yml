@@ -36,6 +36,9 @@ jobs:
       - name: Install workspace dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build packages (TypeDoc resolves types from dist/*.d.ts)
+        run: bun run build
+
       - name: Generate API reference (TypeDoc)
         run: bun run docs
 
