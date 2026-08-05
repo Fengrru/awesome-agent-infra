@@ -14,7 +14,7 @@ bun run test       # Run all tests
 
 1. **Fork** the repository
 2. **Create a branch** — `feat/xxx` or `fix/xxx`
-3. **Make your changes** — follow the conventions in [AGENTS.md](AGENTS.md)
+3. **Make your changes** — follow the conventions in [AGENTS.md](https://github.com/Fengrru/awesome-agent-infra/blob/main/AGENTS.md)
 4. **Run lint** — `biome check --write .`
 5. **Run tests** — `bun run test` (all packages) or `bun test --cwd packages/<name>` (single package)
 6. **Add a changeset** — `bun changeset` (only if changing public API)
