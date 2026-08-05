@@ -44,7 +44,7 @@ Install only what you need — every package is independent:
 npm install @fengrru/fuzzy-patch
 ```
 
-The examples below also use `@fengrru/valid8` and `@fengrru/agent-memory`.
+The examples below also use `@fengrru/agent-memory` and `@fengrru/codegraph`.
 
 **Fix code with fuzzy patching** — 8 strategies that survive LLM whitespace drift:
 
@@ -63,17 +63,17 @@ if (canPatch(source, "port: 3000")) {
 }
 ```
 
-**Validate LLM output** — 4-layer validation network (syntax / semantic / runtime / security):
+**Understand a codebase** — in-memory code graph with symbol search and PageRank centrality:
 
 ```ts
-import { createValidationNetwork } from "@fengrru/valid8"
+import { createCodeGraphBuilder } from "@fengrru/codegraph"
 
-const network = createValidationNetwork()
+const graph = await createCodeGraphBuilder({ rootDir: "./src", maxFiles: 500 }).build()
+console.log(`${graph.nodeCount} symbols, ${graph.edgeCount} edges across ${graph.fileCount} files`)
 
-const code = "export function add(a: number, b: number) {\n  return a + b\n}\n"
-const syntax = await network.runSyntaxValidation(code, "add.ts")
-const security = await network.runSecurityValidation(code)
-console.log("confidence:", network.calculateConfidence([syntax, security]).score)
+for (const sym of graph.searchSymbols("handleRequest")) {
+  console.log(`${sym.name} (${sym.type}) at ${sym.filePath}`)
+}
 ```
 
 **Give your agent memory** — 4-tier memory with the Ebbinghaus forgetting curve:
