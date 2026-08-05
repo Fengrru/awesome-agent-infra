@@ -19,6 +19,7 @@
 - [ ] `bun run test` passes
 - [ ] `biome check --write .` produces no diff (or the diff was committed)
 - [ ] Coverage gate passes for touched packages: `bun scripts/check-coverage.ts`
+- [ ] All benchmarks on hot paths still within variance (±10%)
 
 ## API impact
 
@@ -34,5 +35,10 @@
 - [ ] Tests added/updated in `__tests__/`
 - [ ] README updated if user-facing behavior changed
 - [ ] STABILITY.md classification updated if the package tier changed
+- [ ] Changeset added if breaking or new public API (`bun changeset`) — see [Changesets guide](https://github.com/changesets/changesets)
+
+## Related Issues
+
+<!-- Link to related issues with "Closes #" or "Fixes #" -->
 
 Closes #

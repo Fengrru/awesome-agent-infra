@@ -43,5 +43,6 @@ What actually happened (include error messages, stack traces, or unexpected outp
 
 ## Additional context
 
-- [ ] I have checked that this is not already reported in [existing issues](https://github.com/fengru/awesome-agent-infra/issues)
+- [ ] I have checked that this is not already reported in [existing issues](https://github.com/Fengrru/awesome-agent-infra/issues)
 - [ ] I have included a minimal reproduction, not a full project
+- [ ] I have confirmed the issue exists on the latest published version

@@ -1,0 +1,58 @@
+# Core engine packages
+packages/fuzzy-patch/** @Fengrru
+packages/valid8/** @Fengrru
+packages/event-bus/** @Fengrru
+packages/txn-fs/** @Fengrru
+packages/taskdag/** @Fengrru
+packages/state-machine/** @Fengrru
+packages/engine-db/** @Fengrru
+packages/worker/** @Fengrru
+
+# Memory & knowledge packages
+packages/agent-memory/** @Fengrru
+packages/memory-engine-v2/** @Fengrru
+packages/memory-graph/** @Fengrru
+packages/embedding/** @Fengrru
+packages/project-memory/** @Fengrru
+
+# Search & code intelligence
+packages/codegraph/** @Fengrru
+packages/agentic-search/** @Fengrru
+packages/reasoning-search/** @Fengrru
+
+# Safety & repair
+packages/guardrail/** @Fengrru
+packages/healix/** @Fengrru
+packages/guardrail/** @Fengrru
+packages/confidence-gate/** @Fengrru
+packages/hallucination-detector/** @Fengrru
+packages/code-sandbox/** @Fengrru
+
+# Evolution packages
+packages/skillforge/** @Fengrru
+packages/skill-curator/** @Fengrru
+packages/dreamdistill/** @Fengrru
+packages/learning-nudge/** @Fengrru
+packages/agent-metacog/** @Fengrru
+packages/process-reward/** @Fengrru
+
+# Infrastructure
+packages/tracing/** @Fengrru
+packages/replay/** @Fengrru
+packages/archiver/** @Fengrru
+packages/branch/** @Fengrru
+packages/checkpoint-writer/** @Fengrru
+packages/lifecycle-manager/** @Fengrru
+packages/cycle-controller/** @Fengrru
+packages/max-mode-sampler/** @Fengrru
+packages/pomdp-planner/** @Fengrru
+packages/dynamic-workflow/** @Fengrru
+packages/goal-verifier/** @Fengrru
+packages/llm-dag-generator/** @Fengrru
+packages/notes-manager/** @Fengrru
+
+# Documentation & examples
+docs/** @Fengrru
+examples/** @Fengrru
+*.md @Fengrru
+typedoc.json @Fengrru
