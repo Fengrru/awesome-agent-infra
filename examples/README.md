@@ -1,38 +1,38 @@
 # Agent Kit Examples
 
-每个核心包一个可运行的示例。所有示例直接 import 包源码（零依赖，无需构建），展示真实 API 用法。
+One runnable example per core package. All examples import package source directly (zero dependencies, no build step) and demonstrate real API usage.
 
-## 运行
+## Running
 
 ```bash
 bun install
-bun run fuzzy-patch      # 模糊补丁
-bun run event-bus        # 事件总线
-bun run state-machine    # 状态机
-bun run agent-memory     # 记忆系统
-bun run confidence-gate  # 置信度门控
-bun run codegraph        # 代码图谱
-bun run txn-fs           # 事务性文件系统
-bun run valid8           # 输出校验
-bun run worker           # 工作池
-bun run tracing          # 链路追踪
-bun run taskdag          # DAG 任务编排
-bun run guardrail        # 安全闸门
+bun run fuzzy-patch      # fuzzy patching
+bun run event-bus        # event bus
+bun run state-machine    # state machine
+bun run agent-memory     # memory system
+bun run confidence-gate  # confidence gating
+bun run codegraph        # code graph
+bun run txn-fs           # transactional file system
+bun run valid8           # output validation
+bun run worker           # worker pool
+bun run tracing          # distributed tracing
+bun run taskdag          # DAG task orchestration
+bun run guardrail        # safety gate
 ```
 
-## 示例速览
+## Example overview
 
-| 示例 | 演示内容 |
-|------|----------|
-| [fuzzy-patch.ts](./fuzzy-patch.ts) | 8 策略模糊匹配替换，处理缺失/多余空白 |
-| [event-bus.ts](./event-bus.ts) | 优先级发布订阅、事件等待 |
-| [state-machine.ts](./state-machine.ts) | 15 状态流转、进入/退出钩子、守卫 |
-| [agent-memory.ts](./agent-memory.ts) | 记忆写入、复合检索评分、上下文组装 |
-| [confidence-gate.ts](./confidence-gate.ts) | 校准样本拟合、ECE 评估、置信门控 |
-| [codegraph.ts](./codegraph.ts) | 代码图构建、符号检索、影响分析 |
-| [txn-fs.ts](./txn-fs.ts) | 事务 begin/edit/commit/rollback、冲突处理 |
-| [valid8.ts](./valid8.ts) | 语法 + 安全两层校验、置信度计算 |
-| [worker.ts](./worker.ts) | 能力注册、并行任务执行、指标 |
-| [tracing.ts](./tracing.ts) | 嵌套 span、属性/事件/异常记录 |
-| [taskdag.ts](./taskdag.ts) | DAG 校验、就绪节点调度、失败传播 |
-| [guardrail.ts](./guardrail.ts) | 熵风险指标评估、控制动作决策 |
+| Example | What it demonstrates |
+|---------|----------------------|
+| [fuzzy-patch.ts](./fuzzy-patch.ts) | 8-strategy fuzzy match & replace, handling missing/extra whitespace |
+| [event-bus.ts](./event-bus.ts) | Priority pub/sub, event waiting |
+| [state-machine.ts](./state-machine.ts) | 15-state transitions, enter/exit hooks, guards |
+| [agent-memory.ts](./agent-memory.ts) | Memory writes, composite retrieval scoring, context assembly |
+| [confidence-gate.ts](./confidence-gate.ts) | Calibration sample fitting, ECE evaluation, confidence gating |
+| [codegraph.ts](./codegraph.ts) | Code graph building, symbol lookup, impact analysis |
+| [txn-fs.ts](./txn-fs.ts) | Transaction begin/edit/commit/rollback, conflict handling |
+| [valid8.ts](./valid8.ts) | Syntax + security two-layer validation, confidence scoring |
+| [worker.ts](./worker.ts) | Capability registration, parallel task execution, metrics |
+| [tracing.ts](./tracing.ts) | Nested spans, attribute/event/exception recording |
+| [taskdag.ts](./taskdag.ts) | DAG validation, ready-node scheduling, failure propagation |
+| [guardrail.ts](./guardrail.ts) | Entropy risk metric evaluation, control action decisions |

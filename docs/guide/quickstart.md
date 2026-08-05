@@ -1,22 +1,22 @@
-# 快速开始
+# Quick Start
 
-Agent Kit 是 42 个独立包的集合。**不需要安装整个框架**——按需安装单个包，每个包都是零依赖的。
+Agent Kit is a collection of 42 independent packages. **You don't install a whole framework** — install individual packages on demand; every one of them has zero runtime dependencies.
 
-## 安装
+## Installation
 
 ```bash
-# 按需安装（示例：模糊补丁 + 代码图谱）
+# Install on demand (example: fuzzy patching + code graph)
 npm install @fengrru/fuzzy-patch
 npm install @fengrru/codegraph
 ```
 
-也可以使用 Bun 或 pnpm：
+Bun and pnpm work too:
 
 ```bash
 bun add @fengrru/event-bus
 ```
 
-## 第一个示例：智能体文件编辑
+## First example: agent file editing
 
 ```ts
 import { readFileSync, writeFileSync } from "node:fs"
@@ -30,36 +30,36 @@ if (result.success) {
 }
 ```
 
-## 常用组合
+## Common combinations
 
-| 场景 | 推荐包 |
-|------|--------|
-| 记忆与状态 | `@fengrru/agent-memory`、`@fengrru/agent-checkpoint` |
-| 文件操作安全 | `@fengrru/txn-fs`、`@fengrru/fuzzy-patch` |
-| 输出校验 | `@fengrru/valid8`、`@fengrru/confidence-gate` |
-| 代码理解 | `@fengrru/codegraph`、`@fengrru/agentic-search` |
-| 任务编排 | `@fengrru/taskdag`、`@fengrru/state-machine` |
-| 推理与规划 | `@fengrru/reasoning-search`、`@fengrru/pomdp-planner` |
-| 安全护栏 | `@fengrru/guardrail`、`@fengrru/code-sandbox` |
-| 自我进化 | `@fengrru/skillforge`、`@fengrru/dreamdistill` |
+| Scenario | Recommended packages |
+|----------|----------------------|
+| Memory & state | `@fengrru/agent-memory`, `@fengrru/agent-checkpoint` |
+| Safe file operations | `@fengrru/txn-fs`, `@fengrru/fuzzy-patch` |
+| Output validation | `@fengrru/valid8`, `@fengrru/confidence-gate` |
+| Code understanding | `@fengrru/codegraph`, `@fengrru/agentic-search` |
+| Task orchestration | `@fengrru/taskdag`, `@fengrru/state-machine` |
+| Reasoning & planning | `@fengrru/reasoning-search`, `@fengrru/pomdp-planner` |
+| Safety guardrails | `@fengrru/guardrail`, `@fengrru/code-sandbox` |
+| Self-evolution | `@fengrru/skillforge`, `@fengrru/dreamdistill` |
 
-## 完整示例
+## Full examples
 
-仓库的 [`examples/`](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples) 目录包含每个核心包的可运行示例：
+The repository's [`examples/`](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples) directory contains runnable examples for every core package:
 
 ```bash
 git clone https://github.com/Fengrru/awesome-agent-infra.git
 cd awesome-agent-infra/examples
 bun install
-bun run fuzzy-patch      # 运行模糊补丁示例
-bun run agent-memory     # 运行记忆引擎示例
+bun run fuzzy-patch      # run the fuzzy-patch example
+bun run agent-memory     # run the memory engine example
 ```
 
-## 开发本仓库
+## Developing this repository
 
 ```bash
-bun install              # 安装全部工作区依赖
-bun run typecheck        # 类型检查
-bun run test             # 单元测试
-bun run lint             # 严格 lint
+bun install              # install all workspace dependencies
+bun run typecheck        # type checking
+bun run test             # unit tests
+bun run lint             # strict lint
 ```

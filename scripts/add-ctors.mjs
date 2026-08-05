@@ -48,7 +48,7 @@ for (const [file, clsName, needsSuper] of targets) {
     console.log(`NOT FOUND: ${file} :: ${clsName}`)
     continue
   }
-  // 检查是否已存在 constructor
+  // Check whether a constructor already exists
   const body = code.slice(loc.bodyStart, loc.bodyEnd)
   if (/\bconstructor\s*\(/.test(body)) {
     console.log(`SKIP (has ctor): ${file} :: ${clsName}`)

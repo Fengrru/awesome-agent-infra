@@ -220,7 +220,7 @@ export class SkillCurator {
 
   private heuristicReview(skillName: string, content: string): QualityReview {
     const lines = content.split("\n").filter((l) => l.trim().length > 0)
-    const hasSteps = /^\d+\.\s|step|步骤/i.test(content)
+    const hasSteps = /^\d+\.\s|step/i.test(content)
     const hasCodeBlocks = content.includes("```")
     const hasSections = (content.match(/^#{1,3}\s/gm) ?? []).length >= 2
     const minLength = 100

@@ -1,53 +1,53 @@
-# 稳定性与版本
+# Stability & Versioning
 
-所有包遵循 [semver](https://semver.org/)，并通过 Changesets 管理发版。包按 API 稳定性承诺分为 4 级（详见仓库 [STABILITY.md](https://github.com/Fengrru/awesome-agent-infra/blob/main/STABILITY.md)）。
+All packages follow [semver](https://semver.org/) and are released via Changesets. Packages are divided into 4 tiers by API stability commitment (see [STABILITY.md](https://github.com/Fengrru/awesome-agent-infra/blob/main/STABILITY.md) in the repository).
 
-## 稳定性分级
+## Stability tiers
 
-### Stable — 破坏性变更仅限大版本
+### Stable — breaking changes only in major versions
 
-| 包 | 关键 API |
-|----|----------|
-| `@fengrru/txn-fs` | `TransactionFS`、`merge3`、`TxContext` |
-| `@fengrru/event-bus` | `createSimpleEventBus`、`EventBus`、`PersistedEventBus` |
-| `@fengrru/state-machine` | `AgentStateMachine`、`states`、`transitions` |
-| `@fengrru/engine-db` | `EngineDatabase`、`SQLiteEngineDatabase` |
-| `@fengrru/embedding` | `EnhancedTFIDF`、`CodeEmbeddingIndex`、`HybridSearchEngine` |
-| `@fengrru/fuzzy-patch` | `patch`、8 种匹配策略 |
-| `@fengrru/valid8` | `ValidationNetwork`、`evaluate`、`walkAST` |
-| `@fengrru/tracing` | `createTracer`、`withSpan`、`TraceProvider` |
-| `@fengrru/archiver` | `EventArchiver`、`loadArchive`、`shouldArchive` |
-| `@fengrru/worker` | `StatelessWorkerPool`、`TrueWorkerPool` |
+| Package | Key APIs |
+|---------|----------|
+| `@fengrru/txn-fs` | `TransactionFS`, `merge3`, `TxContext` |
+| `@fengrru/event-bus` | `createSimpleEventBus`, `EventBus`, `PersistedEventBus` |
+| `@fengrru/state-machine` | `AgentStateMachine`, `states`, `transitions` |
+| `@fengrru/engine-db` | `EngineDatabase`, `SQLiteEngineDatabase` |
+| `@fengrru/embedding` | `EnhancedTFIDF`, `CodeEmbeddingIndex`, `HybridSearchEngine` |
+| `@fengrru/fuzzy-patch` | `patch`, 8 matching strategies |
+| `@fengrru/valid8` | `ValidationNetwork`, `evaluate`, `walkAST` |
+| `@fengrru/tracing` | `createTracer`, `withSpan`, `TraceProvider` |
+| `@fengrru/archiver` | `EventArchiver`, `loadArchive`, `shouldArchive` |
+| `@fengrru/worker` | `StatelessWorkerPool`, `TrueWorkerPool` |
 
-### Evolving — 小版本可能调整
+### Evolving — minor versions may adjust
 
-`agent-memory`、`memory-engine-v2`、`codegraph`、`code-sandbox`、`taskdag`、`reasoning-search`、`goal-verifier`、`healix`、`replay`、`notes-manager`、`project-memory`、`branch`、`lifecycle-manager`、`agentic-search`
+`agent-memory`, `memory-engine-v2`, `codegraph`, `code-sandbox`, `taskdag`, `reasoning-search`, `goal-verifier`, `healix`, `replay`, `notes-manager`, `project-memory`, `branch`, `lifecycle-manager`, `agentic-search`
 
-这些包 API 在实践中稳定，但内部细节、构造签名或可选参数可能在小版本中变化。
+These packages have stable APIs in practice, but internal details, constructor signatures, or optional parameters may change in minor versions.
 
-### Experimental — 小版本可能破坏
+### Experimental — minor versions may break
 
-`dreamdistill`、`process-reward`、`agent-metacog`、`hallucination-detector`、`confidence-gate`、`pomdp-planner`、`guardrail`、`max-mode-sampler`、`cycle-controller`、`agent-checkpoint`、`checkpoint-writer`、`llm-dag-generator`、`dynamic-workflow`、`skillforge`、`skill-curator`、`learning-nudge`
+`dreamdistill`, `process-reward`, `agent-metacog`, `hallucination-detector`, `confidence-gate`, `pomdp-planner`, `guardrail`, `max-mode-sampler`, `cycle-controller`, `agent-checkpoint`, `checkpoint-writer`, `llm-dag-generator`, `dynamic-workflow`, `skillforge`, `skill-curator`, `learning-nudge`
 
-活跃开发中的包。API 反馈欢迎，但 `0.x` 版本可能随时破坏。
+Packages under active development. API feedback is welcome, but `0.x` versions may break at any time.
 
-### Internal — 勿直接使用
+### Internal — do not use directly
 
-`@fengrru/internal-tfidf`：私有工作区包，不对外发布，仅被内部消费。
+`@fengrru/internal-tfidf`: a private workspace package, never published, consumed internally only.
 
-## 版本策略
+## Versioning policy
 
-| 级别 | 语义 |
-|------|------|
-| Stable | 严格 semver。`0.x → 1.0` 表示无已知遗留问题。破坏性变更仅出现在大版本 |
-| Evolving | semver 放宽的 minor 语义。API 大体稳定但可能变化 |
-| Experimental | 无保证。`0.x` 随时可能破坏 |
+| Tier | Semantics |
+|------|-----------|
+| Stable | Strict semver. `0.x → 1.0` signals no known outstanding issues. Breaking changes only in major versions |
+| Evolving | Relaxed minor semantics under semver. APIs are largely stable but may change |
+| Experimental | No guarantees. `0.x` may break at any time |
 
-## 升级路径
+## Upgrade path
 
 ```bash
-npm view @fengrru/event-bus versions   # 查看版本
-npm install @fengrru/event-bus@latest  # 升级
+npm view @fengrru/event-bus versions   # list versions
+npm install @fengrru/event-bus@latest  # upgrade
 ```
 
-每次发布都会自动生成 CHANGELOG（Changesets），破坏性变更会在 changelog 中明确标注 `BREAKING CHANGE`。
+Every release automatically generates a CHANGELOG (via Changesets); breaking changes are explicitly marked `BREAKING CHANGE` in the changelog.

@@ -43,7 +43,7 @@ console.log(result.layers) // [{ name: "syntax", passed: true, ... }]
 - **Data-driven**: `VALIDATION_LAYERS` array, not hardcoded
 - **Confidence scoring**: weighted average across layers
 - **Retry logic**: configurable threshold and max retries
-- **Permission rules**: bash blocked by default,可配置
+- **Permission rules**: bash blocked by default, configurable
 
 
 ## Documentation

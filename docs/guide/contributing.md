@@ -1,52 +1,52 @@
-# 贡献指南
+# Contributing
 
-欢迎贡献！完整规范见仓库 [CONTRIBUTING.md](https://github.com/Fengrru/awesome-agent-infra/blob/main/CONTRIBUTING.md)。以下是核心要点。
+Contributions are welcome! See the repository [CONTRIBUTING.md](https://github.com/Fengrru/awesome-agent-infra/blob/main/CONTRIBUTING.md) for the full specification. Here are the essentials.
 
-## 环境
+## Environment
 
-- **Bun** 1.3+（唯一包管理器——禁止 npm/yarn）
-- TypeScript 5.8+、Turborepo、Biome
+- **Bun** 1.3+ (the only package manager — npm/yarn are forbidden)
+- TypeScript 5.8+, Turborepo, Biome
 
 ```bash
-bun install              # 安装依赖
-bun run typecheck        # 类型检查（54 个任务）
-bun run test             # 单元测试（83 个任务）
-bun run lint             # 严格 lint（0 错误 0 警告）
+bun install              # install dependencies
+bun run typecheck        # type checking (55 tasks)
+bun run test             # unit tests (85 tasks)
+bun run lint             # strict lint (0 errors, 0 warnings)
 ```
 
-## 代码规范（必须遵守）
+## Code conventions (mandatory)
 
-| 规则 | 要求 |
-|------|------|
-| 零运行时依赖 | 只允许 `node:` 内置模块，禁止 npm 运行时依赖 |
-| TypeScript | strict 模式，禁止 `any`，对象形状优先 `interface`，区分联合用 discriminated union |
-| JSDoc | 每个公开导出必须有 `@module`/`@param`/`@returns` 标签 |
-| 风格 | 无分号（Biome asNeeded）、双引号、ESM（`.js` 后缀相对导入） |
-| 测试 | `__tests__/` 目录，`bun:test`，`import { describe, expect, test } from "bun:test"` |
-| 工厂函数 | 公开构造器用 `createX()` 而非 `new X()` |
-| 私有包 | `"private": true` 标记 |
+| Rule | Requirement |
+|------|-------------|
+| Zero runtime dependencies | Only `node:` built-in modules allowed; no npm runtime dependencies |
+| TypeScript | strict mode, no `any`, prefer `interface` for object shapes, discriminated unions |
+| JSDoc | Every public export must have `@module`/`@param`/`@returns` tags |
+| Style | No semicolons (Biome asNeeded), double quotes, ESM (relative imports with `.js` extension) |
+| Tests | `__tests__/` directory, `bun:test`, `import { describe, expect, test } from "bun:test"` |
+| Factory functions | Public constructors use `createX()`, not `new X()` |
+| Private packages | Marked with `"private": true` |
 
-## 提交前检查清单
+## Pre-commit checklist
 
 ```bash
 bun run typecheck
 bun run test
-bun run lint        # biome check --error-on-warnings（必须 0 诊断）
+bun run lint        # biome check --error-on-warnings (must be 0 diagnostics)
 bunx biome format --write .
 ```
 
-## 新增包流程
+## Adding a new package
 
-1. 复制现有包结构
-2. `package.json`：`@fengrru/<name>`、更新 description、补 `repository` + `publishConfig` 字段
-3. `tsconfig.json` 继承 `../../tsconfig.base.json`
-4. 加入 `typedoc.json` entryPoints
-5. 根目录 `bun install`
-6. 如果改动了公开 API，运行 `bun changeset` 添加 changeset
+1. Copy an existing package's structure
+2. `package.json`: set `@fengrru/<name>`, update description, add `repository` + `publishConfig` fields
+3. `tsconfig.json` extends `../../tsconfig.base.json`
+4. Add the package to `typedoc.json` entryPoints
+5. Run `bun install` from the root
+6. If you changed public API, run `bun changeset` to add a changeset
 
-## PR 规范
+## PR guidelines
 
-- 每个 PR 一个逻辑变更
-- 必须通过 typecheck + test + lint
-- 公共 API 变更必须带 changeset
-- 提交信息遵循 Conventional Commits（`feat:`、`fix:`、`refactor:`、`chore:`……）
+- One logical change per PR
+- Must pass typecheck + test + lint
+- Public API changes require a changeset
+- Commit messages follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`...)
