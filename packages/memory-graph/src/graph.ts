@@ -386,7 +386,7 @@ export class MemoryGraph {
    * to cascadeInvalidate but calls markValid instead of markStale.
    *
    * @param nodeId - The node that was corrected.
-   * @param reason - Human-readable reason for the correction.
+   * @param _reason - Human-readable reason for the correction (reserved, unused).
    * @returns Array of node IDs that were restored to VALID.
    */
   revalidate(nodeId: string, _reason: string): string[] {

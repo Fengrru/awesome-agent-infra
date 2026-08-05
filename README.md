@@ -99,7 +99,7 @@ const ctx = mem.assembleContext("refactor the config module")
 console.log(`${ctx.l3.length} long-term memories assembled, ${ctx.totalTokens} tokens`)
 ```
 
-More runnable examples live in [examples/](./examples).
+More runnable examples live in [examples/](./examples/README.md).
 
 ## Performance
 
@@ -246,8 +246,8 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 ## Documentation
 
 - **Docs site** — [fengrru.github.io/awesome-agent-infra](https://fengrru.github.io/awesome-agent-infra/) — quickstart, architecture overview, package selection guide, stability policy
-- **Examples** — [examples/](./examples) — runnable usage snippets for 12 core packages (`bun run examples/fuzzy-patch.ts`)
-- **Benchmarks** — [benchmarks/](./benchmarks) — micro-benchmarks for hot paths (`bun run benchmarks/run-all.ts`)
+- **Examples** — [examples/](./examples/README.md) — runnable usage snippets for 12 core packages (`bun run examples/fuzzy-patch.ts`)
+- **Benchmarks** — [benchmarks/](https://github.com/Fengrru/awesome-agent-infra/tree/main/benchmarks) — micro-benchmarks for hot paths (`bun run benchmarks/run-all.ts`)
 - **Stability matrix** — [STABILITY.md](./STABILITY.md) — per-package tier and versioning policy
 
 ## Stability
@@ -275,7 +275,7 @@ bun run benchmarks/run-all.ts        # Micro-benchmarks
 
 ## Contributing
 
-All contributions are welcome — code, tests, docs, and issue triage. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) and check the [issue templates](./.github/ISSUE_TEMPLATE/) before opening a PR.
+All contributions are welcome — code, tests, docs, and issue triage. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) and check the [issue templates](https://github.com/Fengrru/awesome-agent-infra/tree/main/.github/ISSUE_TEMPLATE) before opening a PR.
 
 ## Security
 

@@ -60,6 +60,7 @@ IDLE → INITIALIZING → READY → PLANNING → THINKING → EXECUTING → VERI
 - [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/state-machine)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
+
 ## License
 
 MIT

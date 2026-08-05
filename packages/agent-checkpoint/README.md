@@ -52,6 +52,7 @@ const state = manager.resume(checkpoint.id)
 - [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agent-checkpoint)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
+
 ## License
 
 MIT

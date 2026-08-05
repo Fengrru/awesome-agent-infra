@@ -32,9 +32,28 @@ export {
 export { CodeGraph, flattenSubGraph, buildRepoSummary, estimateTokens } from "./graph"
 export { CodeGraphSearcher } from "./searcher"
 export { CodeGraphRanker } from "./ranker"
-export { CodeGraphWatcher, type FileChange, type FileChangeType, type ExtractorFn } from "./watcher"
+export {
+  CodeGraphWatcher,
+  type FileChange,
+  type FileChangeType,
+  type ExtractorFn,
+  type ExtractResult as WatcherExtractResult,
+} from "./watcher"
 export { CodeGraphBuilder, createCodeGraphBuilder, type DiscoverFilesFn, type CodeGraphBuilderOptions } from "./builder"
-export { extractFromFile, setExtractorDependencies, type ExtractResult, type LanguageParser } from "./extractor"
+export {
+  extractFromFile,
+  setExtractorDependencies,
+  type ExtractResult,
+  type LanguageParser,
+  type ExtractedCall,
+  type ExtractorDependencies,
+  type TreeSitterLanguageLoader,
+  type TreeSitterParserCtor,
+  type TreeSitterParserInstance,
+  type TreeSitterNode,
+  type TreeSitterParser,
+  type TreeSitterLanguage,
+} from "./extractor"
 export { CallSiteStore, createCallSite } from "./callsite"
 export { GraphPersistence, type PersistedGraph } from "./persist"
 export { IncrementalParser, type IncrementalEdit } from "./incremental"

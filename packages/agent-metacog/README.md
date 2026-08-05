@@ -8,7 +8,7 @@ Metacognitive monitoring and confidence calibration for AI agents. Tracks knowle
 
 > Scope note: this package covers metacognitive *training-time* monitoring and calibration.
 > For runtime output gating (accept/reject decisions on live LLM outputs), use
-> [`@fengrru/confidence-gate`](../confidence-gate).
+> [`@fengrru/confidence-gate`](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/confidence-gate).
 
 ## Install
 
@@ -86,6 +86,7 @@ const baselines = CalibrationBaselines.allBaselines(features, "response text")
 - [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agent-metacog)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
+
 ## License
 
 MIT

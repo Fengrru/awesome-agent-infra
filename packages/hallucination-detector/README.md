@@ -77,6 +77,7 @@ const detector = new SpectralHallucinationDetector()
 - [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/hallucination-detector)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
+
 ## License
 
 MIT

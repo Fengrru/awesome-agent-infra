@@ -13,4 +13,7 @@ export type {
   CycleCallbacks,
   ICheckpointWriter,
   ConversationMessage,
+  EventBus,
+  AgentStateMachine,
+  BusEvent,
 } from "./types"

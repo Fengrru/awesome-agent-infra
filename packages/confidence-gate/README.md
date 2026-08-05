@@ -46,6 +46,7 @@ console.log(calibrated.isOverconfident) // true if raw > calibrated
 - [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) — TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/confidence-gate)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
+
 ## License
 
 MIT
