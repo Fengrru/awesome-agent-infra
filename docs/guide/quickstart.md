@@ -19,6 +19,7 @@ bun add @fengrru/event-bus
 ## 第一个示例：智能体文件编辑
 
 ```ts
+import { readFileSync, writeFileSync } from "node:fs"
 import { fuzzyFindAndReplace } from "@fengrru/fuzzy-patch"
 
 const source = readFileSync("config.ts", "utf8")
