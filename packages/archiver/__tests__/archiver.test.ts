@@ -2,14 +2,7 @@ import { afterAll, describe, expect, test } from "bun:test"
 import * as fs from "node:fs/promises"
 import { rm } from "node:fs/promises"
 import * as path from "node:path"
-import {
-  type ArchiveConfig,
-  type ArchiveDatabase,
-  type ArchiveResult,
-  createEventArchiver,
-  DEFAULT_ARCHIVE_CONFIG,
-  EventArchiver,
-} from "../src/index"
+import { type ArchiveDatabase, DEFAULT_ARCHIVE_CONFIG, EventArchiver, createEventArchiver } from "../src/index"
 
 const TEST_DIR = path.join(import.meta.dirname ?? ".", "test-archives")
 
@@ -228,35 +221,31 @@ describe("EventArchiver - compression", () => {
   })
 
   test("gzip failure falls back to uncompressed json", async () => {
-    const original = Bun.gzipSync
-    Bun.gzipSync = () => {
-      throw new Error("gzip broken")
-    }
-    try {
-      const archiver = new EventArchiver({ storageDir: TEST_DIR, compress: true })
-      const db = makeDB([{ eventId: "e1" }])
-      archiver.setDatabase(db)
-      const result = await archiver.archive(Date.now() + 100000)
-      expect(result!.compressed).toBe(false)
-      expect(result!.filePath).toMatch(/\.json$/)
-    } finally {
-      Bun.gzipSync = original
-    }
+    const archiver = new EventArchiver({
+      storageDir: TEST_DIR,
+      compress: true,
+      gzipFn: () => {
+        throw new Error("gzip broken")
+      },
+    })
+    const db = makeDB([{ eventId: "e1" }])
+    archiver.setDatabase(db)
+    const result = await archiver.archive(Date.now() + 100000)
+    expect(result!.compressed).toBe(false)
+    expect(result!.filePath).toMatch(/\.json$/)
   })
 
   test("gzip returning null skips compression", async () => {
-    const original = Bun.gzipSync
-    Bun.gzipSync = () => null
-    try {
-      const archiver = new EventArchiver({ storageDir: TEST_DIR, compress: true })
-      const db = makeDB([{ eventId: "e2" }])
-      archiver.setDatabase(db)
-      const result = await archiver.archive(Date.now() + 100000)
-      expect(result!.compressed).toBe(false)
-      expect(result!.byteSize).toBeGreaterThan(0)
-    } finally {
-      Bun.gzipSync = original
-    }
+    const archiver = new EventArchiver({
+      storageDir: TEST_DIR,
+      compress: true,
+      gzipFn: () => null,
+    })
+    const db = makeDB([{ eventId: "e2" }])
+    archiver.setDatabase(db)
+    const result = await archiver.archive(Date.now() + 100000)
+    expect(result!.compressed).toBe(false)
+    expect(result!.byteSize).toBeGreaterThan(0)
   })
 
   test("loadArchive gunzip failure falls back to raw json", async () => {

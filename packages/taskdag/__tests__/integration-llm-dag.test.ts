@@ -308,7 +308,7 @@ describe("Integration: DAGGenerator (llm-dag-generator) × taskdag engine", () =
 
   test("sequential execution: completing nodes enables downstream nodes", () => {
     const dag = createValidLinearDAG()
-    let currentDAG = structuredClone(dag)
+    const currentDAG = structuredClone(dag)
 
     const completedOrder: string[] = []
 
@@ -405,7 +405,7 @@ describe("Integration: DAGGenerator (llm-dag-generator) × taskdag engine", () =
     dag.nodes[0]!.output = "done"
 
     // Fail n2
-    let workingDAG = markNodeFailed(dag, "n2")
+    const workingDAG = markNodeFailed(dag, "n2")
 
     // Create replacement nodes starting from n1
     const replacementNodes = createReplacementNodes("n1", "repl", 2)
@@ -438,7 +438,7 @@ describe("Integration: DAGGenerator (llm-dag-generator) × taskdag engine", () =
     dag.nodes[0]!.status = "completed"
 
     // Fail n2 (one parallel branch)
-    let workingDAG = markNodeFailed(dag, "n2")
+    const workingDAG = markNodeFailed(dag, "n2")
 
     // n4 should be blocked (depends on n2 AND n3, and n2 failed)
     const n4After = workingDAG.nodes.find((n) => n.node_id === "n4")

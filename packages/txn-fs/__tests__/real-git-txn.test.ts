@@ -89,7 +89,11 @@ describe("RealGitTransactionManager", () => {
     const { manager, fs } = makeManager()
     fs.files.set("a.txt", "hello")
     let committed: FileTransaction | null = null
-    manager.setEventCallbacks({ onCommit: (tx) => void (committed = tx) })
+    manager.setEventCallbacks({
+      onCommit: (tx) => {
+        committed = tx
+      },
+    })
 
     const tx = await manager.begin("s", ["a.txt"])
     manager.propose("a.txt", "updated")
@@ -149,7 +153,11 @@ describe("RealGitTransactionManager", () => {
     const { manager, fs } = makeManager()
     fs.files.set("a.txt", "hello")
     let rolledBack: FileTransaction | null = null
-    manager.setEventCallbacks({ onRollback: (tx) => void (rolledBack = tx) })
+    manager.setEventCallbacks({
+      onRollback: (tx) => {
+        rolledBack = tx
+      },
+    })
 
     const tx = await manager.begin("s", ["a.txt"])
     fs.files.set("a.txt", "tampered")

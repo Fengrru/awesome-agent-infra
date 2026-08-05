@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import { type IProjectMemory, type ISkillManager, LearningNudge, type ProviderAdapter, createLearningNudge } from "../src/index"
+import {
+  type IProjectMemory,
+  type ISkillManager,
+  LearningNudge,
+  type ProviderAdapter,
+  createLearningNudge,
+} from "../src/index"
 
 class FakeMemory implements IProjectMemory {
   entries: Array<{ section: string; content: string; confidence: number }> = []

@@ -38,11 +38,8 @@ describe("tracing", () => {
 
   test("withSpan records exception and re-throws", async () => {
     resetTracer()
-    let exceptionRecorded = false
+    const _exceptionRecorded = false
     const spanEvents: string[] = []
-
-    // Override the singleton tracer with a mock that captures recording
-    let capturedSpan: MockSpan | null = null
 
     class MockSpan implements Span {
       setAttribute(_key: string, _value: string | number | boolean): Span {
@@ -60,18 +57,10 @@ describe("tracing", () => {
       }
     }
 
-    class MockTracer implements Tracer {
-      startSpan(_name: string): Span {
-        const span = new MockSpan()
-        capturedSpan = span
-        return span
-      }
-    }
-
     // Access internal module-level _tracer via reset + manual set
     resetTracer()
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("../src/index") as {
+    const _mod = require("../src/index") as {
       getTracer: () => Tracer
       resetTracer: () => void
       withSpan: typeof withSpan
@@ -95,28 +84,6 @@ describe("tracing", () => {
 
   test("withSpan ends span even on success", async () => {
     resetTracer()
-    let ended = false
-
-    class TestSpan implements Span {
-      setAttribute(): Span {
-        return this
-      }
-      addEvent(): Span {
-        return this
-      }
-      recordException(): Span {
-        return this
-      }
-      end(): void {
-        ended = true
-      }
-    }
-
-    class TestTracer implements Tracer {
-      startSpan(): Span {
-        return new TestSpan()
-      }
-    }
 
     // Test span.end() is called by withSpan
     // We test through the actual implementation by checking the no-op path
@@ -158,9 +125,13 @@ describe("NoOpSpan chaining", () => {
 describe("withSpan with attributes", () => {
   test("withSpan passes attributes", async () => {
     resetTracer()
-    const result = await withSpan("attr-test", async (_span) => {
-      return "done"
-    }, { key: "val" })
+    const result = await withSpan(
+      "attr-test",
+      async (_span) => {
+        return "done"
+      },
+      { key: "val" },
+    )
     expect(result).toBe("done")
   })
 })

@@ -3,14 +3,59 @@ import type { CodeGraphNode, SymbolMetadata, SymbolType } from "./types"
 
 /** Identifiers that can be followed by `(` but are not call targets */
 const CALL_KEYWORDS = new Set([
-  "return", "if", "for", "while", "switch", "catch", "function", "new",
-  "typeof", "delete", "void", "await", "throw", "case", "do", "else",
-  "yield", "import", "export", "class", "extends", "implements",
-  "instanceof", "as", "from", "default", "try", "finally", "super",
-  "this", "const", "let", "var", "async", "static", "get", "set",
-  "type", "enum", "namespace", "module", "declare", "public", "private",
-  "protected", "readonly", "abstract", "satisfies", "using", "in", "of",
-  "break", "continue",
+  "return",
+  "if",
+  "for",
+  "while",
+  "switch",
+  "catch",
+  "function",
+  "new",
+  "typeof",
+  "delete",
+  "void",
+  "await",
+  "throw",
+  "case",
+  "do",
+  "else",
+  "yield",
+  "import",
+  "export",
+  "class",
+  "extends",
+  "implements",
+  "instanceof",
+  "as",
+  "from",
+  "default",
+  "try",
+  "finally",
+  "super",
+  "this",
+  "const",
+  "let",
+  "var",
+  "async",
+  "static",
+  "get",
+  "set",
+  "type",
+  "enum",
+  "namespace",
+  "module",
+  "declare",
+  "public",
+  "private",
+  "protected",
+  "readonly",
+  "abstract",
+  "satisfies",
+  "using",
+  "in",
+  "of",
+  "break",
+  "continue",
 ])
 
 export interface TreeSitterNode {
@@ -36,9 +81,25 @@ export interface TreeSitterLanguage {
   load(path: string): Promise<TreeSitterLanguage>
 }
 
+/** Parser instance produced by a {@link TreeSitterParserCtor}. */
+export interface TreeSitterParserInstance extends TreeSitterParser {
+  setLanguage(language: unknown): void
+}
+
+/** Constructor shape of the web-tree-sitter `Parser` class. */
+export interface TreeSitterParserCtor {
+  new (): TreeSitterParserInstance
+  init(options?: { locateFile?: (file: string) => string }): unknown
+}
+
+/** Loader shape of the web-tree-sitter `Language` class (static `load`). */
+export interface TreeSitterLanguageLoader {
+  load(path: string): Promise<unknown>
+}
+
 export interface ExtractorDependencies {
-  Parser?: any
-  Language?: any
+  Parser?: TreeSitterParserCtor
+  Language?: TreeSitterLanguageLoader
 }
 
 export interface LanguageParser {
@@ -885,8 +946,7 @@ function fallbackExtract(filePath: string, source: string, mtime: number, tokeni
   const exports: string[] = []
   const tName = tokenizerName ?? "simple"
 
-  const importRe =
-    /import\s+(?:\{([^}]*)\}|\*\s+as\s+(\w+)|(\w+))\s+from\s+['"]([^'"]+)['"]/g
+  const importRe = /import\s+(?:\{([^}]*)\}|\*\s+as\s+(\w+)|(\w+))\s+from\s+['"]([^'"]+)['"]/g
   for (const m of source.matchAll(importRe)) {
     if (!m[4]) continue
     const names = m[1]

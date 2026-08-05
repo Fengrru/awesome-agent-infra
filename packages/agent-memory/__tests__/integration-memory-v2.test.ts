@@ -7,12 +7,12 @@
  * context assembly.
  */
 
-import { beforeEach, describe, expect, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 
-import { DEFAULT_MEMORY_CONFIG, MemoryEngine, MemoryType } from "@fengru/memory-engine-v2"
+import { MemoryEngine, MemoryType } from "@fengru/memory-engine-v2"
 import { UnifiedMemoryBridge } from "../src/bridge"
 import { MemorySystem } from "../src/index"
-import type { CoreRule, LongTermMemory, WorkingMemory } from "../src/index"
+import type { LongTermMemory } from "../src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -141,7 +141,7 @@ describe("Integration: MemorySystem (agent-memory) × MemoryEngine (memory-engin
 
   test("frequent access boosts Ebbinghaus retention in both systems", () => {
     const system = new MemorySystem()
-    const bridge = new UnifiedMemoryBridge()
+    const _bridge = new UnifiedMemoryBridge()
 
     const frequentMem = createLTM({
       memory_id: "frequent-ebbing",

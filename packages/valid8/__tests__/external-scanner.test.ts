@@ -64,9 +64,7 @@ mock.module("node:child_process", () => ({
     if (command === "semgrep") {
       return makeFakeProc({
         resolveOutput: (input) =>
-          input.includes("semgrep-hit")
-            ? "rule-1: found issue A\n\u2500 decorative line\nrule-2: found issue B"
-            : "",
+          input.includes("semgrep-hit") ? "rule-1: found issue A\n\u2500 decorative line\nrule-2: found issue B" : "",
         resolveClose: () => 0,
       })
     }

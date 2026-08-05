@@ -239,12 +239,12 @@ describe("StatelessWorkerPool", () => {
 
   test("executeTasksInParallel stopOnFailure prevents further execution", async () => {
     const pool = new StatelessWorkerPool()
-    let counter = 0
+    let _counter = 0
 
     pool.registerHandler("failOn2", async (task) => {
       const n = task.inputs.n as number
       if (n === 2) throw new Error("intentional failure")
-      counter++
+      _counter++
       return {
         taskId: task.taskId,
         nodeId: task.nodeId,

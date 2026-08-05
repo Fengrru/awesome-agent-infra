@@ -12,7 +12,7 @@ import * as os from "node:os"
 import * as path from "node:path"
 
 import { DEFAULT_ARCHIVE_CONFIG, EventArchiver } from "../../archiver/src/index"
-import type { ArchiveConfig, ArchiveDatabase } from "../../archiver/src/index"
+import type { ArchiveDatabase } from "../../archiver/src/index"
 import { EventPriority, EventType, createSimpleEventBus } from "../src/index"
 import type { BusEvent, EventBus } from "../src/index"
 
@@ -53,7 +53,7 @@ function createMockArchiveDatabase(): {
 
     async deleteEventsByIds(ids: string[]): Promise<number> {
       const idSet = new Set(ids)
-      const before = events.length
+      const _before = events.length
       let removed = 0
       for (let i = events.length - 1; i >= 0; i--) {
         const id = events[i]!.eventId ?? events[i]!.id ?? events[i]!.event_id

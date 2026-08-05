@@ -10,37 +10,15 @@ import { beforeEach, describe, expect, test } from "bun:test"
 
 // agent-memory
 import { MemorySystem } from "../src/index"
-import type { CoreRule, LongTermMemory, WorkingMemory } from "../src/index"
+import type { CoreRule, LongTermMemory } from "../src/index"
 
 // engine-db (cross-package import)
 import { EngineDatabase, MemoryBackend } from "../../engine-db/src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-/** Create a fresh in-memory EngineDatabase and wire it via MemoryBackend */
-function createMemorySystem(): { system: MemorySystem; db: EngineDatabase; backend: MemoryBackend } {
-  const db = new EngineDatabase()
-  // Use a minimal mock database since we can't use bun:sqlite in a pure test
-  // EngineDatabase requires an ISQLiteDatabase to function
-  const system = new MemorySystem()
-  const backend = new MemoryBackend(db)
-
-  return { system, db, backend }
-}
-
 /** Create a minimal mock SQLite database that stores data in memory */
 function createMockDB() {
-  const store = new Map<string, Map<string, unknown[]>>()
-
-  function ensureTable(name: string): Map<string, unknown[]> {
-    let table = store.get(name)
-    if (!table) {
-      table = new Map()
-      store.set(name, table)
-    }
-    return table
-  }
-
   return {
     query(_sql: string) {
       return {
@@ -329,7 +307,7 @@ describe("Integration: MemorySystem × EngineDatabase", () => {
 
     // Create new system and restore
     const restored = new MemorySystem()
-    restored.fromJSON(json as any)
+    restored.fromJSON(json as unknown as Parameters<MemorySystem["fromJSON"]>[0])
 
     expect(restored.getLongTermMemories().length).toBe(1)
     expect(restored.getCoreRules().length).toBe(1)

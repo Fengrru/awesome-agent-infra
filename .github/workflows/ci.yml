@@ -18,7 +18,7 @@ env:
 # Pipeline design:
 #
 #   Stage 0 (parallel, no build required):
-#     typecheck  — tsc --noEmit across all 43 packages
+#     typecheck  — tsc --noEmit across all 42 packages
 #     lint       — biome check --error-on-warnings
 #     lockfile   — verify bun.lock is consistent
 #
@@ -27,7 +27,7 @@ env:
 #     integration— cross-package integration tests
 #
 #   Stage 2 (parallel, needs typecheck):
-#     coverage   — per-package lcov gate (85%+ threshold)
+#     coverage   — per-package lcov gate (100% threshold)
 #     build      — tsc emit + dist verification
 #     bench      — benchmark smoke (crash/hang detection)
 #     docs       — typedoc generation check
@@ -210,7 +210,7 @@ jobs:
       - name: Build all packages (tests import cross-package dist)
         run: bun turbo build
 
-      - name: Coverage (85%+ per gated package)
+      - name: Coverage (100% per gated package)
         run: bun scripts/check-coverage.ts
 
   build:

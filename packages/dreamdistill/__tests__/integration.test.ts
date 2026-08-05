@@ -24,7 +24,7 @@ import type {
 
 // project-memory (cross-package import)
 import { ProjectMemoryManager } from "../../project-memory/src/index"
-import type { MemoryEntry as PMMemoryEntry, MemorySection as PMMemorySection } from "../../project-memory/src/index"
+import type { MemorySection as PMMemorySection } from "../../project-memory/src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -306,7 +306,7 @@ describe("Integration: DistillJob × EventArchiver", () => {
     job.setEventArchiver(archiver)
     job.setProvider(echoProvider())
     // Override echo to return our patterns
-    ;(job as any).provider = {
+    ;(job as unknown as { provider: { chat(): Promise<{ content: string }> } }).provider = {
       async chat() {
         return { content: patterns }
       },

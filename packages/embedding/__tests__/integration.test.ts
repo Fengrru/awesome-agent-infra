@@ -16,7 +16,7 @@ import {
   HybridSearch,
   SimpleEmbeddingProvider,
 } from "../src/index"
-import type { CodeEmbeddingItem, CodeGraph, EmbeddingModel, EmbeddingProvider, VectorStore } from "../src/index"
+import type { CodeEmbeddingItem, CodeGraph, EmbeddingProvider } from "../src/index"
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
@@ -431,9 +431,9 @@ describe("Integration: VectorStore edge cases", () => {
 
 function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0
-  let dot = 0,
-    normA = 0,
-    normB = 0
+  let dot = 0
+  let normA = 0
+  let normB = 0
   for (let i = 0; i < a.length; i++) {
     dot += a[i]! * b[i]!
     normA += a[i]! * a[i]!

@@ -11,7 +11,7 @@ import { EngineDatabase, EventArchiveBackend, MemoryBackend } from "../src/index
 // ── Helpers ────────────────────────────────────────────────────────────
 
 function createMockDB() {
-  const store = new Map<string, Map<string, unknown[]>>()
+  const _store = new Map<string, Map<string, unknown[]>>()
 
   return {
     query(_sql: string) {

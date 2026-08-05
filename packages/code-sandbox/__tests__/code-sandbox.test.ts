@@ -164,6 +164,55 @@ describe("SecureExecutor", () => {
     expect(result.stderr).toContain("blocked")
   })
 
+  test("execute: node:-prefixed blocked module throws error", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000 })
+    const result = await executor.execute("require('node:fs')")
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toContain("blocked")
+  })
+
+  test("execute: blocked module subpath throws error", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000 })
+    const result = await executor.execute("require('fs/promises')")
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toContain("blocked")
+  })
+
+  test("execute: module internals via Module._load are blocked", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000 })
+    const result = await executor.execute("require('module')._load('child_process', null, false)")
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toContain("blocked")
+  })
+
+  test("execute: process.binding is disabled", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000 })
+    const result = await executor.execute("process.binding('spawn_sync')")
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toContain("disabled in sandbox")
+  })
+
+  test("execute: process.execSync is disabled", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000 })
+    const result = await executor.execute("process.execSync('node --version')")
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toContain("disabled in sandbox")
+  })
+
+  test("execute: dynamic import is rejected by default", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000 })
+    const result = await executor.execute("import('node:fs').then(() => console.log('escaped'))")
+    expect(result.exitCode).toBe(1)
+    expect(result.error).toContain("Dynamic import")
+  })
+
+  test("execute: dynamic import allowed when explicitly enabled", async () => {
+    const executor = new SecureExecutor({ timeoutMs: 5000, allowDynamicImport: true })
+    const result = await executor.execute("import('path').then((p) => console.log(p.basename('/a/b/c')))")
+    expect(result.stdout.trim()).toBe("c")
+    expect(result.exitCode).toBe(0)
+  })
+
   test("execute: allowed module works", async () => {
     const executor = new SecureExecutor({ timeoutMs: 5000 })
     const result = await executor.execute("var p = require('path'); console.log(p.basename('/a/b/c'))")
@@ -171,11 +220,26 @@ describe("SecureExecutor", () => {
     expect(result.exitCode).toBe(0)
   })
 
+  test("execute: spawn failure resolves with error result", async () => {
+    const originalPath = process.env.PATH ?? ""
+    process.env.PATH = ""
+    try {
+      const executor = new SecureExecutor({ timeoutMs: 5000 })
+      const result = await executor.execute("console.log('unreachable')")
+      expect(result.exitCode).toBe(-1)
+      expect(result.error).toBeDefined()
+    } finally {
+      process.env.PATH = originalPath
+    }
+  })
+
   test("default config is exported", () => {
     expect(DEFAULT_SANDBOX_CONFIG.timeoutMs).toBe(10000)
     expect(DEFAULT_SANDBOX_CONFIG.memoryLimitMb).toBe(512)
     expect(DEFAULT_SANDBOX_CONFIG.blockedModules).toContain("fs")
     expect(DEFAULT_SANDBOX_CONFIG.blockedModules).toContain("child_process")
+    expect(DEFAULT_SANDBOX_CONFIG.blockedModules).toContain("module")
+    expect(DEFAULT_SANDBOX_CONFIG.allowDynamicImport).toBe(false)
   })
 
   test("config can be partially overridden", () => {

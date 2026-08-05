@@ -128,8 +128,6 @@ export class ShortTermMemory {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class LongTermMemory {
-  constructor() {}
-
   private items: MemoryItem[] = []
 
   store(item: MemoryItem): boolean {
@@ -188,8 +186,6 @@ export class LongTermMemory {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class EpisodicMemory {
-  constructor() {}
-
   private items: MemoryItem[] = []
 
   store(item: MemoryItem): boolean {
@@ -234,8 +230,6 @@ export class EpisodicMemory {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class SemanticMemory {
-  constructor() {}
-
   private entities = new Map<string, MemoryItem>()
   private edges: { source: string; relation: string; target: string }[] = []
 

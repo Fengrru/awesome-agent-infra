@@ -12,7 +12,7 @@
  */
 
 import { describe, test } from "bun:test"
-import { buildTFIDFVectors, computeCosineSimilarity } from "@fengru/internal-tfidf"
+import { buildTFIDFVectors } from "@fengru/internal-tfidf"
 import { HallucinationDetector, SpectralHallucinationDetector } from "../src/index"
 import type { FactClaim } from "../src/index"
 
@@ -21,7 +21,7 @@ import type { FactClaim } from "../src/index"
 // ---------------------------------------------------------------------------
 
 function measure(
-  label: string,
+  _label: string,
   fn: () => void,
   iterations = 100,
 ): { opsPerSec: number; avgMs: number; totalMs: number } {
@@ -82,14 +82,22 @@ function makeClaims(count: number): FactClaim[] {
   return claims
 }
 
-// Access private method spectralCluster via index signature for benchmarking
+/** Typed access to private methods for benchmarking. */
+interface DetectorInternals {
+  spectralCluster(claims: FactClaim[], k: number): unknown[]
+}
+interface SpectralDetectorInternals {
+  precluster(claims: FactClaim[], k: number): number[][]
+}
+
+// Access private method spectralCluster via typed cast for benchmarking
 function spectralClusterRaw(detector: HallucinationDetector, claims: FactClaim[], k: number) {
-  return (detector as any).spectralCluster(claims, k)
+  return (detector as unknown as DetectorInternals).spectralCluster(claims, k)
 }
 
 // Access private precluster method on SpectralHallucinationDetector
 function preclusterRaw(detector: SpectralHallucinationDetector, claims: FactClaim[], k: number) {
-  return (detector as any).precluster(claims, k)
+  return (detector as unknown as SpectralDetectorInternals).precluster(claims, k)
 }
 
 // ---------------------------------------------------------------------------

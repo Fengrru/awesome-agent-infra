@@ -105,10 +105,10 @@ class MockParser {
   }
 }
 
-class MockLanguage {
-  static async load(_path: string): Promise<unknown> {
+const MockLanguage = {
+  async load(_path: string): Promise<unknown> {
     return {}
-  }
+  },
 }
 
 function registerTree(source: string, root: Def): void {
@@ -121,39 +121,39 @@ const SRC = [
   `import { x } from "./mod"`,
   `import * as ns from "pkg"`,
   `import def from "other"`,
-  `/** Doc for greet */`,
-  `function greet(name: string): string {`,
+  "/** Doc for greet */",
+  "function greet(name: string): string {",
   `  format("hi", name)`,
   `  const msg = "hi"`,
-  `  return msg`,
-  `}`,
-  ``,
-  `class Greeter {`,
-  `  count = 0`,
-  `  run() {`,
+  "  return msg",
+  "}",
+  "",
+  "class Greeter {",
+  "  count = 0",
+  "  run() {",
   `    return this.format("hi", ...args, count = 1)`,
-  `  }`,
-  `}`,
-  ``,
-  `interface Shape {`,
-  `  area(): number`,
-  `}`,
-  ``,
-  `type Pair<A, B> = [A, B]`,
-  ``,
-  `enum Color {`,
-  `  Red`,
-  `}`,
-  ``,
-  `namespace Util {`,
-  `  const MAX = 1`,
-  `}`,
-  ``,
-  `const VERSION = 1`,
-  `const { a } = obj`,
-  ``,
-  `export { greet }`,
-  `export default greet`,
+  "  }",
+  "}",
+  "",
+  "interface Shape {",
+  "  area(): number",
+  "}",
+  "",
+  "type Pair<A, B> = [A, B]",
+  "",
+  "enum Color {",
+  "  Red",
+  "}",
+  "",
+  "namespace Util {",
+  "  const MAX = 1",
+  "}",
+  "",
+  "const VERSION = 1",
+  "const { a } = obj",
+  "",
+  "export { greet }",
+  "export default greet",
   `export * from "./other"`,
 ].join("\n")
 
@@ -167,11 +167,11 @@ const TREE: Def = {
       children: [
         {
           type: "import_clause",
-          text: `{ x }`,
+          text: "{ x }",
           children: [
             {
               type: "named_imports",
-              text: `{ x }`,
+              text: "{ x }",
               children: [{ type: "import_specifier", text: "x" }],
             },
           ],
@@ -185,8 +185,8 @@ const TREE: Def = {
       children: [
         {
           type: "import_clause",
-          text: `* as ns`,
-          children: [{ type: "namespace_import", text: `* as ns` }],
+          text: "* as ns",
+          children: [{ type: "namespace_import", text: "* as ns" }],
         },
         { type: "string", text: `"pkg"` },
       ],
@@ -197,13 +197,13 @@ const TREE: Def = {
       children: [
         {
           type: "import_clause",
-          text: `def`,
+          text: "def",
           children: [{ type: "import_default_specifier", text: "def" }],
         },
         { type: "string", text: `"other"` },
       ],
     },
-    { type: "comment", text: `/** Doc for greet */` },
+    { type: "comment", text: "/** Doc for greet */" },
     {
       type: "function_declaration",
       text: `function greet(name: string): string {\n  format("hi", name)\n  const msg = "hi"\n  return msg\n}`,
@@ -211,11 +211,11 @@ const TREE: Def = {
         name: { type: "identifier", text: "greet" },
         parameters: {
           type: "formal_parameters",
-          text: `(name: string)`,
+          text: "(name: string)",
           children: [
             {
               type: "required_parameter",
-              text: `name: string`,
+              text: "name: string",
               fields: {
                 name: { type: "identifier", text: "name" },
                 type: { type: "type_identifier", text: "string" },
@@ -262,7 +262,7 @@ const TREE: Def = {
             },
             {
               type: "return_statement",
-              text: `return msg`,
+              text: "return msg",
               children: [{ type: "identifier", text: "msg" }],
             },
           ],
@@ -280,7 +280,7 @@ const TREE: Def = {
           children: [
             {
               type: "public_field_definition",
-              text: `count = 0`,
+              text: "count = 0",
               fields: { name: { type: "property_identifier", text: "count" } },
             },
             {
@@ -288,7 +288,7 @@ const TREE: Def = {
               text: `run() {\n    return this.format("hi", ...args, count = 1)\n  }`,
               fields: {
                 name: { type: "property_identifier", text: "run" },
-                parameters: { type: "formal_parameters", text: `()`, children: [] },
+                parameters: { type: "formal_parameters", text: "()", children: [] },
                 body: {
                   type: "statement_block",
                   text: `{\n    return this.format("hi", ...args, count = 1)\n  }`,
@@ -303,7 +303,7 @@ const TREE: Def = {
                           fields: {
                             function: {
                               type: "member_expression",
-                              text: `this.format`,
+                              text: "this.format",
                               fields: { property: { type: "property_identifier", text: "format" } },
                             },
                             arguments: {
@@ -311,10 +311,10 @@ const TREE: Def = {
                               text: `("hi", ...args, count = 1)`,
                               children: [
                                 { type: "string", text: `"hi"` },
-                                { type: "spread_element", text: `...args` },
+                                { type: "spread_element", text: "...args" },
                                 {
                                   type: "assignment_expression",
-                                  text: `count = 1`,
+                                  text: "count = 1",
                                   fields: { left: { type: "identifier", text: "count" } },
                                 },
                               ],
@@ -333,19 +333,19 @@ const TREE: Def = {
     },
     {
       type: "interface_declaration",
-      text: `interface Shape {\n  area(): number\n}`,
+      text: "interface Shape {\n  area(): number\n}",
       fields: {
         name: { type: "type_identifier", text: "Shape" },
         body: {
           type: "interface_body",
-          text: `{\n  area(): number\n}`,
+          text: "{\n  area(): number\n}",
           children: [
             {
               type: "method_signature",
-              text: `area(): number`,
+              text: "area(): number",
               fields: {
                 name: { type: "property_identifier", text: "area" },
-                parameters: { type: "formal_parameters", text: `()`, children: [] },
+                parameters: { type: "formal_parameters", text: "()", children: [] },
                 return_type: { type: "type_identifier", text: "number" },
               },
             },
@@ -355,12 +355,12 @@ const TREE: Def = {
     },
     {
       type: "type_alias_declaration",
-      text: `type Pair<A, B> = [A, B]`,
+      text: "type Pair<A, B> = [A, B]",
       fields: {
         name: { type: "type_identifier", text: "Pair" },
         type_parameters: {
           type: "type_parameters",
-          text: `<A, B>`,
+          text: "<A, B>",
           children: [
             {
               type: "type_parameter",
@@ -378,56 +378,56 @@ const TREE: Def = {
     },
     {
       type: "enum_declaration",
-      text: `enum Color {\n  Red\n}`,
+      text: "enum Color {\n  Red\n}",
       fields: { name: { type: "identifier", text: "Color" } },
     },
     {
       type: "module_declaration",
-      text: `namespace Util {\n  const MAX = 1\n}`,
+      text: "namespace Util {\n  const MAX = 1\n}",
       fields: { name: { type: "identifier", text: "Util" } },
     },
     {
       type: "lexical_declaration",
-      text: `const VERSION = 1`,
+      text: "const VERSION = 1",
       children: [
         {
           type: "variable_declarator",
-          text: `VERSION = 1`,
+          text: "VERSION = 1",
           fields: { name: { type: "identifier", text: "VERSION" } },
         },
       ],
     },
     {
       type: "lexical_declaration",
-      text: `const { a } = obj`,
+      text: "const { a } = obj",
       children: [
         {
           type: "variable_declarator",
-          text: `{ a } = obj`,
-          fields: { name: { type: "object_destructuring_pattern", text: `{ a }` } },
+          text: "{ a } = obj",
+          fields: { name: { type: "object_destructuring_pattern", text: "{ a }" } },
         },
       ],
     },
     {
       type: "export_statement",
-      text: `export { greet }`,
+      text: "export { greet }",
       children: [
         {
           type: "export_clause",
-          text: `{ greet }`,
+          text: "{ greet }",
           children: [{ type: "export_specifier", text: "greet" }],
         },
       ],
     },
     {
       type: "export_statement",
-      text: `export default greet`,
+      text: "export default greet",
       children: [{ type: "default", text: "default" }],
     },
     {
       type: "export_statement",
       text: `export * from "./other"`,
-      children: [{ type: "wildcard_import", text: `*` }],
+      children: [{ type: "wildcard_import", text: "*" }],
     },
   ],
 }
@@ -529,7 +529,7 @@ describe("extractFromFile (tree-sitter path)", () => {
           text: `function main() {\n  log("x")\n}`,
           fields: {
             name: { type: "identifier", text: "main" },
-            parameters: { type: "formal_parameters", text: `()`, children: [] },
+            parameters: { type: "formal_parameters", text: "()", children: [] },
             body: {
               type: "statement_block",
               text: `{\n  log("x")\n}`,
@@ -596,13 +596,13 @@ describe("extractFromFile (tree-sitter path)", () => {
 
   test("abstract classes and visibility modifiers are recorded", async () => {
     const ABS_SRC = [
-      `abstract class Base {`,
+      "abstract class Base {",
       `  protected name = "x"`,
-      `  static create(label: string): Base {`,
-      `    return new Base()`,
-      `  }`,
-      `  abstract run(): void`,
-      `}`,
+      "  static create(label: string): Base {",
+      "    return new Base()",
+      "  }",
+      "  abstract run(): void",
+      "}",
     ].join("\n")
     registerTree(ABS_SRC, {
       type: "program",
@@ -626,17 +626,17 @@ describe("extractFromFile (tree-sitter path)", () => {
                 },
                 {
                   type: "method_definition",
-                  text: `static create(label: string): Base {\n    return new Base()\n  }`,
+                  text: "static create(label: string): Base {\n    return new Base()\n  }",
                   children: [{ type: "static", text: "static" }],
                   fields: {
                     name: { type: "property_identifier", text: "create" },
                     parameters: {
                       type: "formal_parameters",
-                      text: `(label: string)`,
+                      text: "(label: string)",
                       children: [
                         {
                           type: "required_parameter",
-                          text: `label: string`,
+                          text: "label: string",
                           fields: {
                             name: { type: "identifier", text: "label" },
                             type: { type: "type_identifier", text: "string" },
@@ -649,11 +649,11 @@ describe("extractFromFile (tree-sitter path)", () => {
                 },
                 {
                   type: "abstract_method_signature",
-                  text: `abstract run(): void`,
+                  text: "abstract run(): void",
                   children: [{ type: "abstract", text: "abstract" }],
                   fields: {
                     name: { type: "property_identifier", text: "run" },
-                    parameters: { type: "formal_parameters", text: `()`, children: [] },
+                    parameters: { type: "formal_parameters", text: "()", children: [] },
                     return_type: { type: "type_identifier", text: "void" },
                   },
                 },
@@ -680,18 +680,18 @@ describe("extractFromFile (tree-sitter path)", () => {
   })
 
   test("/// doc comments are extracted", async () => {
-    const DOC_SRC = `/// Line doc\nfunction f() {}\n`
+    const DOC_SRC = "/// Line doc\nfunction f() {}\n"
     registerTree(DOC_SRC, {
       type: "program",
       text: DOC_SRC,
       children: [
-        { type: "comment", text: `/// Line doc` },
+        { type: "comment", text: "/// Line doc" },
         {
           type: "function_declaration",
-          text: `function f() {}`,
+          text: "function f() {}",
           fields: {
             name: { type: "identifier", text: "f" },
-            parameters: { type: "formal_parameters", text: `()`, children: [] },
+            parameters: { type: "formal_parameters", text: "()", children: [] },
           },
         },
       ],
@@ -712,7 +712,7 @@ describe("extractFromFile (tree-sitter path)", () => {
   })
 
   test("arrow function bodies are walked with the enclosing caller", async () => {
-    const ARROW_SRC = `function run() {\n  () => { helper() }\n}`
+    const ARROW_SRC = "function run() {\n  () => { helper() }\n}"
     registerTree(ARROW_SRC, {
       type: "program",
       text: ARROW_SRC,
@@ -724,26 +724,26 @@ describe("extractFromFile (tree-sitter path)", () => {
             name: { type: "identifier", text: "run" },
             body: {
               type: "statement_block",
-              text: `{\n  () => { helper() }\n}`,
+              text: "{\n  () => { helper() }\n}",
               children: [
                 {
                   type: "arrow_function",
-                  text: `() => { helper() }`,
+                  text: "() => { helper() }",
                   fields: {
                     body: {
                       type: "statement_block",
-                      text: `{ helper() }`,
+                      text: "{ helper() }",
                       children: [
                         {
                           type: "expression_statement",
-                          text: `helper()`,
+                          text: "helper()",
                           children: [
                             {
                               type: "call_expression",
-                              text: `helper()`,
+                              text: "helper()",
                               fields: {
                                 function: { type: "identifier", text: "helper" },
-                                arguments: { type: "arguments", text: `()`, children: [] },
+                                arguments: { type: "arguments", text: "()", children: [] },
                               },
                             },
                           ],
@@ -763,19 +763,19 @@ describe("extractFromFile (tree-sitter path)", () => {
   })
 
   test("doc comment lookup skips plain // comments", async () => {
-    const DOC_SRC = `/** Real doc */\n// intermediary note\nfunction g() {}\n`
+    const DOC_SRC = "/** Real doc */\n// intermediary note\nfunction g() {}\n"
     registerTree(DOC_SRC, {
       type: "program",
       text: DOC_SRC,
       children: [
-        { type: "comment", text: `/** Real doc */` },
-        { type: "comment", text: `// intermediary note` },
+        { type: "comment", text: "/** Real doc */" },
+        { type: "comment", text: "// intermediary note" },
         {
           type: "function_declaration",
-          text: `function g() {}`,
+          text: "function g() {}",
           fields: {
             name: { type: "identifier", text: "g" },
-            parameters: { type: "formal_parameters", text: `()`, children: [] },
+            parameters: { type: "formal_parameters", text: "()", children: [] },
           },
         },
       ],
@@ -785,22 +785,22 @@ describe("extractFromFile (tree-sitter path)", () => {
   })
 
   test("export statements with inline declarations are walked", async () => {
-    const EXP_SRC = `export default function run() {}\n`
+    const EXP_SRC = "export default function run() {}\n"
     registerTree(EXP_SRC, {
       type: "program",
       text: EXP_SRC,
       children: [
         {
           type: "export_statement",
-          text: `export default function run() {}`,
+          text: "export default function run() {}",
           children: [
             { type: "default", text: "default" },
             {
               type: "function_declaration",
-              text: `function run() {}`,
+              text: "function run() {}",
               fields: {
                 name: { type: "identifier", text: "run" },
-                parameters: { type: "formal_parameters", text: `()`, children: [] },
+                parameters: { type: "formal_parameters", text: "()", children: [] },
               },
             },
           ],
@@ -817,21 +817,21 @@ describe("extractFromFile (tree-sitter path)", () => {
     URL.createObjectURL = () => "file:///fake/tree.wasm" as unknown as string
     try {
       setExtractorDependencies({ Parser: MockParser, Language: MockLanguage })
-      registerTree(`function a() {}`, {
+      registerTree("function a() {}", {
         type: "program",
-        text: `function a() {}`,
+        text: "function a() {}",
         children: [
           {
             type: "function_declaration",
-            text: `function a() {}`,
+            text: "function a() {}",
             fields: {
               name: { type: "identifier", text: "a" },
-              parameters: { type: "formal_parameters", text: `()`, children: [] },
+              parameters: { type: "formal_parameters", text: "()", children: [] },
             },
           },
         ],
       })
-      const result = await extractFromFile("src/wasm1.ts", `function a() {}`, MOCK_TIME)
+      const result = await extractFromFile("src/wasm1.ts", "function a() {}", MOCK_TIME)
       expect(result.symbols.some((s) => s.name === "a")).toBe(true)
     } finally {
       URL.createObjectURL = origCreate
@@ -843,21 +843,21 @@ describe("extractFromFile (tree-sitter path)", () => {
     URL.createObjectURL = () => "http://" as unknown as string
     try {
       setExtractorDependencies({ Parser: MockParser, Language: MockLanguage })
-      registerTree(`function b() {}`, {
+      registerTree("function b() {}", {
         type: "program",
-        text: `function b() {}`,
+        text: "function b() {}",
         children: [
           {
             type: "function_declaration",
-            text: `function b() {}`,
+            text: "function b() {}",
             fields: {
               name: { type: "identifier", text: "b" },
-              parameters: { type: "formal_parameters", text: `()`, children: [] },
+              parameters: { type: "formal_parameters", text: "()", children: [] },
             },
           },
         ],
       })
-      const result = await extractFromFile("src/wasm2.ts", `function b() {}`, MOCK_TIME)
+      const result = await extractFromFile("src/wasm2.ts", "function b() {}", MOCK_TIME)
       expect(result.symbols.some((s) => s.name === "b")).toBe(true)
     } finally {
       URL.createObjectURL = origCreate
@@ -877,18 +877,18 @@ describe("extractFromFile (tree-sitter path)", () => {
       }
     }
     setExtractorDependencies({ Parser: FailInitParser, Language: MockLanguage })
-    const result = await extractFromFile("src/wasm3.ts", `function c() {}`, MOCK_TIME)
+    const result = await extractFromFile("src/wasm3.ts", "function c() {}", MOCK_TIME)
     expect(result.symbols.some((s) => s.name === "c")).toBe(true)
   })
 
   test("language load failure falls back to the regex parser", async () => {
-    class FailLoadLanguage {
-      static async load(_path: string): Promise<never> {
+    const FailLoadLanguage = {
+      async load(_path: string): Promise<unknown> {
         throw new Error("wasm corrupt")
-      }
+      },
     }
     setExtractorDependencies({ Parser: MockParser, Language: FailLoadLanguage })
-    const result = await extractFromFile("src/wasm4.ts", `function d() {}`, MOCK_TIME)
+    const result = await extractFromFile("src/wasm4.ts", "function d() {}", MOCK_TIME)
     expect(result.symbols.some((s) => s.name === "d")).toBe(true)
   })
 })

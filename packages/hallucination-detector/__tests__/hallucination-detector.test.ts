@@ -3,11 +3,27 @@ import {
   DEFAULT_DETECTOR_CONFIG,
   type FactClaim,
   HallucinationDetector,
-  type HallucinationReport,
   SpectralHallucinationDetector,
   createHallucinationDetector,
   createSpectralHallucinationDetector,
 } from "../src/index"
+
+/** Typed access to private methods for white-box tests. */
+interface SpectralDetectorInternals {
+  laplacianEigenDecomposition(
+    similarityMatrix: number[][],
+    k: number,
+  ): {
+    eigenvalues: number[]
+    eigenvectors: number[][]
+  }
+  precluster(claims: FactClaim[], k: number): number[][]
+}
+interface DetectorInternals {
+  jaccardSimilarity(a: Set<string>, b: Set<string>): number
+  cosineSimilarity(a: number[], b: number[]): number
+  buildTFIDF(docs: string[]): { vectors: number[][]; terms: string[] }
+}
 
 describe("HallucinationDetector", () => {
   test("constructs with default config", () => {
@@ -324,7 +340,7 @@ describe("SpectralHallucinationDetector private methods", () => {
       [1.0, 0.5],
       [0.5, 1.0],
     ]
-    const result = (sdetect as any).laplacianEigenDecomposition(matrix, 2)
+    const result = (sdetect as unknown as SpectralDetectorInternals).laplacianEigenDecomposition(matrix, 2)
     expect(result.eigenvalues).toBeDefined()
     expect(result.eigenvectors).toBeDefined()
     expect(result.eigenvalues.length).toBe(2)
@@ -334,14 +350,14 @@ describe("SpectralHallucinationDetector private methods", () => {
 
   test("laplacianEigenDecomposition with empty matrix", () => {
     const sdetect = new SpectralHallucinationDetector()
-    const result = (sdetect as any).laplacianEigenDecomposition([], 0)
+    const result = (sdetect as unknown as SpectralDetectorInternals).laplacianEigenDecomposition([], 0)
     expect(result.eigenvalues).toEqual([])
     expect(result.eigenvectors).toEqual([])
   })
 
   test("laplacianEigenDecomposition with single element", () => {
     const sdetect = new SpectralHallucinationDetector()
-    const result = (sdetect as any).laplacianEigenDecomposition([[1.0]], 1)
+    const result = (sdetect as unknown as SpectralDetectorInternals).laplacianEigenDecomposition([[1.0]], 1)
     expect(result.eigenvalues.length).toBe(1)
     expect(result.eigenvectors.length).toBe(1)
     expect(result.eigenvectors[0].length).toBe(1)
@@ -353,7 +369,7 @@ describe("SpectralHallucinationDetector private methods", () => {
       [1.0, 0.3],
       [0.3, 1.0],
     ]
-    const result = (sdetect as any).laplacianEigenDecomposition(matrix, 10)
+    const result = (sdetect as unknown as SpectralDetectorInternals).laplacianEigenDecomposition(matrix, 10)
     // k should be clamped to n (2)
     expect(result.eigenvalues.length).toBe(2)
     expect(result.eigenvectors.length).toBe(2)
@@ -361,16 +377,14 @@ describe("SpectralHallucinationDetector private methods", () => {
 
   test("precluster with empty claims", () => {
     const sdetect = new SpectralHallucinationDetector()
-    const result = (sdetect as any).precluster([], 2)
+    const result = (sdetect as unknown as SpectralDetectorInternals).precluster([], 2)
     expect(result).toEqual([])
   })
 
   test("precluster with k=0", () => {
     const sdetect = new SpectralHallucinationDetector()
-    const claims: FactClaim[] = [
-      { text: "Hello world", startIndex: 0, endIndex: 11, confidence: 0.5, source: "test" },
-    ]
-    const result = (sdetect as any).precluster(claims, 0)
+    const claims: FactClaim[] = [{ text: "Hello world", startIndex: 0, endIndex: 11, confidence: 0.5, source: "test" }]
+    const result = (sdetect as unknown as SpectralDetectorInternals).precluster(claims, 0)
     expect(result).toEqual([])
   })
 
@@ -381,7 +395,7 @@ describe("SpectralHallucinationDetector private methods", () => {
       { text: "Dogs are mammals", startIndex: 16, endIndex: 31, confidence: 0.5, source: "test" },
       { text: "Birds are dinosaurs", startIndex: 32, endIndex: 50, confidence: 0.5, source: "test" },
     ]
-    const result = (sdetect as any).precluster(claims, 2)
+    const result = (sdetect as unknown as SpectralDetectorInternals).precluster(claims, 2)
     expect(result.length).toBe(3)
     expect(result[0].length).toBe(2)
   })
@@ -390,7 +404,7 @@ describe("SpectralHallucinationDetector private methods", () => {
     const detector = new HallucinationDetector()
     const setA = new Set(["hello", "world"])
     const setB = new Set(["hello", "there"])
-    const sim = (detector as any).jaccardSimilarity(setA, setB)
+    const sim = (detector as unknown as DetectorInternals).jaccardSimilarity(setA, setB)
     expect(sim).toBeGreaterThan(0)
     expect(sim).toBeLessThanOrEqual(1)
   })
@@ -399,14 +413,14 @@ describe("SpectralHallucinationDetector private methods", () => {
     const detector = new HallucinationDetector()
     const a = [1, 2, 3]
     const b = [1, 2, 3]
-    const sim = (detector as any).cosineSimilarity(a, b)
+    const sim = (detector as unknown as DetectorInternals).cosineSimilarity(a, b)
     expect(sim).toBeCloseTo(1.0, 5)
   })
 
   test("buildTFIDF private method", () => {
     const detector = new HallucinationDetector()
     const docs = ["hello world", "hello there"]
-    const result = (detector as any).buildTFIDF(docs)
+    const result = (detector as unknown as DetectorInternals).buildTFIDF(docs)
     expect(result.vectors).toBeDefined()
     expect(result.terms).toBeDefined()
     expect(result.vectors.length).toBe(2)

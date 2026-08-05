@@ -1,11 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test"
-import {
-  CycleActionType,
-  CycleController,
-  DEFAULT_CYCLE_CONFIG,
-  clamp,
-  createCycleController,
-} from "../src/index"
+import { CycleActionType, CycleController, DEFAULT_CYCLE_CONFIG, clamp, createCycleController } from "../src/index"
 import type {
   AgentStateMachine,
   ConversationMessage,
@@ -112,7 +106,7 @@ describe("CycleController", () => {
 
   it("executeCheckpoint calls writer when set", async () => {
     const writer: ICheckpointWriter = {
-      async write(sid, hist, inc, idx) {
+      async write(sid, _hist, _inc, idx) {
         return `ckpt-${sid}-${idx}`
       },
     }

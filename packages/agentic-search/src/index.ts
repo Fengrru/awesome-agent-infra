@@ -147,8 +147,6 @@ export interface SearchTool {
 // ─── SearchToolRegistry ─────────────────────────────────────────────────────
 
 export class SearchToolRegistry {
-  constructor() {}
-
   private tools = new Map<ToolName, SearchTool>()
 
   register(tool: SearchTool): void {

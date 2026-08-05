@@ -202,8 +202,6 @@ function defaultFuzzyPatch(
 // ─── SkillSystem ────────────────────────────────────────────────────────────
 
 export class SkillSystem {
-  constructor() {}
-
   private skills = new Map<string, Skill>()
   private hookHandlers = new Map<HookPoint, Array<(context: Record<string, unknown>) => Promise<void>>>()
   private agentSkills: AgentSkill[] = []

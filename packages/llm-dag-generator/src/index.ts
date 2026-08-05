@@ -284,6 +284,7 @@ Generate an updated DAG that preserves completed node outputs and retries or rep
  * Supports K-parallel variant generation for ensemble selection.
  */
 export class LLMDAGGenerator extends DAGGenerator {
+  // biome-ignore lint/complexity/noUselessConstructor: explicit constructor preserves bun coverage attribution for the base class
   constructor(config?: DAGGeneratorConfig) {
     super(config)
   }

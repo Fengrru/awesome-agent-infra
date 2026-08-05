@@ -219,8 +219,16 @@ describe("FuzzyPatch - Additional Coverage", () => {
   })
 
   test("context anchor with successful first/last line match", () => {
-    const content = ["## Skills", "This is skill A", "It does things", "It excites users", "## End of Skills"].join("\n")
-    const oldStr = ["## Skills", "This is skill A", "It does things changed", "It excites users", "## End of Skills"].join("\n")
+    const content = ["## Skills", "This is skill A", "It does things", "It excites users", "## End of Skills"].join(
+      "\n",
+    )
+    const oldStr = [
+      "## Skills",
+      "This is skill A",
+      "It does things changed",
+      "It excites users",
+      "## End of Skills",
+    ].join("\n")
     const result = fuzzyFindAndReplace(content, oldStr, "replaced section")
     expect(result.matchCount).toBe(1)
   })
@@ -237,5 +245,47 @@ describe("FuzzyPatch - Additional Coverage", () => {
     const oldStr = "const CONFIG = { apiUrl: 'https://api.example.com/v1', timeout: 3000 }"
     const found = canPatch(content, oldStr)
     expect(found).toBe(true)
+  })
+})
+
+describe("FuzzyPatch - uncovered strategy paths", () => {
+  test("whitespace norm falls back to approximate range when tail anchor is missed", () => {
+    const content = `alpha    beta    gamma${"x".repeat(30)}`
+    const oldStr = "alpha  beta  gamma"
+    const result = fuzzyFindAndReplace(content, oldStr, "REPLACED")
+    expect(result.strategy).toBe("whitespace_normalized")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("indentation norm matches whitespace-only lines", () => {
+    const content = " \n \n "
+    const oldStr = "\n\n"
+    const result = fuzzyFindAndReplace(content, oldStr, "REPLACED")
+    expect(result.strategy).toBe("indentation_normalized")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("line ending norm maps CRLF content back to original offsets", () => {
+    const content = "x\r\na\r\ny"
+    const oldStr = "a\n"
+    const result = fuzzyFindAndReplace(content, oldStr, "REPLACED")
+    expect(result.strategy).toBe("line_ending_normalized")
+    expect(result.newContent).toBe("x\r\nREPLACEDy")
+  })
+
+  test("head tail anchor matches with small middle drift", () => {
+    const oldStr = `HEAD${"x".repeat(10)}TAIL${"z".repeat(10)}`
+    const content = oldStr.replace("TAIL", "TALL")
+    const result = fuzzyFindAndReplace(content, oldStr, "REPLACED")
+    expect(result.strategy).toBe("head_tail_anchor")
+    expect(result.matchCount).toBe(1)
+  })
+
+  test("context anchor returns null when last line never aligns", () => {
+    const content = "A\nB\nD"
+    const oldStr = "A\nB\nC"
+    const result = fuzzyFindAndReplace(content, oldStr, "REPLACED")
+    expect(result.matchCount).toBe(0)
+    expect(result.strategy).toBe("none")
   })
 })

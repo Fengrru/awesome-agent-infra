@@ -9,9 +9,8 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 
 import { LifecycleManager } from "../../lifecycle-manager/src/index"
-import type { EngineContext, IStateMachine, ModuleLifecycle } from "../../lifecycle-manager/src/index"
+import type { IStateMachine, ModuleLifecycle } from "../../lifecycle-manager/src/index"
 import { AgentState, AgentStateMachine } from "../src/index"
-import type { TransitionCallback } from "../src/index"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

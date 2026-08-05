@@ -67,7 +67,7 @@ describe("extractFromFile (fallback parser)", () => {
   })
 
   test("non-exported symbols are flagged correctly", async () => {
-    const source = `function helper() {}\nexport class Public {}\n`
+    const source = "function helper() {}\nexport class Public {}\n"
     const result = await extractFromFile("src/a.ts", source, MOCK_TIME)
 
     const helper = result.symbols.find((s) => s.name === "helper")
@@ -103,16 +103,16 @@ describe("extractFromFile (fallback parser)", () => {
 
   test("fallback extracts calls with args, keywords and spread", async () => {
     const src = [
-      `function outer() {`,
-      `  if (true) { return 1 }`,
-      `  function inner() { return helper() }`,
-      `  return inner()`,
-      `}`,
-      `function fact(n) { return fact(n - 1) }`,
-      `export function run(opts, ...rest) {`,
+      "function outer() {",
+      "  if (true) { return 1 }",
+      "  function inner() { return helper() }",
+      "  return inner()",
+      "}",
+      "function fact(n) { return fact(n - 1) }",
+      "export function run(opts, ...rest) {",
       `  const msg = outer("a,b", { key: 1 }, ...rest)`,
-      `  return msg`,
-      `}`,
+      "  return msg",
+      "}",
     ].join("\n")
     const result = await extractFromFile("src/calls.ts", src, MOCK_TIME)
     const calls = result.calls
@@ -136,7 +136,7 @@ describe("extractFromFile (fallback parser)", () => {
   })
 
   test("fallback skips calls with unbalanced parens", async () => {
-    const src = `function broken() {\n  return helper(\n}\nfunction ok() { return 1 }`
+    const src = "function broken() {\n  return helper(\n}\nfunction ok() { return 1 }"
     const result = await extractFromFile("src/broken.ts", src, MOCK_TIME)
     // helper( has no closing paren before the next declaration boundary
     expect(result.calls.filter((c) => c.calleeName === "helper")).toEqual([])
@@ -168,7 +168,7 @@ describe("fallback symbol metadata", () => {
   })
 
   test("multiline source computes correct line numbers", async () => {
-    const source = `// comment\n\n\nexport function deep() {\n}\n`
+    const source = "// comment\n\n\nexport function deep() {\n}\n"
     const result = await extractFromFile("src/d.ts", source, MOCK_TIME)
     const sym = result.symbols[0]
     expect(sym?.name).toBe("deep")

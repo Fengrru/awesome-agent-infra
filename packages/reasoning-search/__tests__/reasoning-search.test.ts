@@ -36,7 +36,7 @@ function createNode(state: string, action: string | null, parent: MCTSNode | nul
 describe("uctValue", () => {
   test("unvisited node returns Infinity", () => {
     const node = createNode("state", "action", null)
-    expect(uctValue(node, 10, Math.SQRT2)).toBe(Infinity)
+    expect(uctValue(node, 10, Math.SQRT2)).toBe(Number.POSITIVE_INFINITY)
   })
 
   test("visited node returns finite value", () => {
@@ -215,7 +215,7 @@ describe("ReasoningSearch", () => {
   })
 
   test("mcts search with score function", async () => {
-    const scoreFn: ReasoningScoreFn = async (state: string, action: string): Promise<number> => {
+    const scoreFn: ReasoningScoreFn = async (_state: string, action: string): Promise<number> => {
       // Higher score for actions containing numbers
       return /\d+/.test(action) ? 0.8 : 0.3
     }
@@ -252,7 +252,7 @@ describe("ReasoningSearch", () => {
 
   test("invalid strategy throws", async () => {
     const engine = new ReasoningSearch(mockGenerate(["x"]))
-    await expect(engine.solve("test", "invalid" as any)).rejects.toThrow()
+    await expect(engine.solve("test", "invalid" as never)).rejects.toThrow()
   })
 
   test("updateConfig changes behavior", () => {

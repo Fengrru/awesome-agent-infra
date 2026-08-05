@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test"
 import {
-  type AttentionConfig,
   AttentionRetrieval,
   ConfidenceLevel,
   DEFAULT_ATTENTION_CONFIG,
@@ -14,16 +13,21 @@ import {
   MemoryPriority,
   MemoryType,
   MetaMemory,
-  type MetaMemoryConfig,
   SemanticMemory,
   ShortTermMemory,
-  type SleepConfig,
   SleepConsolidation,
   SleepStage,
   WorkingMemory,
   createMemoryEngine,
   createMemoryItem,
 } from "../src/index"
+
+/** Typed access to private methods for white-box tests. */
+interface SleepConsolidationInternals {
+  calcConsolidationScore(item: MemoryItem): number
+  calcRetentionScore(item: MemoryItem): number
+  calcSimilarity(a: MemoryItem, b: MemoryItem): number
+}
 
 function makeItem(overrides: Partial<MemoryItem> = {}): MemoryItem {
   const id = overrides.id ?? Math.random().toString(36).slice(2, 10)
@@ -598,7 +602,7 @@ describe("SleepConsolidation", () => {
       confidence: 0.9,
       timestamp: Date.now() - 60000,
     })
-    const score = (sc as any).calcConsolidationScore(item)
+    const score = (sc as unknown as SleepConsolidationInternals).calcConsolidationScore(item)
     expect(score).toBeGreaterThan(0.3)
     expect(score).toBeLessThanOrEqual(1)
   })
@@ -607,14 +611,15 @@ describe("SleepConsolidation", () => {
     const sc = new SleepConsolidation()
     const highItem = makeItem({ importance: 0.9, accessCount: 10, emotionScore: 0.5 })
     const lowItem = makeItem({ importance: 0.1, accessCount: 0, emotionScore: 0 })
-    expect((sc as any).calcRetentionScore(highItem)).toBeGreaterThan((sc as any).calcRetentionScore(lowItem))
+    const internals = sc as unknown as SleepConsolidationInternals
+    expect(internals.calcRetentionScore(highItem)).toBeGreaterThan(internals.calcRetentionScore(lowItem))
   })
 
   test("calcSimilarity returns 1 for identical content", () => {
     const sc = new SleepConsolidation()
     const a = makeItem({ content: "identical content" })
     const b = makeItem({ content: "identical content" })
-    const sim = (sc as any).calcSimilarity(a, b)
+    const sim = (sc as unknown as SleepConsolidationInternals).calcSimilarity(a, b)
     expect(sim).toBeGreaterThan(0.99)
   })
 
@@ -622,7 +627,7 @@ describe("SleepConsolidation", () => {
     const sc = new SleepConsolidation()
     const a = makeItem({ content: "machine learning algorithms" })
     const b = makeItem({ content: "baking chocolate cake recipe" })
-    const sim = (sc as any).calcSimilarity(a, b)
+    const sim = (sc as unknown as SleepConsolidationInternals).calcSimilarity(a, b)
     expect(sim).toBeLessThan(0.5)
   })
 
@@ -648,7 +653,7 @@ describe("SleepConsolidation", () => {
     )
     expect(stored.length).toBeGreaterThan(0)
     const assoc = stored.find(
-      (i) => i.content && typeof i.content === "object" && (i.content as any).association === true,
+      (i) => i.content && typeof i.content === "object" && (i.content as Record<string, unknown>).association === true,
     )
     expect(assoc).toBeDefined()
   })
@@ -1061,7 +1066,12 @@ describe("MemoryEngine", () => {
     expect(engine.consolidate(item.id)).toBe(true)
     const ltmItem = engine.longTermMemory
       .getAll()
-      .find((i) => i.metadata && typeof i.metadata === "object" && (i.metadata as any).consolidatedFrom === item.id)
+      .find(
+        (i) =>
+          i.metadata &&
+          typeof i.metadata === "object" &&
+          (i.metadata as Record<string, unknown>).consolidatedFrom === item.id,
+      )
     expect(ltmItem).toBeDefined()
   })
 

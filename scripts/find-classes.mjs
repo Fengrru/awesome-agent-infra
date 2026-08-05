@@ -4,8 +4,8 @@ import path from "node:path"
 function findClasses(code) {
   const classes = []
   const re = /(?:export\s+)?(?:abstract\s+)?class\s+(\w+)[^{]*\{/g
-  let m
-  while ((m = re.exec(code)) !== null) {
+  let m = re.exec(code)
+  while (m !== null) {
     const name = m[1]
     const bodyStart = m.index + m[0].length - 1
     let depth = 1
@@ -17,6 +17,7 @@ function findClasses(code) {
     }
     const body = code.slice(bodyStart, i)
     classes.push({ name, bodyStart, bodyEnd: i, hasCtor: /\bconstructor\s*\(/.test(body), body })
+    m = re.exec(code)
   }
   return classes
 }

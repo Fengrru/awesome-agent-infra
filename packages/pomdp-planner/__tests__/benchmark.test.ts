@@ -15,12 +15,23 @@ import { describe, test } from "bun:test"
 import { ActionRegistry, ParticleFilter, QMDPSolver, StateHasher, createState, defaultRewardFn } from "../src/index"
 import type { Action, BeliefState, Observation, POMDPState } from "../src/index"
 
+/** Typed access to private methods for benchmarking. */
+interface QMDPSolverInternals {
+  qmdpEstimate(
+    belief: BeliefState,
+    action: Action,
+    actions: Action[],
+    stateTransition: (state: POMDPState, action: Action) => POMDPState,
+    rewardFn: (state: POMDPState, action: Action, nextState: POMDPState) => number,
+  ): number
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function measure(
-  label: string,
+  _label: string,
   fn: () => void,
   iterations = 100,
 ): { opsPerSec: number; avgMs: number; totalMs: number } {
@@ -261,10 +272,10 @@ describe("benchmark: QMDP per-action estimate", () => {
     const action = makeActions()[0]!
     const actions = makeActions()
 
-    // Access private qmdpEstimate via any cast
+    // Access private qmdpEstimate via typed cast
     const result = measure(
       "",
-      () => (solver as any).qmdpEstimate(belief, action, actions, stateTransition, rewardFn),
+      () => (solver as unknown as QMDPSolverInternals).qmdpEstimate(belief, action, actions, stateTransition, rewardFn),
       5,
     )
     console.log(`  100 particles × 10 rollouts: ${result.avgMs.toFixed(3)}ms avg`)

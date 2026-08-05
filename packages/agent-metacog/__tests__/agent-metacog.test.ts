@@ -1,12 +1,6 @@
 import { describe, expect, test } from "bun:test"
-import {
-  AgentMetacog,
-  type InteractionRecord,
-  type KnowledgeGap,
-  ebbinghausRetention,
-  nextReviewDays,
-} from "../src/index.js"
 import { createConfidenceCalibrator } from "../src/calibrator.js"
+import { AgentMetacog, ebbinghausRetention, nextReviewDays } from "../src/index.js"
 import {
   addVectors,
   dotProduct,

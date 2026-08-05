@@ -3,10 +3,10 @@ import {
   type Checkpoint,
   type CheckpointDatabase,
   CheckpointManager,
-  createCheckpointManager,
   type L1Snapshot,
   type L2Snapshot,
   type L3Snapshot,
+  createCheckpointManager,
 } from "../src/index"
 
 function makeL1(overrides?: Partial<L1Snapshot>): L1Snapshot {

@@ -20,7 +20,7 @@ import type { CodeGraphEdge, CodeGraphNode } from "../src/index"
 // ---------------------------------------------------------------------------
 
 function measure(
-  label: string,
+  _label: string,
   fn: () => void,
   iterations = 100,
 ): { opsPerSec: number; avgMs: number; totalMs: number } {

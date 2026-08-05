@@ -2,7 +2,16 @@ import { describe, expect, test } from "bun:test"
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { type AgentSkill, DAG_GENERATION_PROMPT, HookPoints, type Skill, SkillManager, SkillSystem, createSkillManager, createSkillSystem } from "../src/index"
+import {
+  type AgentSkill,
+  DAG_GENERATION_PROMPT,
+  HookPoints,
+  type Skill,
+  SkillManager,
+  SkillSystem,
+  createSkillManager,
+  createSkillSystem,
+} from "../src/index"
 
 function makeSkill(id: string, trigger: string, priority = 5): Skill {
   return {
@@ -230,7 +239,7 @@ describe("SkillManager — progressive loading", () => {
       await mkdir(dirs.userSkillDir, { recursive: true })
       await writeFile(
         join(dirs.userSkillDir, "external.md"),
-        `---\nname: external\ndescription: from disk\nversion: 2.1.0\ncreated_by: user\ntags: [imported]\n---\nexternal body`,
+        "---\nname: external\ndescription: from disk\nversion: 2.1.0\ncreated_by: user\ntags: [imported]\n---\nexternal body",
         "utf-8",
       )
 
@@ -258,7 +267,7 @@ describe("SkillManager — progressive loading", () => {
       await mkdir(dirs.userSkillDir, { recursive: true })
       await writeFile(
         join(dirs.userSkillDir, "user-skill.md"),
-        `---\nname: user-skill\ndescription: user one\n---\nbody`,
+        "---\nname: user-skill\ndescription: user one\n---\nbody",
         "utf-8",
       )
 
@@ -398,10 +407,7 @@ describe("exports", () => {
 
   test("createSkillManager returns a SkillManager instance", () => {
     const sys = new SkillSystem()
-    const mgr = createSkillManager(
-      { projectSkillDir: "/tmp/proj", userSkillDir: "/tmp/user" },
-      sys,
-    )
+    const mgr = createSkillManager({ projectSkillDir: "/tmp/proj", userSkillDir: "/tmp/user" }, sys)
     expect(mgr).toBeInstanceOf(SkillManager)
     expect(mgr.skillSystem).toBe(sys)
   })

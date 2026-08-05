@@ -80,7 +80,7 @@ describe("AgentStateMachine", () => {
     let fired = false
     let capturedPrev = ""
     let capturedNext = ""
-    sm.onEnter(AgentState.INITIALIZING, async (prev, next, reason) => {
+    sm.onEnter(AgentState.INITIALIZING, async (prev, next, _reason) => {
       fired = true
       capturedPrev = prev
       capturedNext = next
@@ -275,7 +275,7 @@ describe("AgentStateMachine", () => {
       previous_state: AgentState.INITIALIZING,
       transition_count: 5,
       state_history: [],
-    } as any)
+    } as unknown as Parameters<AgentStateMachine["restore"]>[0])
     expect(sm.state).toBe(AgentState.READY)
     expect(sm.transitions).toBe(5)
   })
@@ -342,9 +342,9 @@ describe("AgentStateMachine", () => {
     try {
       await sm.transition(AgentState.INITIALIZING)
       expect(sm.state).toBe(AgentState.INITIALIZING) // might succeed on fast machine
-    } catch (e: any) {
+    } catch (e) {
       // Timeout is expected
-      expect(e.message).toContain("timed out")
+      expect((e as Error).message).toContain("timed out")
     }
   })
 

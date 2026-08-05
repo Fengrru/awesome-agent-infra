@@ -1,5 +1,14 @@
 import { describe, expect, test } from "bun:test"
-import { type BusEvent, EventBusService, EventPriority, EventType, type PersistentEvent, calculateSpecificity, createEventBusService, createSimpleEventBus } from "../src/index"
+import {
+  type BusEvent,
+  EventBusService,
+  EventPriority,
+  EventType,
+  type PersistentEvent,
+  calculateSpecificity,
+  createEventBusService,
+  createSimpleEventBus,
+} from "../src/index"
 
 describe("createSimpleEventBus", () => {
   // ── Basic publish/subscribe ─────────────────────────────────────────────

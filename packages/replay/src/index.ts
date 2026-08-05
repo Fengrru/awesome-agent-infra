@@ -67,8 +67,6 @@ class MinimalStateMachine {
   private currentState = "IDLE"
   private states: string[] = []
 
-  constructor() {}
-
   get state(): string {
     return this.currentState
   }

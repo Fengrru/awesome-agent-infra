@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import { ErrorClassifier, type RecoveryRule, RepairMemoryEngine, createErrorClassifier, createRepairMemoryEngine } from "../src/index"
+import {
+  ErrorClassifier,
+  type RecoveryRule,
+  RepairMemoryEngine,
+  createErrorClassifier,
+  createRepairMemoryEngine,
+} from "../src/index"
 
 describe("ErrorClassifier", () => {
   const classifier = new ErrorClassifier()

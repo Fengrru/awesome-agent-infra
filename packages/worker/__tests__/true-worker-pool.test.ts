@@ -343,3 +343,78 @@ describe("createTrueWorkerPool", () => {
     expect(pool).toBeInstanceOf(TrueWorkerPool)
   })
 })
+
+/** Typed access to TrueWorkerPool private members for white-box tests. */
+interface PoolInternals {
+  slots: Array<{ worker: { emit(event: string, ...args: unknown[]): boolean }; busy: boolean }>
+}
+
+describe("TrueWorkerPool failure paths", () => {
+  test("executeSequential times out a queued task and returns an error result", async () => {
+    const pool = new TrueWorkerPool({
+      workerScript: WORKER_SCRIPT,
+      maxWorkers: 1,
+    })
+
+    // Occupy the only worker so the next task waits in the queue
+    const blocker = pool.execute([makeTask("block", "double", 1, 400)])
+    await new Promise((r) => setTimeout(r, 50))
+
+    const results = await pool.executeSequential([makeTask("queued-slow", "double", 2)], { timeoutMs: 100 })
+    expect(results[0].success).toBe(false)
+    expect(results[0].error).toContain("timed out")
+
+    await blocker
+    await pool.shutdown()
+  })
+
+  test("executeSequential crash rejects through the queue reject callback", async () => {
+    const pool = new TrueWorkerPool({
+      workerScript: WORKER_SCRIPT,
+      maxWorkers: 1,
+    })
+
+    const results = await pool.executeSequential([makeTask("boom", "crash")], { timeoutMs: 5000 })
+    expect(results[0].success).toBe(false)
+    expect(results[0].error).toContain("exited with code 1")
+
+    await pool.shutdown()
+  })
+
+  test("worker error event fails the active task", async () => {
+    const pool = new TrueWorkerPool({
+      workerScript: WORKER_SCRIPT,
+      maxWorkers: 1,
+    })
+
+    const pending = pool.executeSequential([makeTask("evt", "double", 1, 300)])
+    await new Promise((r) => setTimeout(r, 50))
+
+    const internals = pool as unknown as PoolInternals
+    internals.slots[0]!.worker.emit("error", new Error("simulated worker error"))
+
+    const results = await pending
+    expect(results[0].success).toBe(false)
+    expect(results[0].error).toContain("simulated worker error")
+
+    await pool.shutdown()
+  })
+
+  test("worker messageerror event replaces the failing worker", async () => {
+    const pool = new TrueWorkerPool({
+      workerScript: WORKER_SCRIPT,
+      maxWorkers: 1,
+    })
+
+    await pool.execute([makeTask("warm", "double", 1)])
+
+    const internals = pool as unknown as PoolInternals
+    internals.slots[0]!.worker.emit("messageerror")
+
+    const results = await pool.execute([makeTask("after", "double", 3)])
+    expect(results[0].success).toBe(true)
+    expect(results[0].output).toBe(6)
+
+    await pool.shutdown()
+  })
+})

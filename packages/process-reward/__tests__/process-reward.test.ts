@@ -6,8 +6,6 @@ import {
   PRMLabeler,
   PRMTrainer,
   ProcessRewardModel,
-  type StepScore,
-  type TaskType,
   type TrainingSample,
   createPRMTrainer,
   heuristicScore,
@@ -17,6 +15,16 @@ import {
   scoreMathStep,
   weakSupervisionLabel,
 } from "../src/index.js"
+
+/** Typed access to private methods for white-box tests. */
+interface PRMTrainerInternals {
+  cosineLR(currentStep: number, totalSteps: number, baseLR: number): number
+  linearDecayLR(currentStep: number, totalSteps: number, baseLR: number): number
+}
+interface ProcessRewardModelInternals {
+  getCachedScore(state: string, action: string): number | undefined
+  setCachedScore(state: string, action: string, score: number): void
+}
 
 // ─── Rollout Confidence ─────────────────────────────────────────────────────
 
@@ -226,10 +234,10 @@ describe("ProcessRewardModel", () => {
     const { labels, confidences } = await prm.labelSteps(steps, true, "general")
     expect(labels.length).toBe(3)
     // For correct outcome, each label should be > 0.5 (bias toward positive)
-    labels.forEach((l) => {
+    for (const l of labels) {
       expect(l).toBeGreaterThanOrEqual(0)
       expect(l).toBeLessThanOrEqual(1)
-    })
+    }
     expect(confidences.every((c) => c > 0)).toBe(true)
   })
 
@@ -403,7 +411,7 @@ describe("PRMLabeler", () => {
       expect(result.labels.length).toBe(4)
       expect(result.confidences.length).toBe(4)
       expect(result.strategy).toBe("heuristic")
-      result.confidences.forEach((c) => expect(c).toBe(0.7))
+      for (const c of result.confidences) expect(c).toBe(0.7)
     })
 
     test("boosts final step for success outcome", () => {
@@ -428,31 +436,31 @@ describe("PRMLabeler", () => {
       const result = labeler.labelSteps(steps, 1, "math")
       expect(result.labels.length).toBe(3)
       expect(result.confidences.length).toBe(3)
-      result.confidences.forEach((c) => expect(c).toBe(0.3))
-      result.labels.forEach((l) => {
+      for (const c of result.confidences) expect(c).toBe(0.3)
+      for (const l of result.labels) {
         expect(l).toBeGreaterThanOrEqual(0)
         expect(l).toBeLessThanOrEqual(1)
-      })
+      }
     })
 
     test("labels failure path with weak supervision", () => {
       const labeler = new PRMLabeler({ labelingStrategy: "weak_supervision" })
       const steps = ["step1", "step2", "step3"]
       const result = labeler.labelSteps(steps, 0, "math")
-      result.labels.forEach((l) => {
+      for (const l of result.labels) {
         expect(l).toBeGreaterThanOrEqual(0)
         expect(l).toBeLessThanOrEqual(1)
-      })
+      }
     })
 
     test("normalized labels are in range [0, 1]", () => {
       const labeler = new PRMLabeler({ labelingStrategy: "weak_supervision" })
       const steps = ["step a", "step b", "step c", "step d"]
       const result = labeler.labelSteps(steps, 1, "math")
-      result.labels.forEach((l) => {
+      for (const l of result.labels) {
         expect(l).toBeGreaterThanOrEqual(0)
         expect(l).toBeLessThanOrEqual(1)
-      })
+      }
     })
   })
 
@@ -480,14 +488,14 @@ describe("PRMLabeler", () => {
 
       expect(result.labels.length).toBe(2)
       expect(result.confidences.length).toBe(2)
-      result.confidences.forEach((c) => {
+      for (const c of result.confidences) {
         expect(c).toBeGreaterThan(0)
         expect(c).toBeLessThanOrEqual(1)
-      })
-      result.labels.forEach((l) => {
+      }
+      for (const l of result.labels) {
         expect(l).toBeGreaterThanOrEqual(0)
         expect(l).toBeLessThanOrEqual(1)
-      })
+      }
     })
 
     test("confidence increases with rollouts", () => {
@@ -532,12 +540,12 @@ describe("PRMLabeler", () => {
       const steps = ["x = 1", "x = 2"]
       const scores = labeler.scorePath(steps, "math")
       expect(scores.length).toBe(2)
-      scores.forEach((s) => {
+      for (const s of scores) {
         expect(s.score).toBeGreaterThanOrEqual(0)
         expect(s.score).toBeLessThanOrEqual(1)
         expect(s.confidence).toBe(0.7)
         expect(s.method).toBe("heuristic")
-      })
+      }
     })
 
     test("empty path returns empty array", () => {
@@ -554,13 +562,13 @@ describe("PRMLabeler", () => {
       const outcomes = [1]
       const samples = labeler.prepareTrainingData(paths, outcomes, "math")
       expect(samples.length).toBe(2)
-      samples.forEach((s) => {
+      for (const s of samples) {
         expect(s.state.length).toBeGreaterThan(0)
         expect(s.action.length).toBeGreaterThan(0)
         expect(s.label).toBeGreaterThanOrEqual(0)
         expect(s.label).toBeLessThanOrEqual(1)
         expect(s.confidence).toBeGreaterThan(0)
-      })
+      }
     })
   })
 })
@@ -680,20 +688,20 @@ describe("PRMTrainer", () => {
   })
 
   test("cosineLR produces expected range", () => {
-    const cosineTrainer = new PRMTrainer({ lrSchedule: "cosine" })
-    const lr0 = (cosineTrainer as any).cosineLR(0, 10, 0.1)
-    const lrMid = (cosineTrainer as any).cosineLR(5, 10, 0.1)
-    const lrEnd = (cosineTrainer as any).cosineLR(9, 10, 0.1)
+    const cosineTrainer = new PRMTrainer({ lrSchedule: "cosine" }) as unknown as PRMTrainerInternals
+    const lr0 = cosineTrainer.cosineLR(0, 10, 0.1)
+    const lrMid = cosineTrainer.cosineLR(5, 10, 0.1)
+    const lrEnd = cosineTrainer.cosineLR(9, 10, 0.1)
     expect(lr0).toBeCloseTo(0.1, 5)
     expect(lrMid).toBeLessThan(lr0)
     expect(lrEnd).toBeLessThan(lrMid)
   })
 
   test("linearDecayLR produces expected range", () => {
-    const decayTrainer = new PRMTrainer({ lrSchedule: "linear_decay" })
-    const lr0 = (decayTrainer as any).linearDecayLR(0, 10, 0.1)
-    const lrMid = (decayTrainer as any).linearDecayLR(5, 10, 0.1)
-    const lrEnd = (decayTrainer as any).linearDecayLR(10, 10, 0.1)
+    const decayTrainer = new PRMTrainer({ lrSchedule: "linear_decay" }) as unknown as PRMTrainerInternals
+    const lr0 = decayTrainer.linearDecayLR(0, 10, 0.1)
+    const lrMid = decayTrainer.linearDecayLR(5, 10, 0.1)
+    const lrEnd = decayTrainer.linearDecayLR(10, 10, 0.1)
     expect(lr0).toBeCloseTo(0.1, 5)
     expect(lrMid).toBeCloseTo(0.05, 5)
     expect(lrEnd).toBe(0)
@@ -750,8 +758,9 @@ describe("ProcessRewardModel score cache", () => {
     expect(result1.score).toBeGreaterThanOrEqual(0)
 
     // Manually exercise the cache
-    ;(model as any).setCachedScore(state, action, 0.5)
-    const cached = (model as any).getCachedScore(state, action)
+    const modelInternals = model as unknown as ProcessRewardModelInternals
+    modelInternals.setCachedScore(state, action, 0.5)
+    const cached = modelInternals.getCachedScore(state, action)
     expect(cached).toBe(0.5)
   })
 })
@@ -772,11 +781,7 @@ describe("scoreCodeStep indent coverage", () => {
 describe("HeuristicStepScorer contradiction detection", () => {
   test("logic step with contradiction pattern is penalized", () => {
     const scorer = new HeuristicStepScorer()
-    const score = scorer.scoreStep(
-      "If P is true and P is false then we have a contradiction",
-      null,
-      "logic",
-    )
+    const score = scorer.scoreStep("If P is true and P is false then we have a contradiction", null, "logic")
     expect(score).toBeLessThan(0.5)
   })
 })

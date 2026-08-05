@@ -26,7 +26,7 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { Script, createContext } from "node:vm"
+import { Script, createContext, runInContext } from "node:vm"
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -180,6 +180,22 @@ export class DynamicWorkflowEngine {
 
   // ── Sandbox Execution ─────────────────────────────────────────────────
 
+  /**
+   * Execute a workflow script inside a `node:vm` context.
+   *
+   * Security notes:
+   *   - `node:vm` is NOT a security mechanism per Node.js documentation. This
+   *     method hardens the common escape vectors (host intrinsics and host
+   *     function constructor chains) so workflow scripts cannot reach the host
+   *     realm through the usual prototype/constructor tricks, but it must not
+   *     be relied upon against adversarial code. Use OS-level isolation for
+   *     untrusted scripts.
+   *   - Host functions are wrapped in context-realm functions before being
+   *     exposed, so `.constructor.constructor(...)` on them cannot evaluate
+   *     code in the host realm.
+   *   - The `input` value crosses the boundary as a JSON string only; host
+   *     object references and prototypes never enter the context.
+   */
   private async runInSandbox(ctx: WorkflowContext, script: string, input?: unknown): Promise<unknown> {
     this.nestingDepth++
 
@@ -190,50 +206,60 @@ export class DynamicWorkflowEngine {
 
     const primitives = this.buildPrimitives(ctx, input)
 
-    const sandbox = {
-      agent: primitives.agent,
-      parallel: primitives.parallel,
-      pipeline: primitives.pipeline,
-      workflow: primitives.workflow,
-      readFile: async (path: string) => {
-        const result = await this.sandboxReadFile(path)
-        await this.recordStep(ctx, "file_read", { path }, result)
-        return result
-      },
-      writeFile: async (path: string, data: string) => {
-        await this.sandboxWriteFile(path, data)
-        await this.recordStep(ctx, "file_write", { path, dataLength: data.length }, true)
-      },
-      log: async (message: string) => {
-        await this.recordStep(ctx, "log", { message }, undefined)
-        console.log(`[Workflow:${ctx.executionId}] ${message}`)
-      },
-      input,
-      console: {
-        log: (...args: unknown[]) => console.log(`[Workflow:${ctx.executionId}]`, ...args),
-        error: (...args: unknown[]) => console.error(`[Workflow:${ctx.executionId}]`, ...args),
-        warn: (...args: unknown[]) => console.warn(`[Workflow:${ctx.executionId}]`, ...args),
-      },
-      JSON,
-      Object,
-      Array,
-      String,
-      Number,
-      Boolean,
-      Date,
-      Math,
-      Promise,
-      setTimeout: undefined,
-      setInterval: undefined,
+    let inputJson = "null"
+    if (input !== undefined) {
+      try {
+        inputJson = JSON.stringify(input) ?? "null"
+      } catch {
+        this.nestingDepth--
+        throw new Error("Workflow input must be JSON-serializable")
+      }
     }
 
+    // The sandbox object becomes the context's globalThis. Do NOT pass host
+    // realm intrinsics (JSON, Object, Promise, ...) or raw host functions:
+    // their constructor chains would let script code reach the host realm.
+    const sandbox: Record<string, unknown> = { __inputJson: inputJson }
+
     const vmContext = createContext(sandbox)
+
+    // Wrapper compiled in the context realm: exposed functions carry the
+    // context's Function in their prototype chain, not the host's.
+    const wrapFn = runInContext("(fn) => (...args) => fn(...args)", vmContext) as <F>(fn: F) => F
+
+    sandbox.agent = wrapFn(primitives.agent)
+    sandbox.parallel = wrapFn(primitives.parallel)
+    sandbox.pipeline = wrapFn(primitives.pipeline)
+    sandbox.workflow = wrapFn(primitives.workflow)
+    sandbox.readFile = wrapFn(async (path: string) => {
+      const result = await this.sandboxReadFile(path)
+      await this.recordStep(ctx, "file_read", { path }, result)
+      return result
+    })
+    sandbox.writeFile = wrapFn(async (path: string, data: string) => {
+      await this.sandboxWriteFile(path, data)
+      await this.recordStep(ctx, "file_write", { path, dataLength: data.length }, true)
+    })
+    sandbox.log = wrapFn(async (message: string) => {
+      await this.recordStep(ctx, "log", { message }, undefined)
+      console.log(`[Workflow:${ctx.executionId}] ${message}`)
+    })
+
+    sandbox.__cl = wrapFn((...args: unknown[]) => console.log(`[Workflow:${ctx.executionId}]`, ...args))
+    sandbox.__ce = wrapFn((...args: unknown[]) => console.error(`[Workflow:${ctx.executionId}]`, ...args))
+    sandbox.__cw = wrapFn((...args: unknown[]) => console.warn(`[Workflow:${ctx.executionId}]`, ...args))
+    runInContext(
+      "globalThis.console = { log: globalThis.__cl, error: globalThis.__ce, warn: globalThis.__cw };" +
+        "globalThis.__cl = undefined; globalThis.__ce = undefined; globalThis.__cw = undefined;",
+      vmContext,
+    )
 
     try {
       const executable = this.transformScript(script)
 
       const wrapped = `
         (async () => {
+          const input = JSON.parse(globalThis.__inputJson);
           try {
             ${executable}
           } catch (err) {

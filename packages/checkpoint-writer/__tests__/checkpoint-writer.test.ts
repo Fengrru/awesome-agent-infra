@@ -199,7 +199,7 @@ describe("normalization", () => {
   test("intent falls back to legacy 'intent' key", async () => {
     await withTempWriter(async (writer) => {
       const raw = llmFields()
-      delete raw.current_intent
+      raw.current_intent = undefined
       raw.intent = "legacy intent"
       writer.setProvider(makeProvider(JSON.stringify(raw)))
       const path = await writer.write("sess1", HISTORY, false, 0)

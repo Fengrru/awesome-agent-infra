@@ -9,11 +9,11 @@
  * - Token-budget context assembly
  */
 
-import { beforeEach, describe, expect, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 
 import { MemoryType } from "@fengru/memory-engine-v2"
 import { UnifiedMemoryBridge } from "../src/bridge"
-import type { CoreRule, LongTermMemory, WorkingMemory } from "../src/bridge"
+import type { CoreRule, LongTermMemory } from "../src/bridge"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -107,7 +107,7 @@ describe("UnifiedMemoryBridge", () => {
     bridge.addToLayer("long-term item", MemoryType.LONG_TERM, 0.4)
 
     const workingResults = bridge.recall("item", 10, [MemoryType.WORKING])
-    const workingIds = new Set(workingResults.map(([item]) => item.id))
+    const _workingIds = new Set(workingResults.map(([item]) => item.id))
     // Should find the working memory item
     expect(workingResults.some(([item]) => item.memoryType === MemoryType.WORKING)).toBe(true)
   })
@@ -359,8 +359,8 @@ describe("UnifiedMemoryBridge", () => {
   test("assembleContext different vectors produce different L3", () => {
     const bridge = new UnifiedMemoryBridge()
     // Add engine items with embeddings
-    const item1 = bridge.addMemory("task A description", 0.5, undefined, { embedding: [1.0, 0.0, 0.0] })
-    const item2 = bridge.addMemory("task B description", 0.5, undefined, { embedding: [0.0, 1.0, 0.0] })
+    const _item1 = bridge.addMemory("task A description", 0.5, undefined, { embedding: [1.0, 0.0, 0.0] })
+    const _item2 = bridge.addMemory("task B description", 0.5, undefined, { embedding: [0.0, 1.0, 0.0] })
 
     // Without vector scoring, the results may overlap - verify the context is assembled
     const ctx1 = bridge.assembleContext("task A", [1.0, 0.0, 0.0])
@@ -411,7 +411,7 @@ describe("UnifiedMemoryBridge", () => {
     expect(json).toHaveProperty("transientMemories")
 
     const restored = new UnifiedMemoryBridge()
-    restored.fromJSON(json as any)
+    restored.fromJSON(json as unknown as Parameters<UnifiedMemoryBridge["fromJSON"]>[0])
 
     expect(restored.getCoreRules().length).toBe(1)
     expect(restored.getCoreRules()[0]!.rule_id).toBe("json-r1")

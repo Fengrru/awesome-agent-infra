@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { type FileTransaction, GitTransactionManager, createGitTransactionManager, threeWayMerge } from "../src/index"
+import { GitTransactionManager, createGitTransactionManager, threeWayMerge } from "../src/index"
 
 describe("GitTransactionManager (in-memory)", () => {
   let txm: GitTransactionManager

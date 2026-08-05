@@ -9,16 +9,17 @@
  *   - ArchiveConfig controls threshold, storage directory, compression
  *   - ArchiveDatabase interface for persistence layer (injectable)
  *   - EventArchiver orchestrates: shouldArchive, archive, loadArchive
- *   - Optional Bun.gzipSync/gunzipSync support via try/catch
- *   - Falls back to uncompressed JSON when Bun or gzip is unavailable
+ *   - Optional gzip compression via node:zlib
+ *   - Falls back to uncompressed JSON when gzip is unavailable
  *
- * Depends on Node.js fs/promises for file operations.
+ * Depends on Node.js fs/promises and zlib for file operations.
  *
  * @module archiver
  */
 
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
+import { gunzipSync, gzipSync } from "node:zlib"
 
 // ── Interfaces ──────────────────────────────────────────────────────────────
 
@@ -27,6 +28,12 @@ export interface ArchiveConfig {
   storageDir: string
   compress: boolean
   coldPrefix: string
+  /**
+   * Custom synchronous compression function used when `compress` is enabled.
+   * Return `null` (or throw) to fall back to uncompressed JSON.
+   * Defaults to `gzipSync` from `node:zlib`.
+   */
+  gzipFn?: (data: Uint8Array) => Uint8Array | Buffer | null
 }
 
 export const DEFAULT_ARCHIVE_CONFIG: ArchiveConfig = {
@@ -52,32 +59,14 @@ export interface ArchiveDatabase {
   getArchivedEvents(archiveId: string): Promise<Record<string, unknown>[]>
 }
 
-// ── Gzip Helpers (optional Bun support) ─────────────────────────────────────
-
-function tryGzipSync(data: Buffer | Uint8Array): Buffer | null {
-  if (typeof Bun !== "undefined") {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      const result = (Bun as any).gzipSync(data)
-      if (result) return Buffer.from(result)
-    } catch {
-      return null
-    }
-  }
-  return null
-}
+// ── Gzip Helpers (node:zlib, works on Node and Bun) ─────────────────────────────────────
 
 function tryGunzipSync(data: Buffer | Uint8Array): Buffer | null {
-  if (typeof Bun !== "undefined") {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      const result = (Bun as any).gunzipSync(data)
-      if (result) return Buffer.from(result)
-    } catch {
-      return null
-    }
+  try {
+    return gunzipSync(data)
+  } catch {
+    return null
   }
-  return null
 }
 
 // ── EventArchiver ───────────────────────────────────────────────────────────
@@ -115,8 +104,16 @@ export class EventArchiver {
     const jsonData = JSON.stringify(events)
     const buf = Buffer.from(jsonData, "utf-8")
 
-    // Try compression if enabled
-    const compressed = this.config.compress ? tryGzipSync(buf) : null
+    // Try compression if enabled (custom gzipFn may be injected for testing)
+    let compressed: Uint8Array | Buffer | null = null
+    if (this.config.compress) {
+      const fn = this.config.gzipFn ?? gzipSync
+      try {
+        compressed = fn(buf) ?? null
+      } catch {
+        compressed = null
+      }
+    }
     const fileData = compressed ?? buf
     const ext = compressed ? ".json.gz" : ".json"
     const fileName = `${archiveId}${ext}`
@@ -206,13 +203,6 @@ export class EventArchiver {
     }
   }
 }
-
-interface BunGlobal {
-  gzipSync?(data: Uint8Array | Buffer): Uint8Array | null
-  gunzipSync?(data: Uint8Array | Buffer): Uint8Array | null
-}
-
-declare let Bun: BunGlobal | undefined
 
 /**
  * Create a {@link EventArchiver} instance.

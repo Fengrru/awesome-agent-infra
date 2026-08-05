@@ -267,8 +267,12 @@ describe("HybridSearch - setCodeGraph", () => {
     const hybrid = new HybridSearch(tfidf)
 
     const mockGraph = {
-      getNodeCentrality(id) { return id === "doc1" ? 1.0 : 0 },
-      async searchNeighbors() { return [] },
+      getNodeCentrality(id) {
+        return id === "doc1" ? 1.0 : 0
+      },
+      async searchNeighbors() {
+        return []
+      },
     }
 
     hybrid.setCodeGraph(mockGraph)

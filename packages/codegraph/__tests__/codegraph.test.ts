@@ -24,7 +24,19 @@ import {
   hashesEqual,
   signatureChanged,
 } from "../src/index"
-import type { CallSite, CodeGraphEdge, CodeGraphNode, ExtractResult, ExtractorFn } from "../src/index"
+import type { BuildEvent, CallSite, CodeGraphEdge, CodeGraphNode, ExtractorFn } from "../src/index"
+
+/** Typed access to private members for white-box tests. */
+interface GraphInternals {
+  notify(event: BuildEvent): void
+}
+interface IncrementalParserInternals {
+  computeFileContentHash(entities: CodeGraphNode[]): string | undefined
+  resolveImportSimple(importSource: string, currentFile: string): string | null
+}
+interface WatcherInternals {
+  resolveImportSimple(importSource: string, currentFile: string): string | null
+}
 
 function makeNode(overrides?: Partial<CodeGraphNode>): CodeGraphNode {
   return {
@@ -359,15 +371,21 @@ describe("CodeGraph", () => {
   test("private notify calls observer without throwing", () => {
     const g = new CodeGraph()
     let called = false
-    g.addObserver(() => { called = true })
-    ;(g as any).notify({ type: "complete", phase: "build", message: "ok" })
+    g.addObserver(() => {
+      called = true
+    })
+    ;(g as unknown as GraphInternals).notify({ type: "complete", phase: "build", message: "ok" })
     expect(called).toBe(true)
   })
 
   test("notify swallows observer errors", () => {
     const g = new CodeGraph()
-    g.addObserver(() => { throw new Error("boom") })
-    expect(() => (g as any).notify({ type: "complete", phase: "build", message: "ok" })).not.toThrow()
+    g.addObserver(() => {
+      throw new Error("boom")
+    })
+    expect(() =>
+      (g as unknown as GraphInternals).notify({ type: "complete", phase: "build", message: "ok" }),
+    ).not.toThrow()
   })
 })
 
@@ -693,7 +711,7 @@ describe("CodeGraphWatcher", () => {
 
     const g = new CodeGraph()
     const watcher = new CodeGraphWatcher(g, tmpDir)
-    watcher.setExtractor(async (_fp, src, mtime) => ({
+    watcher.setExtractor(async (_fp, _src, mtime) => ({
       symbols: [
         {
           id: "symbol:hello",
@@ -731,14 +749,14 @@ describe("CodeGraphWatcher", () => {
   test("applyChanges modify replaces existing nodes", async () => {
     const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-test-"))
     const filePath = join(tmpDir, "mod.ts")
-    writeFileSync(filePath, `export function old() {}`)
+    writeFileSync(filePath, "export function old() {}")
 
     const g = new CodeGraph()
     g.addNode(makeNode({ id: "symbol:old", name: "old", filePath: "mod.ts", startLine: 1 }))
     g.addNode(makeNode({ id: "file:mod.ts", type: "file", name: "mod.ts", filePath: "mod.ts", symbolType: undefined }))
 
     const watcher = new CodeGraphWatcher(g, tmpDir)
-    watcher.setExtractor(async (_fp, src, mtime) => ({
+    watcher.setExtractor(async (_fp, _src, mtime) => ({
       symbols: [
         {
           id: "symbol:new",
@@ -1757,7 +1775,7 @@ describe("IncrementalParser", () => {
       makeNode({ id: "symbol:a", metadata: { contentHash: hashString("body_a") } }),
       makeNode({ id: "symbol:b", metadata: { signatureHash: hashString("sig_b") } }),
     ]
-    const hash = (parser as any).computeFileContentHash(entities)
+    const hash = (parser as unknown as IncrementalParserInternals).computeFileContentHash(entities)
     expect(typeof hash).toBe("string")
     expect(hash!.length).toBe(64)
   })
@@ -1766,7 +1784,7 @@ describe("IncrementalParser", () => {
     const g = new CodeGraph()
     const cs = new CallSiteStore()
     const parser = new IncrementalParser(g, cs, ".")
-    const hash = (parser as any).computeFileContentHash([])
+    const hash = (parser as unknown as IncrementalParserInternals).computeFileContentHash([])
     expect(hash).toBeUndefined()
   })
 
@@ -1777,7 +1795,7 @@ describe("IncrementalParser", () => {
     g.addNode(makeNode({ id: "file:utils", type: "file", filePath: "utils" }))
     const cs = new CallSiteStore()
     const parser = new IncrementalParser(g, cs, ".")
-    const resolved = (parser as any).resolveImportSimple("./utils", "index")
+    const resolved = (parser as unknown as IncrementalParserInternals).resolveImportSimple("./utils", "index")
     expect(resolved).toBe("utils")
   })
 
@@ -1785,7 +1803,7 @@ describe("IncrementalParser", () => {
     const g = new CodeGraph()
     const cs = new CallSiteStore()
     const parser = new IncrementalParser(g, cs, ".")
-    const resolved = (parser as any).resolveImportSimple("lodash", "src/main")
+    const resolved = (parser as unknown as IncrementalParserInternals).resolveImportSimple("lodash", "src/main")
     expect(resolved).toBeNull()
   })
 
@@ -1794,7 +1812,7 @@ describe("IncrementalParser", () => {
     g.setBidirectional(true)
     g.addNode(makeNode({ id: "file:lib", type: "file", filePath: "lib" }))
     const watcher = new CodeGraphWatcher(g, ".")
-    const resolved = (watcher as any).resolveImportSimple("./lib", "index")
+    const resolved = (watcher as unknown as WatcherInternals).resolveImportSimple("./lib", "index")
     expect(resolved).toBe("lib")
   })
 
@@ -1828,7 +1846,7 @@ describe("IncrementalParser", () => {
     expect(second.entities.length).toBe(0)
 
     // Changed content re-extracts
-    writeFileSync(filePath, `export function run() { return 2 }`)
+    writeFileSync(filePath, "export function run() { return 2 }")
     const third = await parser.processEdit({ filePath, editType: "modify" })
     expect(third.entities.length).toBeGreaterThan(0)
 
@@ -1904,7 +1922,7 @@ describe("IncrementalParser", () => {
   test("processEdit marks callers and overriders as stale neighbors", async () => {
     const tmpDir = mkdtempSync(join(tmpdir(), "codegraph-inc-neighbor-"))
     const filePath = join(tmpDir, "main.ts")
-    writeFileSync(filePath, `export function run() { return 1 }\n`, "utf-8")
+    writeFileSync(filePath, "export function run() { return 1 }\n", "utf-8")
 
     const g = new CodeGraph()
     g.setBidirectional(true)

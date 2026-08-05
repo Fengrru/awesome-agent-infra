@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import { type Capability, DEFAULT_MAX_MODE_CONFIG, MaxModeSampler, type ProviderAdapter, createMaxModeSampler } from "../src/index"
+import {
+  type Capability,
+  DEFAULT_MAX_MODE_CONFIG,
+  MaxModeSampler,
+  type ProviderAdapter,
+  createMaxModeSampler,
+} from "../src/index"
 
 function makeCapability(id: string): Capability {
   return { capability_id: id, description: `does ${id}` }
@@ -215,7 +221,7 @@ describe("heuristic judge scoring", () => {
 
     const result = await sampler.sampleAndSelect("goal", CAPS)
     expect(result.winner.id).toBe("candidate_0")
-    expect(result.judgeResult.scores["candidate_0"]!).toBeGreaterThan(result.judgeResult.scores["candidate_1"]!)
+    expect(result.judgeResult.scores.candidate_0!).toBeGreaterThan(result.judgeResult.scores.candidate_1!)
   })
 })
 

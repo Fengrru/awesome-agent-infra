@@ -13,7 +13,7 @@ import {
   TransformerLayer,
 } from "../src/index"
 
-function makeFakeStreamFeatures(seqLen: number = 5, hiddenSize: number = 64): StreamFeatures {
+function makeFakeStreamFeatures(seqLen = 5, hiddenSize = 64): StreamFeatures {
   const hiddenStates: number[][] = []
   for (let i = 0; i < seqLen; i++) {
     const row: number[] = []
@@ -247,7 +247,7 @@ describe("TransformerLayer", () => {
     // Should produce finite values
     for (const row of output) {
       for (const v of row) {
-        expect(isFinite(v)).toBe(true)
+        expect(Number.isFinite(v)).toBe(true)
       }
     }
   })
@@ -302,8 +302,8 @@ describe("MetacognitiveTransformer", () => {
     const output1 = model.forward(features1)
     const output2 = model.forward(features2)
     // Mean confidences should differ with different random features
-    const mean1 = output1.confidence.reduce((a, b) => a + b, 0) / output1.confidence.length
-    const mean2 = output2.confidence.reduce((a, b) => a + b, 0) / output2.confidence.length
+    const _mean1 = output1.confidence.reduce((a, b) => a + b, 0) / output1.confidence.length
+    const _mean2 = output2.confidence.reduce((a, b) => a + b, 0) / output2.confidence.length
     // Not guaranteed to differ but extremely likely with different inputs
     expect(output1.confidence.length).toBe(output2.confidence.length)
   })
@@ -351,7 +351,7 @@ describe("FeatureExtractor", () => {
     const features = extractor.extract(hiddenStates, attentionWeights, [0, 0, 0])
     for (const e of features.attentionEntropy) {
       expect(e).toBeGreaterThanOrEqual(0)
-      expect(isFinite(e)).toBe(true)
+      expect(Number.isFinite(e)).toBe(true)
     }
   })
 
@@ -420,8 +420,8 @@ describe("ConfidenceCalibrator", () => {
     expect(history.confidenceLosses.length).toBe(5)
     expect(history.calibrationErrors.length).toBe(5)
 
-    expect(history.finalLoss).toBeGreaterThan(-Infinity)
-    expect(history.finalLoss).toBeLessThan(Infinity)
+    expect(history.finalLoss).toBeGreaterThan(Number.NEGATIVE_INFINITY)
+    expect(history.finalLoss).toBeLessThan(Number.POSITIVE_INFINITY)
   })
 
   test("train calls onEpoch callback", () => {
@@ -631,7 +631,7 @@ describe("Edge cases", () => {
     const calibrator = new ConfidenceCalibrator(64, smallConfig)
     const result = calibrator.calibrate(features)
     expect(result.confidence).toBeDefined()
-    expect(isNaN(result.confidence)).toBe(false)
+    expect(Number.isNaN(result.confidence)).toBe(false)
   })
 
   test("uniform hidden states", () => {
@@ -642,8 +642,8 @@ describe("Edge cases", () => {
     }
     const calibrator = new ConfidenceCalibrator(64, smallConfig)
     const result = calibrator.calibrate(features)
-    expect(isNaN(result.confidence)).toBe(false)
-    expect(isNaN(result.difficulty)).toBe(false)
+    expect(Number.isNaN(result.confidence)).toBe(false)
+    expect(Number.isNaN(result.difficulty)).toBe(false)
   })
 
   test("large hidden size configuration", () => {
@@ -704,7 +704,7 @@ describe("Edge cases", () => {
 
     const history = calibrator.train(batches, 8, 0.005)
     expect(history.epochs.length).toBe(8)
-    expect(history.losses.every((l) => !isNaN(l))).toBe(true)
+    expect(history.losses.every((l) => !Number.isNaN(l))).toBe(true)
   })
 
   test("FeatureExtractor with identically distributed attention", () => {
@@ -728,7 +728,7 @@ describe("Edge cases", () => {
       tokenLogLikelihoods: [0, 0, 0],
     }
     const result = calibrator.calibrate(features)
-    expect(isNaN(result.confidence)).toBe(false)
+    expect(Number.isNaN(result.confidence)).toBe(false)
     expect(result.ece).toBeGreaterThanOrEqual(0)
   })
 })

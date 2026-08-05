@@ -36,8 +36,7 @@
         "noUnusedVariables": "warn",
         "noUnusedImports": "warn"
       }
-    },
-
+    }
   },
   "javascript": {
     "formatter": {

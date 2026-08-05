@@ -76,7 +76,7 @@ describe("ValidationNetwork", () => {
     })
 
     test("LLM review callback is used when provided", async () => {
-      const mockLLM = async (output: string, goal: string) => ({
+      const mockLLM = async (_output: string, _goal: string) => ({
         score: 0.95,
         report: "Output perfectly matches the goal",
       })

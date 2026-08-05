@@ -9,25 +9,19 @@
  *   - SessionBranch tracks parent, status, creation timestamp, and metadata
  *   - BranchDatabase is an abstract interface for persistence (injectable)
  *   - BranchManager orchestrates fork/merge/abandon lifecycle
- *   - UUID generation via crypto.randomUUID() with fallback to Math.random
+ *   - UUID generation via node:crypto randomUUID
  *
  * Zero runtime dependencies.
  *
  * @module branch
  */
 
+import { randomUUID } from "node:crypto"
+
 // ── UUID Generation ─────────────────────────────────────────────────────────
 
 function generateUUID(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-  // Fallback: RFC4122 v4 UUID
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === "x" ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+  return randomUUID()
 }
 
 // ── Types ───────────────────────────────────────────────────────────────────

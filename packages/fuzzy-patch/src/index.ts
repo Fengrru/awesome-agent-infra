@@ -240,18 +240,14 @@ function strategyHeadTailAnchor(content: string, oldStr: string): MatchResult | 
 
   for (const start of candidates) {
     const expectedTailPos = start + oldStr.length - tailLen
-    if (expectedTailPos <= content.length && content.slice(expectedTailPos, expectedTailPos + tailLen) === tail) {
-      const middle = content.slice(start + headLen, expectedTailPos)
-      const oldMiddle = oldStr.slice(headLen, oldStr.length - tailLen)
-      if (middle.length > 0 && oldMiddle.length > 0) {
-        const maxEdit = Math.max(middle.length, oldMiddle.length) * 0.4
-        if (levenshtein(middle, oldMiddle) <= maxEdit) {
-          return { index: start, length: expectedTailPos + tailLen - start }
-        }
-      } else {
-        return { index: start, length: expectedTailPos + tailLen - start }
-      }
-    }
+    const tailFound =
+      expectedTailPos <= content.length && content.slice(expectedTailPos, expectedTailPos + tailLen) === tail
+    if (!tailFound) continue
+    const middle = content.slice(start + headLen, expectedTailPos)
+    const oldMiddle = oldStr.slice(headLen, oldStr.length - tailLen)
+    const maxEdit = Math.max(middle.length, oldMiddle.length) * 0.4
+    if (levenshtein(middle, oldMiddle) > maxEdit) continue
+    return { index: start, length: expectedTailPos + tailLen - start }
   }
   return null
 }

@@ -89,7 +89,7 @@ describe("generateDAG with LLM caller", () => {
 
   test("extracts JSON embedded in prose (markdown fences)", async () => {
     const gen = new DAGGenerator()
-    gen.setLLMCaller(async () => "Here is the plan:\n```json\n" + VALID_DAG_JSON + "\n```\nDone.")
+    gen.setLLMCaller(async () => `Here is the plan:\n\`\`\`json\n${VALID_DAG_JSON}\n\`\`\`\nDone.`)
     const dag = await gen.generateDAG("goal", [makeCapability("read_file")])
     expect(dag.nodes.length).toBe(2)
   })

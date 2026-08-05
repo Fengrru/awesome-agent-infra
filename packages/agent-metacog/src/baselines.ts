@@ -12,8 +12,6 @@ import { mean, sigmoid } from "./linalg"
 
 // biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class CalibrationBaselines {
-  constructor() {}
-
   static rawConfidence(features: StreamFeatures): number {
     const likes = features.tokenLogLikelihoods
     const n = likes.length
@@ -149,9 +147,9 @@ export class CalibrationBaselines {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class FeatureExtractor {
-  readonly config: any
+  readonly config: Record<string, unknown>
 
-  constructor(config?: any) {
+  constructor(config: Record<string, unknown> = {}) {
     this.config = { ...config }
   }
 

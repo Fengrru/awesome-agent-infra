@@ -275,8 +275,6 @@ export function threeWayMerge(base: string, ours: string, theirs: string): Merge
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export class GitTransactionManager {
-  constructor() {}
-
   private staging: Map<string, string> = new Map()
   private activeTransaction: FileTransaction | null = null
 

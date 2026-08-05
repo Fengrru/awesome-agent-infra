@@ -3,6 +3,8 @@
  * @module memory-engine-v2/types
  */
 
+import { randomUUID } from "node:crypto"
+
 // ─── Enums ─────────────────────────────────────────────────────────────
 
 export enum MemoryType {
@@ -165,11 +167,7 @@ export const DEFAULT_ATTENTION_CONFIG: AttentionConfig = {
 // ─── Helper functions ──────────────────────────────────────────────────
 
 export function generateId(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0
-    const v = c === "x" ? r : (r & 0x3) | 0x8
-    return v.toString(16)
-  })
+  return randomUUID()
 }
 
 export function clamp(value: number, min: number, max: number): number {

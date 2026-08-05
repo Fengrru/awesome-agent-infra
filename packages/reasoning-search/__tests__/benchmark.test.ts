@@ -22,7 +22,7 @@ import { resetNodeCounter } from "../src/utils"
 // ---------------------------------------------------------------------------
 
 function measure(
-  label: string,
+  _label: string,
   fn: () => void,
   iterations = 100,
 ): { opsPerSec: number; avgMs: number; totalMs: number } {
@@ -217,7 +217,7 @@ describe("benchmark: full MCTS simulation (mock)", () => {
         if (node.depth < 15) {
           const candidates = await mockGenerate(node.state, 3)
           for (const candidate of candidates) {
-            const child = createNode(node.state + "\n" + candidate, candidate, node)
+            const child = createNode(`${node.state}\n${candidate}`, candidate, node)
             node.children.push(child)
           }
 

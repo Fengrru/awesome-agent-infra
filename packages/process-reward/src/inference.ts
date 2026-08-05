@@ -17,8 +17,6 @@ import type { GenerateFn, SegmentedPRMStep, StepSegmentKind, TaskType, Verificat
  */
 // biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class StepSegmenter {
-  constructor() {}
-
   /**
    * Classify a single step into its rhetorical kind.
    * Priority: IMPLICATION → ASSERTION → EQUATION → CONCLUSION → UNKNOWN
@@ -99,8 +97,6 @@ const BLOCKED_CODE_MODULES = new Set([
  */
 // biome-ignore lint/complexity/noStaticOnlyClass: public API shape, kept for backward compatibility
 export class VerifierPool {
-  constructor() {}
-
   /**
    * Verify a math answer against ground truth.
    * Handles: #### format, fraction normalization, comma-separated numbers.

@@ -30,8 +30,6 @@ function edgeKey(sourceId: string, relation: string, targetId: string): string {
 }
 
 export class CodeGraph {
-  constructor() {}
-
   private _nodes = new Map<string, CodeGraphNode>()
   private _fileIndex = new Map<string, Set<string>>()
   private _outgoing = new Map<string, Map<EdgeRelation, Set<string>>>()

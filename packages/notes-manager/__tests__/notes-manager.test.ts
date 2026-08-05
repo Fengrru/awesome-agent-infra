@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+import { afterAll, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -253,7 +253,7 @@ describe("in-memory fallback backend", () => {
       await mgr.deleteSession(sid)
       expect(await mgr.readAll(sid)).toEqual([])
     } finally {
-      delete process.env.NOTES_MANAGER_BACKEND
+      process.env.NOTES_MANAGER_BACKEND = undefined
     }
   })
 })

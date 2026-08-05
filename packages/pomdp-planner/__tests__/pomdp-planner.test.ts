@@ -3,12 +3,10 @@ import {
   type Action,
   ActionRegistry,
   type BeliefState,
-  DEFAULT_POMDP_CONFIG,
   type Observation,
   type POMDPConfig,
   POMDPPlanner,
   type POMDPState,
-  type Particle,
   ParticleFilter,
   QMDPSolver,
   StateHasher,
@@ -524,7 +522,7 @@ describe("QMDPSolver", () => {
     const qValues = solver.computeQValues(belief, actions, gridTransition, gridReward)
 
     for (const qv of qValues) {
-      expect(isFinite(qv.qValue)).toBe(true)
+      expect(Number.isFinite(qv.qValue)).toBe(true)
     }
   })
 
@@ -650,7 +648,7 @@ describe("POMDPPlanner - grid world", () => {
     }
 
     const planner = new POMDPPlanner(actions, config)
-    const result = planner.plan(createState({ x: 0, y: 0 }, 0), goal, gridTransition, gridReward, { maxSteps: 5 })
+    const _result = planner.plan(createState({ x: 0, y: 0 }, 0), goal, gridTransition, gridReward, { maxSteps: 5 })
 
     const meta = planner.getMetadata()
     expect(meta.particlesGenerated).toBeGreaterThan(0)
@@ -947,17 +945,17 @@ describe("Integration", () => {
       cost: 1,
     }))
 
-    let targetSeen = false
+    let _targetSeen = false
     const transition = (s: POMDPState, a: Action): POMDPState => {
       if (a.id === "action_19") {
-        targetSeen = true
+        _targetSeen = true
         return createState({ target: "reached" }, s.step + 1, s.id, 100)
       }
       return createState(
-        { pos: parseInt(a.id.split("_")[1]!) },
+        { pos: Number.parseInt(a.id.split("_")[1]!) },
         s.step + 1,
         s.id,
-        Math.abs(parseInt(a.id.split("_")[1]!) - 19),
+        Math.abs(Number.parseInt(a.id.split("_")[1]!) - 19),
       )
     }
 

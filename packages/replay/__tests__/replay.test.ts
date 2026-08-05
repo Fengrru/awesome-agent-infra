@@ -1,12 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-  type ReplayEvent,
-  type ReplayMode,
-  type ReplayResult,
-  SessionReplayer,
-  type StateMachineLike,
-  createSessionReplayer,
-} from "../src/index"
+import { type ReplayEvent, SessionReplayer, type StateMachineLike, createSessionReplayer } from "../src/index"
 
 function makeEvent(overrides?: Partial<ReplayEvent>): ReplayEvent {
   return {
@@ -100,7 +93,7 @@ describe("SessionReplayer", () => {
       makeEvent({ eventId: "c", timestamp: 300, destructive: false }),
     ])
 
-    const result = await replayer.replay("read-only", async (event) => {
+    const _result = await replayer.replay("read-only", async (event) => {
       executed.push(event.eventId)
     })
 
@@ -201,9 +194,7 @@ describe("internal helpers", () => {
       restore: () => {},
     }
     const replayer = createSessionReplayer(machine, () => ({ valid: false, error: "bad dag" }))
-    replayer.loadEvents([
-      makeEvent({ eventId: "x", timestamp: 1, stateTransition: { from: "IDLE", to: "RUN" } }),
-    ])
+    replayer.loadEvents([makeEvent({ eventId: "x", timestamp: 1, stateTransition: { from: "IDLE", to: "RUN" } })])
     const result = await replayer.replay("dry-run")
     expect(result.stateTrajectory[0]!.state).toBe("RUN")
   })
@@ -234,9 +225,11 @@ describe("internal helpers", () => {
 
   test("default DAG validator accepts any DAG", () => {
     const replayer = new SessionReplayer()
-    const validate = (replayer as unknown as {
-      validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
-    }).validateDAG
+    const validate = (
+      replayer as unknown as {
+        validateDAG: (dag: Record<string, unknown>) => { valid: boolean; error?: string }
+      }
+    ).validateDAG
     expect(validate({ nodes: [], edges: [] }).valid).toBe(true)
   })
 })

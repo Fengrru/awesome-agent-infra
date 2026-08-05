@@ -9,6 +9,12 @@ export interface SandboxConfig {
   memoryLimitMb: number
   blockedModules: string[]
   allowedEnvironment: string[]
+  /**
+   * Reject code containing dynamic `import()` before execution.
+   * Dynamic imports bypass the require-hook defense layer, so they are
+   * blocked by default. Default: `false` (blocked).
+   */
+  allowDynamicImport: boolean
 }
 
 export interface ExecutionResult {
@@ -32,9 +38,29 @@ export interface VerificationResult {
 export const DEFAULT_SANDBOX_CONFIG: SandboxConfig = {
   timeoutMs: 10000,
   memoryLimitMb: 512,
-  blockedModules: ["child_process", "fs", "net", "http", "os", "cluster", "worker_threads"],
+  blockedModules: [
+    "child_process",
+    "fs",
+    "net",
+    "http",
+    "https",
+    "os",
+    "cluster",
+    "worker_threads",
+    "module",
+    "vm",
+    "v8",
+    "dns",
+    "dgram",
+    "tls",
+    "inspector",
+  ],
   allowedEnvironment: ["PATH", "HOME", "TMPDIR", "TEMP"],
+  allowDynamicImport: false,
 }
+
+/** Matches dynamic `import(...)` call expressions (heuristic, string-based). */
+const DYNAMIC_IMPORT_PATTERN = /\bimport\s*\(/
 
 export const DEFAULT_MATH_VERIFIER_TOLERANCE = 1e-5
 
@@ -154,6 +180,23 @@ export class MathVerifier {
   }
 }
 
+/**
+ * Executes untrusted code in a child Node.js process with layered defenses.
+ *
+ * Defense layers:
+ *   1. `Module._load` hook — every require path (including `node:`-prefixed
+ *      ids and subpaths like `fs/promises`) is checked against blockedModules.
+ *   2. Dangerous `process` methods (binding, spawnSync, exec*, kill, ...) are
+ *      replaced with throwing stubs before user code runs.
+ *   3. Dynamic `import()` is rejected statically (it bypasses require hooks).
+ *   4. Environment variables are filtered via `allowedEnvironment`.
+ *
+ * **Security disclaimer**: this is a defense-in-depth mitigation, NOT a true
+ * isolation boundary. A determined adversary with arbitrary code execution
+ * may still escape a same-process JavaScript sandbox. For adversarial
+ * untrusted code, run this executor inside OS-level isolation (containers,
+ * VMs, or dedicated unprivileged users).
+ */
 export class SecureExecutor {
   config: SandboxConfig
 
@@ -163,6 +206,18 @@ export class SecureExecutor {
 
   execute(code: string, stdin?: string): Promise<ExecutionResult> {
     const startTime = Date.now()
+
+    if (!this.config.allowDynamicImport && DYNAMIC_IMPORT_PATTERN.test(code)) {
+      return Promise.resolve({
+        stdout: "",
+        stderr: "Error: dynamic import() is not allowed in sandbox",
+        exitCode: 1,
+        timedOut: false,
+        durationMs: Date.now() - startTime,
+        error: "Dynamic import() is not allowed in sandbox",
+      })
+    }
+
     const tempFile = join(tmpdir(), `sandbox-${randomUUID()}.js`)
 
     const wrapped = this.buildWrapper(code)
@@ -242,16 +297,52 @@ export class SecureExecutor {
     return [
       "(function() {",
       `  var _blocked = ${blockedModules};`,
+      "  function _isBlocked(id) {",
+      "    if (typeof id !== 'string') return true;",
+      "    var norm = id.indexOf('node:') === 0 ? id.slice(5) : id;",
+      "    var base = norm.split('/')[0];",
+      "    for (var i = 0; i < _blocked.length; i++) {",
+      "      var b = _blocked[i];",
+      "      var nb = b.indexOf('node:') === 0 ? b.slice(5) : b;",
+      "      if (norm === nb || base === nb) return true;",
+      "    }",
+      "    return false;",
+      "  }",
       "  try {",
       "    var Module = require('module');",
+      "    var _origLoad = Module._load;",
+      "    Module._load = function(request, parent, isMain) {",
+      "      if (_isBlocked(request)) {",
+      "        throw new Error('Access to module \\'' + request + '\\' is blocked in sandbox');",
+      "      }",
+      "      return _origLoad.apply(this, arguments);",
+      "    };",
       "    var _origRequire = Module.prototype.require;",
       "    Module.prototype.require = function(id) {",
-      "      if (_blocked.indexOf(id) !== -1) {",
+      "      if (_isBlocked(id)) {",
       "        throw new Error('Access to module \\'' + id + '\\' is blocked in sandbox');",
       "      }",
       "      return _origRequire.apply(this, arguments);",
       "    };",
       "  } catch (_e) {}",
+      "  try {",
+      "    var _dangerous = ['binding', '_linkedBinding', 'dlopen', 'spawnSync',",
+      "      'exec', 'execSync', 'execFile', 'execFileSync', 'kill',",
+      "      '_debugProcess', '_debugEnd'];",
+      "    for (var _i = 0; _i < _dangerous.length; _i++) {",
+      "      (function(name) {",
+      "        try {",
+      "          Object.defineProperty(process, name, {",
+      "            value: function() {",
+      "              throw new Error('process.' + name + ' is disabled in sandbox');",
+      "            },",
+      "            writable: false,",
+      "            configurable: false,",
+      "          });",
+      "        } catch (_e2) {}",
+      "      })(_dangerous[_i]);",
+      "    }",
+      "  } catch (_e3) {}",
       userCode,
       "})();",
     ].join("\n")
@@ -341,8 +432,6 @@ export class CodeVerifier {
 }
 
 export class LogicVerifier {
-  constructor() {}
-
   verify(generated: string, reference: string): VerificationResult {
     const genWords = new Set(generated.toLowerCase().split(/\W+/).filter(Boolean))
     const refWords = new Set(reference.toLowerCase().split(/\W+/).filter(Boolean))

@@ -18,8 +18,6 @@ import type {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export class SleepConsolidator {
-  constructor() {}
-
   private stage: SleepStage = "awake"
   private transferredCount = 0
   private createdAssociations = 0

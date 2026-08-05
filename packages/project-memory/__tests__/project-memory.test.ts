@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createProjectMemoryManager, DEFAULT_CONFIG, type Discovery, ProjectMemoryManager } from "../src/index"
+import { DEFAULT_CONFIG, type Discovery, ProjectMemoryManager, createProjectMemoryManager } from "../src/index"
 
 async function withTempFile(fn: (filePath: string) => Promise<void>): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), "project-memory-test-"))

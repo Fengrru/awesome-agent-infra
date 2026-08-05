@@ -30,6 +30,14 @@
 - [mem_1785719148831_d4803g] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
 - [mem_1785719148968_o9w1ox] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
 - [mem_1785719149091_7st3jz] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785909787070_cwg0kx] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785909787585_dy7ori] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785909787740_hfn7u5] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785909787877_s1we6l] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785911212431_15wr4c] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785911212916_6enb1a] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785911213055_vcwxy0] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
+- [mem_1785911213197_yuzwos] Mini-CRM: a lightweight user management service with auth, persistence, and HTTP handlers.
 
 ## Architecture Decisions
 
@@ -88,6 +96,22 @@
 - [mem_1785719148968_cavacc] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
   [conf:0.90]
 - [mem_1785719149092_tf68u7] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785909787071_85fsj8] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785909787585_244hhu] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785909787740_9vi540] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785909787877_tz4gs7] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785911212434_5ynb21] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785911212917_i8htp8] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785911213055_p4kh4t] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
+  [conf:0.90]
+- [mem_1785911213197_rewxfw] Auth module uses bcrypt for password hashing. Repo layer uses PostgreSQL via Drizzle ORM.
   [conf:0.90]
 
 ## Verified Facts

@@ -262,7 +262,7 @@ describe("isComplete / allSucceeded", () => {
 
   test("allSucceeded true when completed or blocked only", () => {
     const dag = makeLinearDAG()
-    dag.nodes.forEach((n) => (n.status = "completed"))
+    for (const n of dag.nodes) n.status = "completed"
     expect(allSucceeded(dag)).toBe(true)
     dag.nodes[2]!.status = "blocked"
     expect(allSucceeded(dag)).toBe(true)

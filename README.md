@@ -18,7 +18,7 @@ Zero runtime dependencies. Plug into any framework.
 
 - **Zero dependencies, zero conflicts.** Every one of the 42 packages ships with no external runtime dependencies — drop them into any agent stack without version fights or bloat.
 - **One package per concern.** Memory, patching, validation, search, workflows, self-evolution — each building block is isolated, typed, and testable on its own.
-- **Production-grade by default.** Every package carries tests, an 85%+ coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
+- **Production-grade by default.** Every package carries tests, a 100% coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
 - **TypeScript-native.** Written in strict TypeScript 5.8 with ESM-only output, so your IDE and compiler see exactly what your agent runs.
 
 ## Quick Start
@@ -205,7 +205,7 @@ bun install                          # Install all dependencies
 bun run build                        # Build all packages (42 packages)
 bun run test                         # Run all tests
 bun run lint                         # Biome strict lint
-bun scripts/check-coverage.ts        # Coverage gate (85%+ per package)
+bun scripts/check-coverage.ts        # Coverage gate (100% per package)
 bun run benchmarks/run-all.ts        # Micro-benchmarks
 ```
 

@@ -5,9 +5,9 @@ import { join } from "node:path"
 import {
   DEFAULT_WORKFLOW_CONFIG,
   DynamicWorkflowEngine,
-  createDynamicWorkflowEngine,
   type IAgentDispatcher,
   type WorkflowContext,
+  createDynamicWorkflowEngine,
 } from "../src/index"
 
 async function withTempEngine(
@@ -67,6 +67,30 @@ describe("execute — sandbox basics", () => {
       expect(await engine.execute("s1", "typeof setTimeout")).toBe("undefined")
       expect(await engine.execute("s1", "typeof process")).toBe("undefined")
       expect(await engine.execute("s1", "typeof require")).toBe("undefined")
+    })
+  })
+
+  test("host realm is not reachable via function constructor chains", async () => {
+    await withTempEngine(async (engine) => {
+      await expect(engine.execute("s1", "log.constructor.constructor('return process')()")).rejects.toThrow()
+      expect(await engine.execute("s1", "readFile.constructor.constructor('return typeof process')()")).toBe(
+        "undefined",
+      )
+    })
+  })
+
+  test("input crosses the boundary as plain context-realm data", async () => {
+    await withTempEngine(async (engine) => {
+      const result = await engine.execute("s1", "input.constructor === Object", { a: 1 })
+      expect(result).toBe(true)
+    })
+  })
+
+  test("non-serializable input is rejected", async () => {
+    await withTempEngine(async (engine) => {
+      const circular: Record<string, unknown> = {}
+      circular.self = circular
+      await expect(engine.execute("s1", "1 + 1", circular)).rejects.toThrow("JSON-serializable")
     })
   })
 

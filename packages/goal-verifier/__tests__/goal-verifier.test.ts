@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import { DEFAULT_GOAL_VERIFIER_CONFIG, type GoalContext, GoalVerifier, type ProviderAdapter, createGoalVerifier } from "../src/index"
+import {
+  DEFAULT_GOAL_VERIFIER_CONFIG,
+  type GoalContext,
+  GoalVerifier,
+  type ProviderAdapter,
+  createGoalVerifier,
+} from "../src/index"
 
 function makeContext(overrides?: Partial<GoalContext>): GoalContext {
   return {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { createMemorySystem, MemorySystem } from "../src/index"
+import { MemorySystem, createMemorySystem } from "../src/index"
 import type { CoreRule, LongTermMemory, MemoryDatabase, WorkingMemory } from "../src/index"
 
 function createMem(overrides?: Partial<LongTermMemory>): LongTermMemory {

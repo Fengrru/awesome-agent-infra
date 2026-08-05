@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import { type ISkillManager, type ProviderAdapter, SkillCurator, type SkillListItem, createSkillCurator } from "../src/index"
+import {
+  type ISkillManager,
+  type ProviderAdapter,
+  SkillCurator,
+  type SkillListItem,
+  createSkillCurator,
+} from "../src/index"
 
 const DAY = 24 * 60 * 60 * 1000
 

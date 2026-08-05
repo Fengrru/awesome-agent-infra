@@ -70,7 +70,7 @@ function createMockSymbolSearcher(): ISymbolSearcher {
       edges: [],
       estimatedTokens: 10,
     }),
-    flattenResults: (results: SearchResult[], _opts?: any): string => {
+    flattenResults: (results: SearchResult[], _opts?: unknown): string => {
       return results.map((r) => r.node.name).join("\n")
     },
   }
@@ -104,7 +104,7 @@ describe("SearchToolRegistry", () => {
 
   test("get returns undefined for unknown tool", () => {
     const registry = new SearchToolRegistry()
-    expect(registry.get("code_symbol" as any)).toBeUndefined()
+    expect(registry.get("code_symbol" as never)).toBeUndefined()
   })
 
   test("getAll returns all tools", () => {

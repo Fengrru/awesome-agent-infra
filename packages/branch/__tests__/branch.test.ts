@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type BranchDatabase, BranchManager, createBranchManager, type BranchStatus, type SessionBranch } from "../src/index"
+import { type BranchDatabase, BranchManager, createBranchManager } from "../src/index"
 
 function makeDB(): BranchDatabase & { copyLogCalls: number; copyCheckpointCalls: number } {
   return {
@@ -49,7 +49,7 @@ describe("BranchManager", () => {
   test("fork calls database copy methods when database is set", async () => {
     const db = makeDB()
     const manager = new BranchManager(db)
-    const branch = await manager.fork("main")
+    const _branch = await manager.fork("main")
     expect(db.copyLogCalls).toBe(1)
     expect(db.copyCheckpointCalls).toBe(1)
   })

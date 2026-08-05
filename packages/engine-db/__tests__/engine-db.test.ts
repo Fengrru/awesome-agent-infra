@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite"
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { EngineDatabase, createEngineDatabase, type ISQLiteDatabase, type ISQLiteStatement } from "../src/index"
+import { EngineDatabase, type ISQLiteDatabase, type ISQLiteStatement, createEngineDatabase } from "../src/index"
 
 // bun:sqlite → ISQLiteDatabase adapter
 function bunAdapter(db: Database): ISQLiteDatabase {
@@ -12,7 +12,7 @@ function bunAdapter(db: Database): ISQLiteDatabase {
       return db.prepare(sql) as unknown as ISQLiteStatement
     },
     run(sql: string, ...params: unknown[]): void {
-      ;(db.run as any)(sql, ...params)
+      ;(db.run as unknown as (sql: string, ...params: unknown[]) => void)(sql, ...params)
     },
     transaction<T>(fn: () => T): () => T {
       return db.transaction(fn) as unknown as () => T
@@ -509,8 +509,8 @@ describe("EngineDatabase", () => {
 
     const sess = engineDb.getSession("sess-1")
     expect(sess).not.toBeNull()
-    expect((sess as any).title).toBe("Test Session")
-    expect((sess as any).status).toBe("active")
+    expect(sess?.title).toBe("Test Session")
+    expect(sess?.status).toBe("active")
   })
 
   test("getSession returns null for nonexistent session", () => {
@@ -526,7 +526,7 @@ describe("EngineDatabase", () => {
 
     engineDb.updateSessionStatus("sess-status", "completed")
     const sess = engineDb.getSession("sess-status")
-    expect((sess as any).status).toBe("completed")
+    expect(sess?.status).toBe("completed")
   })
 
   test("updateSessionStatus updates with checkpoint", () => {
@@ -537,8 +537,8 @@ describe("EngineDatabase", () => {
 
     engineDb.updateSessionStatus("sess-cp", "paused", "cp-123")
     const sess = engineDb.getSession("sess-cp")
-    expect((sess as any).status).toBe("paused")
-    expect((sess as any).current_checkpoint_id).toBe("cp-123")
+    expect(sess?.status).toBe("paused")
+    expect(sess?.current_checkpoint_id).toBe("cp-123")
   })
 
   // ─── Agent Self Rules ─────────────────────────────────────────

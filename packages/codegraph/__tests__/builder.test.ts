@@ -19,6 +19,19 @@ beforeEach(() => {
   setExtractorDependencies({})
 })
 
+/** Typed access to CodeGraphBuilder private members for white-box tests. */
+interface BuilderInternals {
+  buildTypeUsageEdges(symbols: CodeGraphNode[]): void
+  buildInheritanceEdges(symbols: CodeGraphNode[]): void
+  buildDataFlowEdges(symbols: CodeGraphNode[]): void
+  buildTestCoverEdges(symbols: CodeGraphNode[]): void
+  resolveImportPath(sourceFile: string, importSource: string): string | null
+}
+
+function internals(builder: CodeGraphBuilder): BuilderInternals {
+  return builder as unknown as BuilderInternals
+}
+
 const UTIL_SOURCE = `export function add(a: number, b: number): number {
   return a + b
 }
@@ -145,7 +158,13 @@ describe("CodeGraphBuilder", () => {
     builder.addObserver((event) => events.push(event))
     // Graph-level events (e.g. future addNode/removeNode notifications) are
     // forwarded to builder observers via the constructor-registered hook.
-    ;(builder.graph as any).notify({ type: "index", phase: "index", message: "manual", nodeCount: 1, edgeCount: 0 })
+    ;(builder.graph as unknown as { notify(event: BuildEvent): void }).notify({
+      type: "index",
+      phase: "index",
+      message: "manual",
+      nodeCount: 1,
+      edgeCount: 0,
+    })
     expect(events.length).toBe(1)
     expect(events[0]!.type).toBe("index")
   })
@@ -221,8 +240,7 @@ export function processUsers(users: Array<User>): void {}
         parameters: [{ name: "users", type: "User" }],
       },
     })
-
-    ;(builder as any).buildTypeUsageEdges([typeEnt, user])
+    internals(builder).buildTypeUsageEdges([typeEnt, user])
     const edges = builder.graph.getEdges(undefined, "type_uses")
     expect(edges.some((e) => e.sourceId === "symbol:User" && e.targetId === "symbol:createUser")).toBe(true)
     rmSync(dir, { recursive: true, force: true })
@@ -281,10 +299,11 @@ export function processUsers(users: Array<User>): void {}
       name: "greet",
       metadata: { parentId: "symbol:class:Base:b" },
     })
-
-    ;(builder as any).buildInheritanceEdges([baseA, baseB, greetA, greetB])
+    internals(builder).buildInheritanceEdges([baseA, baseB, greetA, greetB])
     const edges = builder.graph.getEdges(undefined, "overrides")
-    expect(edges.some((e) => e.sourceId === "symbol:method:greet:a" && e.targetId === "symbol:method:greet:b")).toBe(true)
+    expect(edges.some((e) => e.sourceId === "symbol:method:greet:a" && e.targetId === "symbol:method:greet:b")).toBe(
+      true,
+    )
   })
 
   test("buildDataFlowEdges links variables to function parameters", () => {
@@ -322,8 +341,7 @@ export function processUsers(users: Array<User>): void {}
       startToken: 10,
       metadata: { parameters: [{ name: "users", type: "User[]" }] },
     })
-
-    ;(builder as any).buildDataFlowEdges([v, f])
+    internals(builder).buildDataFlowEdges([v, f])
     const edges = builder.graph.getEdges(undefined, "data_flow")
     expect(edges.some((e) => e.sourceId === "symbol:var:users" && e.targetId === "symbol:func:process")).toBe(true)
   })
@@ -373,8 +391,7 @@ export function processUsers(users: Array<User>): void {}
     builder.graph.addNode(testFile)
     builder.graph.addNode(testFunc)
     builder.graph.addNode(srcFunc)
-
-    ;(builder as any).buildTestCoverEdges([testFunc, srcFunc])
+    internals(builder).buildTestCoverEdges([testFunc, srcFunc])
     const edges = builder.graph.getEdges(undefined, "test_covers")
     expect(edges.some((e) => e.sourceId === "symbol:testHelper" && e.targetId === "symbol:helper")).toBe(true)
   })
@@ -397,7 +414,7 @@ export function processUsers(users: Array<User>): void {}
       mtime: 1700000000000,
     })
 
-    const resolved = (builder as any).resolveImportPath("src/main.ts", "/util/helper")
+    const resolved = internals(builder).resolveImportPath("src/main.ts", "/util/helper")
     expect(resolved).toBe("src/util/helper.ts")
   })
 })

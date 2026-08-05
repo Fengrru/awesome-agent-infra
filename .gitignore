@@ -19,3 +19,5 @@ docs/api.json
 # Temporary scripts and probe files
 /scripts/tmp-*.ts
 /packages/*/__tests__/probe-*.ts
+# Local AI tooling specs
+.comate/
