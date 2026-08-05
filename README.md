@@ -11,7 +11,6 @@
 [![Coverage](https://img.shields.io/badge/coverage-100%25%20gate-success)](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![npm scope](https://img.shields.io/badge/npm_scope-%40fengrru-orange)](https://www.npmjs.com/org/fengru)
-[![GitHub stars](https://img.shields.io/github/stars/Fengrru/awesome-agent-infra?style=social)](https://github.com/Fengrru/awesome-agent-infra/stargazers)
 
 **42 packages · 0 runtime dependencies · 100% line-coverage gate · strict TypeScript 5.8 · ESM-only**
 

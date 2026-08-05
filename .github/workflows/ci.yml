@@ -145,6 +145,7 @@ jobs:
 
       - name: Collect diagnostics on failure
         if: failure()
+        shell: bash
         run: |
           echo "--- bun version ---"
           bun --version

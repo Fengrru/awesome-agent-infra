@@ -238,21 +238,27 @@ describe("TrueWorkerPool", () => {
       maxWorkers: 4,
     })
 
+    const tasks = [
+      makeTask("t1", "double", 5, 250),
+      makeTask("t2", "double", 10, 250),
+      makeTask("t3", "double", 15, 250),
+    ]
+
+    // Parallel run: 4 workers should execute all 3 delayed tasks concurrently
     const start = Date.now()
+    const results = await pool.execute(tasks)
+    const parallelElapsed = Date.now() - start
 
-    const results = await pool.execute([
-      makeTask("t1", "double", 5, 100),
-      makeTask("t2", "double", 10, 100),
-      makeTask("t3", "double", 15, 100),
-    ])
-
-    const elapsed = Date.now() - start
+    // Sequential baseline: the same 3 tasks one at a time (workers are warm)
+    const seqStart = Date.now()
+    await pool.executeSequential(tasks)
+    const sequentialElapsed = Date.now() - seqStart
 
     expect(results).toHaveLength(3)
     expect(results.every((r) => r.success)).toBe(true)
-    // With 4 workers, all 3 should run concurrently, so total time < 200ms
-    // (would be 300+ if sequential)
-    expect(elapsed).toBeLessThan(300)
+    // Relative assertion: parallel must be clearly faster than sequential,
+    // robust against worker startup cost differences across platforms/CI
+    expect(parallelElapsed).toBeLessThan(sequentialElapsed)
 
     await pool.shutdown()
   })
