@@ -8,9 +8,10 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Runtime-Bun-000000)](https://bun.sh)
 [![CI](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml/badge.svg)](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25%20gate-success)](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Zero runtime dependencies. Plug into any framework.
+**42 packages · 0 runtime dependencies · 100% line-coverage gate · strict TypeScript 5.8 · ESM-only**
 
 </div>
 
@@ -20,6 +21,20 @@ Zero runtime dependencies. Plug into any framework.
 - **One package per concern.** Memory, patching, validation, search, workflows, self-evolution — each building block is isolated, typed, and testable on its own.
 - **Production-grade by default.** Every package carries tests, a 100% coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
 - **TypeScript-native.** Written in strict TypeScript 5.8 with ESM-only output, so your IDE and compiler see exactly what your agent runs.
+
+## Building blocks, not a framework
+
+awesome-agent-infra is **not** an agent framework. It does not dictate how your agent loops, which model you call, or how tools are wired. Each package is an isolated primitive you adopt one at a time — alongside any framework, or with none at all.
+
+| | **awesome-agent-infra** | **Agent frameworks** |
+|---|---|---|
+| Positioning | Composable building blocks | End-to-end orchestration stack |
+| Runtime dependencies | **0** per package | Typically many transitive deps |
+| Adoption | Cherry-pick individual packages | Usually adopts the whole stack |
+| Interoperability | Works under, above, or beside any framework | Often replaces the integration layer |
+| Quality contract | 100% coverage gate + strict lint + per-package stability tier | Varies by project |
+
+If you already run an orchestration framework, these packages slot into the gaps frameworks usually leave open: reliable file patching, memory tiering, output validation, self-healing, and session replay.
 
 ## Quick Start
 
@@ -80,6 +95,46 @@ bus.publish({
 ```
 
 More runnable examples live in [examples/](./examples).
+
+## Performance
+
+Micro-benchmarks for hot paths run in CI-adjacent local runs (single machine, Bun runtime; median over measured iterations via `bun run benchmarks/run-all.ts`):
+
+| Hot path | Package | Throughput |
+|---|---|---|
+| Exact-match patch apply | `fuzzy-patch` | 6.17M ops/sec |
+| Three-way merge (no conflict) | `txn-fs` | 6.22M ops/sec |
+| Confidence calibration (single output) | `confidence-gate` | 6.34M ops/sec |
+| Event publish (normal priority, batched) | `event-bus` | 3.36M ops/sec |
+| Long-term memory upsert | `agent-memory` | 731k ops/sec |
+| Symbol lookup by name | `codegraph` | 196k ops/sec |
+| Cosine similarity (300-dim vectors) | `embedding` | 94.9k ops/sec |
+| 20 parallel tasks (concurrency 4) | `worker` | 19.6k task-groups/sec |
+
+Numbers are reference points, not marketing — re-run `bun run benchmarks/run-all.ts` on your own hardware any time.
+
+## Architecture
+
+The 42 packages are organized in layers. Higher layers build on lower ones, but every package can also be used standalone:
+
+```mermaid
+graph TB
+    A[Your agent / any orchestration framework] --> B[Core Engines]
+    A --> C[Safety & Repair]
+    B --> D[Memory & Knowledge]
+    B --> E[Search & Code Intelligence]
+    B --> F[Workflow & Execution]
+    D --> G[Self-Evolution]
+    E --> G
+    F --> G
+    G --> H[Reasoning & Calibration]
+    B --> I[Infrastructure: tracing / replay / archiver / branch]
+```
+
+- **Core Engines** — fuzzy-patch, valid8, txn-fs, taskdag, state-machine, event-bus, engine-db, worker
+- **Memory & Knowledge** — agent-memory, memory-engine-v2, memory-graph, embedding, project-memory, checkpoints
+- **Safety & Repair** — guardrail, healix, goal-verifier, confidence-gate
+- **Self-Evolution** — skillforge, skill-curator, dreamdistill, learning-nudge, agent-metacog, process-reward
 
 ## How to choose a package
 
