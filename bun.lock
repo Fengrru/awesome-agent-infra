@@ -16,7 +16,7 @@
     },
     "demo/code-refactor-agent": {
       "name": "code-refactor-agent-demo",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@fengrru/archiver": "workspace:*",
         "@fengrru/codegraph": "workspace:*",
@@ -36,6 +36,22 @@
         "typescript": "^5.8.0",
       },
     },
+    "demo/self-hosted-agent": {
+      "name": "self-hosted-agent-demo",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fengrru/evidence-log": "workspace:*",
+        "@fengrru/history-compact": "workspace:*",
+        "@fengrru/knowledge-vault": "workspace:*",
+        "@fengrru/retrieval-feedback": "workspace:*",
+        "zod": "^3.24.1",
+      },
+      "devDependencies": {
+        "@types/node": "^26.1.2",
+        "bun-types": "^1.3.14",
+        "typescript": "^5.8.0",
+      },
+    },
     "packages/agent-checkpoint": {
       "name": "@fengrru/agent-checkpoint",
       "version": "0.1.0",
@@ -45,7 +61,7 @@
     },
     "packages/agent-memory": {
       "name": "@fengrru/agent-memory",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@fengrru/memory-engine-v2": "workspace:*",
       },
@@ -55,28 +71,28 @@
     },
     "packages/agent-metacog": {
       "name": "@fengrru/agent-metacog",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/agentic-search": {
       "name": "@fengrru/agentic-search",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/archiver": {
       "name": "@fengrru/archiver",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/branch": {
       "name": "@fengrru/branch",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -90,11 +106,11 @@
     },
     "packages/code-sandbox": {
       "name": "@fengrru/code-sandbox",
-      "version": "0.1.0",
+      "version": "0.2.0",
     },
     "packages/codegraph": {
       "name": "@fengrru/codegraph",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -114,7 +130,7 @@
     },
     "packages/cycle-controller": {
       "name": "@fengrru/cycle-controller",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -136,14 +152,14 @@
     },
     "packages/dynamic-workflow": {
       "name": "@fengrru/dynamic-workflow",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/embedding": {
       "name": "@fengrru/embedding",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -157,11 +173,15 @@
     },
     "packages/event-bus": {
       "name": "@fengrru/event-bus",
+      "version": "0.1.1",
+    },
+    "packages/evidence-log": {
+      "name": "@fengrru/evidence-log",
       "version": "0.1.0",
     },
     "packages/fuzzy-patch": {
       "name": "@fengrru/fuzzy-patch",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -182,21 +202,35 @@
     },
     "packages/hallucination-detector": {
       "name": "@fengrru/hallucination-detector",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@fengrru/internal-tfidf": "workspace:*",
       },
     },
     "packages/healix": {
       "name": "@fengrru/healix",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
+      },
+    },
+    "packages/history-compact": {
+      "name": "@fengrru/history-compact",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fengrru/evidence-log": "workspace:*",
       },
     },
     "packages/internal-tfidf": {
       "name": "@fengrru/internal-tfidf",
       "version": "0.1.0",
+    },
+    "packages/knowledge-vault": {
+      "name": "@fengrru/knowledge-vault",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fengrru/evidence-log": "workspace:*",
+      },
     },
     "packages/learning-nudge": {
       "name": "@fengrru/learning-nudge",
@@ -214,7 +248,7 @@
     },
     "packages/llm-dag-generator": {
       "name": "@fengrru/llm-dag-generator",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -226,16 +260,20 @@
         "typescript": "^5.0.0",
       },
     },
+    "packages/mcp-client": {
+      "name": "@fengrru/mcp-client",
+      "version": "0.1.0",
+    },
     "packages/memory-engine-v2": {
       "name": "@fengrru/memory-engine-v2",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@fengrru/internal-tfidf": "workspace:*",
       },
     },
     "packages/memory-graph": {
       "name": "@fengrru/memory-graph",
-      "version": "0.1.0",
+      "version": "0.1.1",
     },
     "packages/notes-manager": {
       "name": "@fengrru/notes-manager",
@@ -246,11 +284,11 @@
     },
     "packages/pomdp-planner": {
       "name": "@fengrru/pomdp-planner",
-      "version": "0.1.0",
+      "version": "0.1.1",
     },
     "packages/process-reward": {
       "name": "@fengrru/process-reward",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -264,16 +302,23 @@
     },
     "packages/reasoning-search": {
       "name": "@fengrru/reasoning-search",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/replay": {
       "name": "@fengrru/replay",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
+      },
+    },
+    "packages/retrieval-feedback": {
+      "name": "@fengrru/retrieval-feedback",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fengrru/knowledge-vault": "workspace:*",
       },
     },
     "packages/skill-curator": {
@@ -285,7 +330,7 @@
     },
     "packages/skillforge": {
       "name": "@fengrru/skillforge",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -306,14 +351,14 @@
     },
     "packages/tracing": {
       "name": "@fengrru/tracing",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/txn-fs": {
       "name": "@fengrru/txn-fs",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "typescript": "^5.0.0",
       },
@@ -423,6 +468,8 @@
 
     "@fengrru/event-bus": ["@fengrru/event-bus@workspace:packages/event-bus"],
 
+    "@fengrru/evidence-log": ["@fengrru/evidence-log@workspace:packages/evidence-log"],
+
     "@fengrru/fuzzy-patch": ["@fengrru/fuzzy-patch@workspace:packages/fuzzy-patch"],
 
     "@fengrru/goal-verifier": ["@fengrru/goal-verifier@workspace:packages/goal-verifier"],
@@ -433,7 +480,11 @@
 
     "@fengrru/healix": ["@fengrru/healix@workspace:packages/healix"],
 
+    "@fengrru/history-compact": ["@fengrru/history-compact@workspace:packages/history-compact"],
+
     "@fengrru/internal-tfidf": ["@fengrru/internal-tfidf@workspace:packages/internal-tfidf"],
+
+    "@fengrru/knowledge-vault": ["@fengrru/knowledge-vault@workspace:packages/knowledge-vault"],
 
     "@fengrru/learning-nudge": ["@fengrru/learning-nudge@workspace:packages/learning-nudge"],
 
@@ -442,6 +493,8 @@
     "@fengrru/llm-dag-generator": ["@fengrru/llm-dag-generator@workspace:packages/llm-dag-generator"],
 
     "@fengrru/max-mode-sampler": ["@fengrru/max-mode-sampler@workspace:packages/max-mode-sampler"],
+
+    "@fengrru/mcp-client": ["@fengrru/mcp-client@workspace:packages/mcp-client"],
 
     "@fengrru/memory-engine-v2": ["@fengrru/memory-engine-v2@workspace:packages/memory-engine-v2"],
 
@@ -458,6 +511,8 @@
     "@fengrru/reasoning-search": ["@fengrru/reasoning-search@workspace:packages/reasoning-search"],
 
     "@fengrru/replay": ["@fengrru/replay@workspace:packages/replay"],
+
+    "@fengrru/retrieval-feedback": ["@fengrru/retrieval-feedback@workspace:packages/retrieval-feedback"],
 
     "@fengrru/skill-curator": ["@fengrru/skill-curator@workspace:packages/skill-curator"],
 
@@ -655,6 +710,8 @@
 
     "safer-buffer": ["safer-buffer@2.1.2", "", {}, "sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg=="],
 
+    "self-hosted-agent-demo": ["self-hosted-agent-demo@workspace:demo/self-hosted-agent"],
+
     "semver": ["semver@7.8.5", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA=="],
 
     "shebang-command": ["shebang-command@2.0.0", "", { "dependencies": { "shebang-regex": "^3.0.0" } }, "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA=="],
@@ -692,6 +749,8 @@
     "which": ["which@2.0.2", "", { "dependencies": { "isexe": "^2.0.0" }, "bin": { "node-which": "./bin/node-which" } }, "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA=="],
 
     "yaml": ["yaml@2.9.0", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA=="],
+
+    "zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@manypkg/find-root/@types/node": ["@types/node@12.20.55", "", {}, "sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ=="],
 

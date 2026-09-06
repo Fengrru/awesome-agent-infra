@@ -11,12 +11,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "typescript": ">=5.0"
@@ -26,21 +24,8 @@
       "optional": true
     }
   },
-  "keywords": ["validation", "security", "syntax-check", "ai-output", "code-quality"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
-    "directory": "packages/valid8"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
-  "bugs": {
-    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

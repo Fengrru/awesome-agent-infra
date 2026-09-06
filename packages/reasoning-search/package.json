@@ -11,38 +11,13 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
-  "keywords": [
-    "mcts",
-    "monte-carlo-tree-search",
-    "reasoning",
-    "beam-search",
-    "tree-of-thoughts",
-    "planning",
-    "ai-agent",
-    "uct",
-    "guided-search"
-  ],
   "license": "MIT",
   "scripts": {
     "build": "tsc",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
-    "directory": "packages/reasoning-search"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
-  "bugs": {
-    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

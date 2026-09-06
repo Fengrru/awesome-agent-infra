@@ -1,0 +1,23 @@
+{
+  "name": "@fengrru/retrieval-feedback",
+  "version": "0.1.0",
+  "description": "Zero-dependency retrieval filters and usage-based re-ranking. Extracted from the seed self-hosted-agent project.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fengrru/knowledge-vault": "workspace:*"
+  },
+  "license": "MIT"
+}

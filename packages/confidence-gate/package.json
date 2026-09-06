@@ -11,37 +11,13 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
-  "keywords": [
-    "llm",
-    "confidence",
-    "calibration",
-    "ece",
-    "brier-score",
-    "hallucination",
-    "temperature-scaling",
-    "ai-agent"
-  ],
   "license": "MIT",
   "scripts": {
     "build": "tsc",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
-    "directory": "packages/confidence-gate"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
-  "bugs": {
-    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

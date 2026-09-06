@@ -11,14 +11,11 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "typecheck": "tsc --noEmit"
   },
-  "keywords": ["cycle-controller", "context-window", "token-tracking", "checkpoint", "agent"],
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
@@ -34,17 +31,5 @@
     "@fengrru/state-machine": {
       "optional": true
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
-    "directory": "packages/cycle-controller"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
-  "bugs": {
-    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }

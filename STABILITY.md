@@ -42,6 +42,11 @@ APIs are stable in practice but internal details, constructor signatures, or opt
 | `@fengrru/branch` | v0.1.0 | Fork/merge API stable; conflict resolution strategies evolving |
 | `@fengrru/lifecycle-manager` | v0.1.0 | Module hooks stable; phase definitions evolving |
 | `@fengrru/agentic-search` | v0.1.0 | Search orchestrator API stable; intent classifier evolving |
+| `@fengrru/evidence-log` | v0.1.0 | Content-addressed append-only event log; extracted from seed demo |
+| `@fengrru/knowledge-vault` | v0.1.0 | Versioned knowledge store with derivation edges; extracted from seed demo |
+| `@fengrru/history-compact` | v0.1.0 | Deterministic history compaction; extracted from seed demo |
+| `@fengrru/retrieval-feedback` | v0.1.0 | Usage-based retrieval signals; extracted from seed demo |
+| `@fengrru/mcp-client` | v0.1.0 | Stdio/HTTP MCP client; tool discovery and JSON-RPC stable |
 
 ## Experimental (semver minor = may break)
 

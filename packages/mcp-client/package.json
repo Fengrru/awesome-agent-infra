@@ -1,0 +1,20 @@
+{
+  "name": "@fengrru/mcp-client",
+  "version": "0.1.0",
+  "description": "Zero-dependency Model Context Protocol clients — stdio and streamable HTTP transports with tool discovery, JSON-RPC 2.0, and request timeouts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT"
+}

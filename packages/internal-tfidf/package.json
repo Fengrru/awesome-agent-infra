@@ -12,22 +12,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
   "scripts": {
     "test": "bun test",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "typecheck": "tsc --noEmit"
   },
-  "keywords": ["tf-idf", "tokenization", "cosine-similarity", "vectorization"],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
-    "directory": "packages/internal-tfidf"
-  },
-  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
-  "bugs": {
-    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
-  }
+  "license": "MIT"
 }

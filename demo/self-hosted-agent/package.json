@@ -1,0 +1,33 @@
+{
+  "name": "self-hosted-agent-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted agent reference demo: a stable kernel loop over a writable, versioned, evidence-backed self. Migrated from the standalone seed project.",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "coverage": "bun test --coverage",
+    "eval": "bun run src/eval/cli.ts",
+    "eval:evolution": "bun run src/eval/evolution-cli.ts",
+    "bench": "bun run bench/cli.ts",
+    "bench:smoke": "bun run bench/cli.ts --fake"
+  },
+  "dependencies": {
+    "@fengrru/evidence-log": "workspace:*",
+    "@fengrru/history-compact": "workspace:*",
+    "@fengrru/knowledge-vault": "workspace:*",
+    "@fengrru/retrieval-feedback": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "bun-types": "^1.3.14",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "license": "MIT"
+}

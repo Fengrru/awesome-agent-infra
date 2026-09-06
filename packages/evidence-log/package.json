@@ -1,0 +1,20 @@
+{
+  "name": "@fengrru/evidence-log",
+  "version": "0.1.0",
+  "description": "Zero-dependency content-addressed append-only event log with evidence verification. Extracted from the seed self-hosted-agent project.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "bun test",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT"
+}

@@ -18,7 +18,7 @@ env:
 # Pipeline design:
 #
 #   Stage 0 (parallel, no build required):
-#     typecheck  — tsc --noEmit across all 42 packages
+#     typecheck  — tsc --noEmit across all 47 packages
 #     lint       — biome check --error-on-warnings
 #     lockfile   — verify bun.lock is consistent
 #
@@ -30,7 +30,6 @@ env:
 #     coverage   — per-package lcov gate (100% threshold)
 #     build      — tsc emit + dist verification
 #     bench      — benchmark smoke (crash/hang detection)
-#     docs       — typedoc generation check
 #
 # Turbo cache keys use content hashing (lockfile + configs) so unchanged
 # packages hit the cache across commits.
@@ -279,36 +278,6 @@ jobs:
         working-directory: benchmarks
         run: bun run-all.ts
 
-  docs:
-    name: Docs Build
-    needs: [typecheck]
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
-
-      - uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-docs-${{ hashFiles('bun.lock', 'turbo.json', 'tsconfig.base.json') }}
-          restore-keys: |
-            turbo-docs-
-            turbo-typecheck-
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Build all packages (TypeDoc needs cross-package deps)
-        run: bun turbo build
-
-      - name: Generate TypeDoc
-        run: bun run docs
-
   # ═══════════════════════════════════════════════════════════════════════
   # Final Gate -- aggregator for branch-protection required check
   # ═══════════════════════════════════════════════════════════════════════
@@ -316,7 +285,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [typecheck, lint, lockfile, test, integration, coverage, build, bench, docs]
+    needs: [typecheck, lint, lockfile, test, integration, coverage, build, bench]
     runs-on: ubuntu-latest
     timeout-minutes: 1
 
@@ -357,7 +326,6 @@ jobs:
           check "coverage"      "${{ needs.coverage.result }}"
           check "build"         "${{ needs.build.result }}"
           check "bench"         "${{ needs.bench.result }}"
-          check "docs"          "${{ needs.docs.result }}"
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Passed:** $PASS | **Failed:** $FAIL | **Skipped:** $SKIP" >> "$GITHUB_STEP_SUMMARY"

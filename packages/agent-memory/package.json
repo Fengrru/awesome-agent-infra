@@ -11,31 +11,16 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
-  "keywords": ["ai-agent", "memory", "ebbinghaus", "forgetting-curve", "agent-memory", "vector-retrieval"],
   "license": "MIT",
   "scripts": {
     "test": "bun test",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fengrru/memory-engine-v2": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Fengrru/awesome-agent-infra.git",
-    "directory": "packages/agent-memory"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://fengrru.github.io/awesome-agent-infra/",
-  "bugs": {
-    "url": "https://github.com/Fengrru/awesome-agent-infra/issues"
   }
 }
