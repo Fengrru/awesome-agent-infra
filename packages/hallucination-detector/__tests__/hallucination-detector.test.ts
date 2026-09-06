@@ -7,6 +7,7 @@ import {
   createHallucinationDetector,
   createSpectralHallucinationDetector,
 } from "../src/index"
+import { buildTFIDFVectors, computeCosineSimilarity, tokenize } from "@fengrru/internal-tfidf"
 
 /** Typed access to private methods for white-box tests. */
 interface SpectralDetectorInternals {
@@ -18,11 +19,6 @@ interface SpectralDetectorInternals {
     eigenvectors: number[][]
   }
   precluster(claims: FactClaim[], k: number): number[][]
-}
-interface DetectorInternals {
-  jaccardSimilarity(a: Set<string>, b: Set<string>): number
-  cosineSimilarity(a: number[], b: number[]): number
-  buildTFIDF(docs: string[]): { vectors: number[][]; terms: string[] }
 }
 
 describe("HallucinationDetector", () => {
@@ -400,27 +396,29 @@ describe("SpectralHallucinationDetector private methods", () => {
     expect(result[0].length).toBe(2)
   })
 
-  test("jaccardSimilarity private method", () => {
-    const detector = new HallucinationDetector()
-    const setA = new Set(["hello", "world"])
-    const setB = new Set(["hello", "there"])
-    const sim = (detector as unknown as DetectorInternals).jaccardSimilarity(setA, setB)
+  test("jaccardSimilarity via tokenize + Set", () => {
+    const setA = new Set(tokenize("hello world"))
+    const setB = new Set(tokenize("hello there"))
+    let intersection = 0
+    for (const item of setA) {
+      if (setB.has(item)) intersection++
+    }
+    const union = new Set([...setA, ...setB])
+    const sim = union.size > 0 ? intersection / union.size : 0
     expect(sim).toBeGreaterThan(0)
     expect(sim).toBeLessThanOrEqual(1)
   })
 
-  test("cosineSimilarity private method", () => {
-    const detector = new HallucinationDetector()
+  test("cosineSimilarity via computeCosineSimilarity", () => {
     const a = [1, 2, 3]
     const b = [1, 2, 3]
-    const sim = (detector as unknown as DetectorInternals).cosineSimilarity(a, b)
+    const sim = computeCosineSimilarity(a, b)
     expect(sim).toBeCloseTo(1.0, 5)
   })
 
-  test("buildTFIDF private method", () => {
-    const detector = new HallucinationDetector()
+  test("buildTFIDF via buildTFIDFVectors", () => {
     const docs = ["hello world", "hello there"]
-    const result = (detector as unknown as DetectorInternals).buildTFIDF(docs)
+    const result = buildTFIDFVectors(docs)
     expect(result.vectors).toBeDefined()
     expect(result.terms).toBeDefined()
     expect(result.vectors.length).toBe(2)
