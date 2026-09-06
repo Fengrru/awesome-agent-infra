@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test"
+import { buildTFIDFVectors, computeCosineSimilarity, tokenize } from "@fengrru/internal-tfidf"
 import {
   DEFAULT_DETECTOR_CONFIG,
   type FactClaim,
@@ -7,7 +8,6 @@ import {
   createHallucinationDetector,
   createSpectralHallucinationDetector,
 } from "../src/index"
-import { buildTFIDFVectors, computeCosineSimilarity, tokenize } from "@fengrru/internal-tfidf"
 
 /** Typed access to private methods for white-box tests. */
 interface SpectralDetectorInternals {
