@@ -336,8 +336,6 @@ export class HallucinationDetector {
     }
     return maxSim
   }
-
-
 }
 
 export class SpectralHallucinationDetector extends HallucinationDetector {
