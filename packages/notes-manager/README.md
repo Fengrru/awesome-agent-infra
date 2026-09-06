@@ -66,7 +66,7 @@ await notes.deleteSession("session-1");
 
 ## Format
 
-Notes are stored as [JSONL](https://jsonlines.org/) â€” one JSON object per line:
+Notes are stored as [JSONL](https://jsonlines.org/) â€?one JSON object per line:
 
 ```jsonl
 {"timestamp":1719000000000,"content":"Found a broken link","tag":"discovery"}
@@ -75,12 +75,12 @@ Notes are stored as [JSONL](https://jsonlines.org/) â€” one JSON object per line
 
 ## Fallback
 
-When `node:fs/promises` is unavailable (browser, restricted runtimes), `NotesManager` automatically falls back to an in-memory store. All methods continue to work identically â€” data is simply not persisted to disk.
+When `node:fs/promises` is unavailable (browser, restricted runtimes), `NotesManager` automatically falls back to an in-memory store. All methods continue to work identically â€?data is simply not persisted to disk.
 
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/notes-manager)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

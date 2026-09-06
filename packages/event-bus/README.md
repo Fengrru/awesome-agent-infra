@@ -65,7 +65,7 @@ const bus = createSimpleEventBus({
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/event-bus)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

@@ -7,7 +7,7 @@ Lightweight OpenTelemetry tracing abstraction with zero runtime dependencies.
 ## Install
 
 ```bash
-npm install @fengrru/tracing
+bun add @fengrru/tracing
 ```
 
 ## Quick Start
@@ -41,7 +41,7 @@ await withSpan("fetch-data", async (span) => {
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/tracing)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

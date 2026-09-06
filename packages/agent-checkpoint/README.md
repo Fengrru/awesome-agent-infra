@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/agent-checkpoint)](https://www.npmjs.com/package/@fengrru/agent-checkpoint) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/agent-checkpoint)](https://www.npmjs.com/package/@fengrru/agent-checkpoint) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 3-level checkpoint system (L1/L2/L3) for agent state persistence.
 
 ## Install
 
 ```bash
-npm install @fengrru/agent-checkpoint
+bun add @fengrru/agent-checkpoint
 ```
 
 ## Quick Start
@@ -44,12 +44,12 @@ const state = manager.resume(checkpoint.id)
 - **LRU cache**: fast access to recent checkpoints
 - **Workspace hash**: detects file changes
 - **Git HEAD hash**: code version consistency
-- **Chain fallback**: L1 â†’ L2 â†’ L3 resume
+- **Chain fallback**: L1 â†?L2 â†?L3 resume
 
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agent-checkpoint)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

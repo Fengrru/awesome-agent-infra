@@ -1,7 +1,7 @@
 {
   "name": "@fengrru/codegraph",
   "version": "0.1.1",
-  "description": "In-memory heterogeneous code graph  symbol extraction, PageRank centrality, k-hop ego-graph search, incremental file watcher",
+  "description": "In-memory heterogeneous code graph — symbol extraction, PageRank centrality, k-hop ego-graph search, incremental file watcher",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

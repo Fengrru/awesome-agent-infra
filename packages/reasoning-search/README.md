@@ -7,7 +7,7 @@ MCTS tree search reasoning engine for AI agents.
 ## Install
 
 ```bash
-npm install @fengrru/reasoning-search
+bun add @fengrru/reasoning-search
 ```
 
 ## Quick Start
@@ -48,7 +48,7 @@ console.log(result.score) // confidence score
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/reasoning-search)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

@@ -7,7 +7,7 @@
 ## Install
 
 ```bash
-npm install @fengrru/fuzzy-patch
+bun add @fengrru/fuzzy-patch
 ```
 
 ## Quick Start
@@ -22,14 +22,14 @@ console.log(result.matchCount) // number of replacements
 
 ## Strategies (in order)
 
-1. **exact** â€” direct string match
-2. **whitespace_normalized** â€” collapse whitespace
-3. **indentation_normalized** â€” strip leading whitespace
-4. **line_ending_normalized** â€” normalize \r\n â†’ \n
-5. **token_match** â€” tokenize and match subsequence
-6. **head_tail_anchor** â€” match first/last N chars
-7. **context_anchor** â€” match first/last lines
-8. **levenshtein_fuzzy** â€” sliding window Levenshtein (30% threshold)
+1. **exact** â€?direct string match
+2. **whitespace_normalized** â€?collapse whitespace
+3. **indentation_normalized** â€?strip leading whitespace
+4. **line_ending_normalized** â€?normalize \r\n â†?\n
+5. **token_match** â€?tokenize and match subsequence
+6. **head_tail_anchor** â€?match first/last N chars
+7. **context_anchor** â€?match first/last lines
+8. **levenshtein_fuzzy** â€?sliding window Levenshtein (30% threshold)
 
 ## API
 
@@ -48,7 +48,7 @@ Returns list of strategies that would match.
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/fuzzy-patch)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

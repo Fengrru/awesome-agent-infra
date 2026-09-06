@@ -107,14 +107,14 @@ Micro-benchmarks for hot paths were measured on a single machine using the Bun r
 
 | Hot path | Package | Throughput |
 |---|---|---|
-| Exact-match patch apply | `fuzzy-patch` | 6.17M ops/sec |
-| Three-way merge (no conflict) | `txn-fs` | 6.22M ops/sec |
-| Confidence calibration (single output) | `confidence-gate` | 6.34M ops/sec |
-| Event publish (normal priority, batched) | `event-bus` | 3.36M ops/sec |
-| Long-term memory upsert | `agent-memory` | 731k ops/sec |
-| Symbol lookup by name | `codegraph` | 196k ops/sec |
-| Cosine similarity (300-dim vectors) | `embedding` | 94.9k ops/sec |
-| 20 parallel tasks (concurrency 4) | `worker` | 19.6k task-groups/sec |
+| Exact-match patch apply | `fuzzy-patch` | 4.0M ops/sec |
+| Three-way merge (no conflict) | `txn-fs` | 5.4M ops/sec |
+| Confidence calibration (single output) | `confidence-gate` | 5.2M ops/sec |
+| Event publish (normal priority, batched) | `event-bus` | 3.3M ops/sec |
+| Long-term memory upsert | `agent-memory` | 593k ops/sec |
+| Symbol lookup by name | `codegraph` | 236k ops/sec |
+| Cosine similarity (300-dim vectors) | `embedding` | 111k ops/sec |
+| 20 parallel tasks (concurrency 4) | `worker` | 1.4k task-groups/sec |
 
 Numbers are reference points, not marketing — re-run `bun run benchmarks/run-all.ts` on your own hardware any time.
 
@@ -137,13 +137,13 @@ graph TB
 ```
 
 - **Core Engines** — fuzzy-patch, valid8, txn-fs, taskdag, state-machine, event-bus, engine-db, worker
-- **Memory & Knowledge** — agent-memory, memory-engine-v2, memory-graph, embedding, project-memory, checkpoints, knowledge-vault, retrieval-feedback
+- **Memory & Knowledge** — agent-memory, memory-engine-v2, memory-graph, embedding, project-memory, agent-checkpoint, knowledge-vault, retrieval-feedback
 - **Search & Code Intelligence** — codegraph, agentic-search, reasoning-search
-- **Workflow & Execution** — taskdag, state-machine, dynamic-workflow, lifecycle-manager, cycle-controller
-- **Safety & Repair** — guardrail, healix, goal-verifier, confidence-gate, hallucination-detector, code-sandbox
-- **Reasoning & Calibration** — pomdp-planner, reasoning-search
-- **Self-Evolution** — skillforge, skill-curator, dreamdistill, learning-nudge, agent-metacog, process-reward
-- **Infrastructure** — tracing, replay, archiver, branch, event-bus, evidence-log, history-compact, mcp-client
+- **Workflow & Execution** — taskdag, state-machine, dynamic-workflow, lifecycle-manager
+- **Safety & Repair** — guardrail, healix, goal-verifier, confidence-gate
+- **Reasoning & Calibration** — pomdp-planner, reasoning-search, hallucination-detector, code-sandbox, memory-engine-v2
+- **Self-Evolution** — skillforge, skill-curator, dreamdistill, learning-nudge, max-mode-sampler, agent-metacog, process-reward
+- **Infrastructure** — tracing, replay, archiver, branch, event-bus, evidence-log, history-compact, cycle-controller, mcp-client
 
 ## How to choose a package
 

@@ -8,11 +8,11 @@ Zero dependencies. Uses Node.js `child_process` for subprocess isolation.
 
 ## Features
 
-- **SecureExecutor** â€” Execute code in an isolated subprocess with timeout and memory limits
-- **MathVerifier** â€” Robust number extraction (GSM8K format, fractions, floats) with tolerance-based comparison
-- **CodeVerifier** â€” Execute code and check output in pass/stdout/assert modes
-- **LogicVerifier** â€” Jaccard similarity, contradiction detection, premise-conclusion structure
-- **VerifierPool** â€” Registry pattern with pre-registered math/code/logic verifiers and fallback
+- **SecureExecutor** â€?Execute code in an isolated subprocess with timeout and memory limits
+- **MathVerifier** â€?Robust number extraction (GSM8K format, fractions, floats) with tolerance-based comparison
+- **CodeVerifier** â€?Execute code and check output in pass/stdout/assert modes
+- **LogicVerifier** â€?Jaccard similarity, contradiction detection, premise-conclusion structure
+- **VerifierPool** â€?Registry pattern with pre-registered math/code/logic verifiers and fallback
 
 ## Usage
 

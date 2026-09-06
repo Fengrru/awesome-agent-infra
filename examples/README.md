@@ -1,4 +1,4 @@
-# Agent Kit Examples
+# awesome-agent-infra Examples
 
 One runnable example per core package. All examples import package source directly (zero dependencies, no build step) and demonstrate real API usage.
 

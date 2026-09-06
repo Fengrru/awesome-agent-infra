@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/agent-metacog)](https://www.npmjs.com/package/@fengrru/agent-metacog) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/agent-metacog)](https://www.npmjs.com/package/@fengrru/agent-metacog) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Metacognitive monitoring and confidence calibration for AI agents. Tracks knowledge boundaries and forgetting, and fuses 3 information streams (semantic features, attention entropy, and token likelihoods) through a lightweight transformer to produce calibrated confidence scores.
 
@@ -13,7 +13,7 @@ Metacognitive monitoring and confidence calibration for AI agents. Tracks knowle
 ## Install
 
 ```bash
-npm install @fengrru/agent-metacog
+bun add @fengrru/agent-metacog
 ```
 
 ## Quick Start
@@ -83,7 +83,7 @@ const baselines = CalibrationBaselines.allBaselines(features, "response text")
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agent-metacog)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

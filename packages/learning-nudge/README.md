@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/learning-nudge)](https://www.npmjs.com/package/@fengrru/learning-nudge) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/learning-nudge)](https://www.npmjs.com/package/@fengrru/learning-nudge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Self-reflection trigger for continuous learning in AI agents.
 
 ## Install
 
 ```bash
-npm install @fengrru/learning-nudge
+bun add @fengrru/learning-nudge
 ```
 
 ## Quick Start
@@ -26,8 +26,8 @@ const nudge = new LearningNudge({
 const evaluation = nudge.evaluate(toolCallHistory)
 if (evaluation.shouldNudge) {
   const result = await nudge.executeNudge(context)
-  // result.insights â€” high-confidence learnings
-  // result.suggestedSkills â€” patterns to formalize
+  // result.insights â€?high-confidence learnings
+  // result.suggestedSkills â€?patterns to formalize
 }
 ```
 
@@ -37,7 +37,7 @@ if (evaluation.shouldNudge) {
 |------|---------|----------|
 | periodic | Every N tool calls | 4 |
 | session_end | Session complete | 5 |
-| pattern_detection | Same success â‰¥3 times | 6 |
+| pattern_detection | Same success â‰? times | 6 |
 | user_declaration | "Remember this" | highest |
 
 ## Features
@@ -50,7 +50,7 @@ if (evaluation.shouldNudge) {
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/learning-nudge)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/max-mode-sampler)](https://www.npmjs.com/package/@fengrru/max-mode-sampler) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/max-mode-sampler)](https://www.npmjs.com/package/@fengrru/max-mode-sampler) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Best-of-N parallel plan sampling for AI agent reasoning.
 
 ## Install
 
 ```bash
-npm install @fengrru/max-mode-sampler
+bun add @fengrru/max-mode-sampler
 ```
 
 ## Quick Start
@@ -52,7 +52,7 @@ console.log(result.scores) // all candidate scores
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/max-mode-sampler)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

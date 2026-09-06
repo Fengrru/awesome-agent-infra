@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/dynamic-workflow)](https://www.npmjs.com/package/@fengrru/dynamic-workflow) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/dynamic-workflow)](https://www.npmjs.com/package/@fengrru/dynamic-workflow) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 VM-sandboxed workflow engine for AI agent execution.
 
 ## Install
 
 ```bash
-npm install @fengrru/dynamic-workflow
+bun add @fengrru/dynamic-workflow
 ```
 
 ## Quick Start
@@ -54,7 +54,7 @@ const result = await engine.execute("process-data", { input: "data.csv" })
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/dynamic-workflow)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

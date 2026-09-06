@@ -1,10 +1,10 @@
 # @fengrru/internal-tfidf
 
-> **Internal package** â€” not published to npm.
+> **Internal package** â€?not published to npm.
 
-Shared TF-IDF utilities â€” tokenization, IDF computation, vectorization, and cosine similarity.
+Shared TF-IDF utilities â€?tokenization, IDF computation, vectorization, and cosine similarity.
 
-> **Internal package** â€” marked `"private": true` and never published to npm. It is consumed via
+> **Internal package** â€?marked `"private": true` and never published to npm. It is consumed via
 > `workspace:*` by [`@fengrru/embedding`](../embedding), [`@fengrru/memory-engine-v2`](../memory-engine-v2),
 > and [`@fengrru/hallucination-detector`](../hallucination-detector) to avoid duplicating TF-IDF logic.
 

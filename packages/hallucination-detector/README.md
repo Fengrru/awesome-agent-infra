@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/hallucination-detector)](https://www.npmjs.com/package/@fengrru/hallucination-detector) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/hallucination-detector)](https://www.npmjs.com/package/@fengrru/hallucination-detector) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Zero-dependency spectral clustering hallucination detection with self-consistency verification.
 
@@ -74,7 +74,7 @@ const detector = new SpectralHallucinationDetector()
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/hallucination-detector)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

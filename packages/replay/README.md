@@ -7,7 +7,7 @@ Session event replay engine for AI agent sessions.
 ## Install
 
 ```bash
-npm install @fengrru/replay
+bun add @fengrru/replay
 ```
 
 ## Quick Start
@@ -55,7 +55,7 @@ const fullResult = await replayer.replay("full", async (event) => {
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/replay)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

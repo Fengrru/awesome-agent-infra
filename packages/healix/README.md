@@ -7,7 +7,7 @@ Self-healing error classifier with dual hash matching and Hamming distance fuzzy
 ## Install
 
 ```bash
-npm install @fengrru/healix
+bun add @fengrru/healix
 ```
 
 ## Quick Start
@@ -38,14 +38,14 @@ const match = engine.matchRules(errorInfo)
 
 ## Error Categories
 
-- `not_found` â€” file/directory not found
-- `permission` â€” access denied
-- `timeout` â€” operation timed out
-- `syntax` â€” parse/compile errors
-- `resource` â€” memory/disk limits
-- `network` â€” connection failures
-- `research_failed` â€” LLM/tool failures
-- `unknown` â€” unrecognized errors
+- `not_found` â€?file/directory not found
+- `permission` â€?access denied
+- `timeout` â€?operation timed out
+- `syntax` â€?parse/compile errors
+- `resource` â€?memory/disk limits
+- `network` â€?connection failures
+- `research_failed` â€?LLM/tool failures
+- `unknown` â€?unrecognized errors
 
 ## Features
 
@@ -57,7 +57,7 @@ const match = engine.matchRules(errorInfo)
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/healix)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

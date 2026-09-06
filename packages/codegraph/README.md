@@ -7,18 +7,21 @@ In-memory heterogeneous code graph with PageRank centrality ranking. Build a kno
 ## Install
 
 ```bash
-npm install @fengrru/codegraph
-# Optional: npm install web-tree-sitter (for AST parsing)
+bun add @fengrru/codegraph
+# Optional: bun add web-tree-sitter (for AST parsing)
 ```
 
 ## Quick Start
 
 ```typescript
-import { CodeGraph, CodeGraphSearcher, CodeGraphRanker } from "@fengrru/codegraph"
+import { CodeGraph, CodeGraphSearcher, CodeGraphRanker, createCodeGraphBuilder } from "@fengrru/codegraph"
 
-// Build graph from codebase
-const graph = new CodeGraph()
-await graph.build("./src")
+// Option A: Builder pattern (recommended)
+const graph = await createCodeGraphBuilder({ rootDir: "./src", maxFiles: 500 }).build()
+
+// Option B: Direct construction
+const graph2 = new CodeGraph()
+await graph2.build("./src")
 
 // Search
 const searcher = new CodeGraphSearcher(graph)
@@ -50,7 +53,7 @@ const ranked = ranker.rank()
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/codegraph)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

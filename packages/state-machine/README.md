@@ -7,7 +7,7 @@
 ## Install
 
 ```bash
-npm install @fengrru/state-machine
+bun add @fengrru/state-machine
 ```
 
 ## Quick Start
@@ -18,8 +18,8 @@ import { AgentStateMachine } from "@fengrru/state-machine"
 const sm = new AgentStateMachine()
 
 // Transition
-sm.transition("INITIALIZING") // IDLE â†’ INITIALIZING
-sm.transition("READY")        // INITIALIZING â†’ READY
+sm.transition("INITIALIZING") // IDLE â†?INITIALIZING
+sm.transition("READY")        // INITIALIZING â†?READY
 
 // Callbacks
 sm.onEnter("EXECUTING", () => console.log("Starting execution"))
@@ -36,13 +36,13 @@ sm.restore(snapshot)
 ## States
 
 ```
-IDLE â†’ INITIALIZING â†’ READY â†’ PLANNING â†’ THINKING â†’ EXECUTING â†’ VERIFYING â†’ COMPLETED
+IDLE â†?INITIALIZING â†?READY â†?PLANNING â†?THINKING â†?EXECUTING â†?VERIFYING â†?COMPLETED
                                 |                              |
                                 v                              v
                               PAUSED                        COMPACTING
                                 |
                                 v
-                               ERROR â†’ RECOVERING â†’ READY
+                               ERROR â†?RECOVERING â†?READY
 ```
 
 ## Features
@@ -57,7 +57,7 @@ IDLE â†’ INITIALIZING â†’ READY â†’ PLANNING â†’ THINKING â†’ EXECUTING â†’ VERI
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/state-machine)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

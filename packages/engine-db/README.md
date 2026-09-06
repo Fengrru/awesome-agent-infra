@@ -7,7 +7,7 @@ Pluggable SQLite engine with 13 tables for agent state persistence.
 ## Install
 
 ```bash
-npm install @fengrru/engine-db
+bun add @fengrru/engine-db
 ```
 
 ## Quick Start
@@ -53,7 +53,7 @@ const checkpoints = db.queryCheckpoints("s1")
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/engine-db)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

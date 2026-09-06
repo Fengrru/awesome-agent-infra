@@ -7,7 +7,7 @@ File-based MEMORY.md project knowledge persistence.
 ## Install
 
 ```bash
-npm install @fengrru/project-memory
+bun add @fengrru/project-memory
 ```
 
 ## Quick Start
@@ -55,7 +55,7 @@ await manager.promoteDiscovery("User prefers dark mode")
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/project-memory)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

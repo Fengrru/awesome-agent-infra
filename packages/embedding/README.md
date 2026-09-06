@@ -19,9 +19,9 @@ const results = tfidf.search("parse user input", 5)
 
 ## Features
 
-- **EnhancedTFIDF** â€” n-gram expansion, CamelCase/snake_case splitting, subword tokens, cosine similarity search
-- **CodeEmbeddingIndexer** â€” wraps EnhancedTFIDF with optional external embedding model and vector store
-- **HybridSearch** â€” fuses vector + graph + text signals with configurable weights (default: 0.4/0.3/0.3); CodeGraph integration is optional
+- **EnhancedTFIDF** â€?n-gram expansion, CamelCase/snake_case splitting, subword tokens, cosine similarity search
+- **CodeEmbeddingIndexer** â€?wraps EnhancedTFIDF with optional external embedding model and vector store
+- **HybridSearch** â€?fuses vector + graph + text signals with configurable weights (default: 0.4/0.3/0.3); CodeGraph integration is optional
 
 ## API
 
@@ -32,8 +32,8 @@ const tfidf = new EnhancedTFIDF({ ngramMin: 2, ngramMax: 4 })
 tfidf.addDocument("id", "content")
 tfidf.addDocuments([{ id: "a", content: "..." }])
 tfidf.removeDocument("id")
-tfidf.search("query", topK: 10) // â†’ TFIDFResult[]
-tfidf.getVector("id")            // â†’ Map<string, number> | null
+tfidf.search("query", topK: 10) // â†?TFIDFResult[]
+tfidf.getVector("id")            // â†?Map<string, number> | null
 tfidf.clear()
 ```
 
@@ -48,8 +48,8 @@ const indexer = new CodeEmbeddingIndexer({
 await indexer.addItem({ id, content, type, filePath, startLine, endLine })
 await indexer.addItems([...])
 await indexer.removeItem("id")
-indexer.searchText("query", 10)           // â†’ SearchResult[]
-await indexer.searchVector("query", 10)   // â†’ SearchResult[]
+indexer.searchText("query", 10)           // â†?SearchResult[]
+await indexer.searchVector("query", 10)   // â†?SearchResult[]
 ```
 
 ### `HybridSearch`
@@ -64,7 +64,7 @@ const results = await hybrid.search({
   weights: { vector: 0.4, graph: 0.3, text: 0.3 },
   minScore: 0.1,
 })
-// â†’ HybridSearchResult[] with vectorScore, graphScore, textScore, compositeScore
+// â†?HybridSearchResult[] with vectorScore, graphScore, textScore, compositeScore
 ```
 
 Zero external dependencies. All types are defined locally.

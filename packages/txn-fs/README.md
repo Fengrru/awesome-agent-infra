@@ -7,7 +7,7 @@ Transactional filesystem with 3-way merge for AI agent file operations.
 ## Install
 
 ```bash
-npm install @fengrru/txn-fs
+bun add @fengrru/txn-fs
 ```
 
 ## Quick Start
@@ -41,7 +41,7 @@ console.log(result.conflicts) // files with conflicts
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/txn-fs)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

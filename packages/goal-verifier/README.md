@@ -7,7 +7,7 @@ Independent goal completion verification for AI agents.
 ## Install
 
 ```bash
-npm install @fengrru/goal-verifier
+bun add @fengrru/goal-verifier
 ```
 
 ## Quick Start
@@ -42,13 +42,13 @@ console.log(result.gaps) // what's missing
 
 - **Independent LLM call**: doesn't share main agent attention
 - **Gap analysis**: identifies what's missing
-- **Loop prevention**: maxRetries â†’ force pass
+- **Loop prevention**: maxRetries â†?force pass
 - **Heuristic fallback**: DAG completion rate when LLM fails
 
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/goal-verifier)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

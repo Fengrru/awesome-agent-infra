@@ -31,12 +31,12 @@ const scored = candidates
 
 ## API
 
-- `isExpired(obj, now)` â€” true when `created + ttl < now`.
-- `injectable(obj)` â€” true for non-draft, non-stale/archived entries; skills must
+- `isExpired(obj, now)` â€?true when `created + ttl < now`.
+- `injectable(obj)` â€?true for non-draft, non-stale/archived entries; skills must
   be verified.
-- `usageFactor(obj)` â€” bounded multiplier based on `metrics.uses` and
+- `usageFactor(obj)` â€?bounded multiplier based on `metrics.uses` and
   `metrics.successes`; healthy successes raise the score, failures lower it.
-- `Retriever` â€” interface for a queryable knowledge source.
+- `Retriever` â€?interface for a queryable knowledge source.
 
 ## License
 

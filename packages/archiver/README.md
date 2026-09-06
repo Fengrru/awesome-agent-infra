@@ -7,7 +7,7 @@ Event archiver with hot/cold tiering for AI agent sessions.
 ## Install
 
 ```bash
-npm install @fengrru/archiver
+bun add @fengrru/archiver
 ```
 
 ## Quick Start
@@ -53,7 +53,7 @@ const events = await archiver.loadArchive("cold_12345")
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/archiver)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

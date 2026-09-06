@@ -48,10 +48,10 @@ for (const fold of folds) {
 
 ## API
 
-- `summarizeRound(events)` â€” model-free summary of one completed turn.
-- `createPlanCompaction(reconstructHistory)` â€” returns a planner.
-- `DEFAULT_COMPACT_THRESHOLD` â€” default 30,000 characters.
-- `PlannedCompact` â€” `{ covers, events, summary }`.
+- `summarizeRound(events)` â€?model-free summary of one completed turn.
+- `createPlanCompaction(reconstructHistory)` â€?returns a planner.
+- `DEFAULT_COMPACT_THRESHOLD` â€?default 30,000 characters.
+- `PlannedCompact` â€?`{ covers, events, summary }`.
 
 ## License
 

@@ -7,8 +7,8 @@
 ## Install
 
 ```bash
-npm install @fengrru/valid8
-# Optional: npm install typescript (for AST-based syntax validation)
+bun add @fengrru/valid8
+# Optional: bun add typescript (for AST-based syntax validation)
 ```
 
 ## Quick Start
@@ -48,7 +48,7 @@ console.log(result.layers) // [{ name: "syntax", passed: true, ... }]
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/valid8)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

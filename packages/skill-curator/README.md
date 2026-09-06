@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/skill-curator)](https://www.npmjs.com/package/@fengrru/skill-curator) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/skill-curator)](https://www.npmjs.com/package/@fengrru/skill-curator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Automated skill library curation for AI agent skills.
 
 ## Install
 
 ```bash
-npm install @fengrru/skill-curator
+bun add @fengrru/skill-curator
 ```
 
 ## Quick Start
@@ -35,7 +35,7 @@ const review = await curator.reviewSkill("error-handling")
 
 ## Features
 
-- **Auto-archive**: 30 days unused â†’ .archive/
+- **Auto-archive**: 30 days unused â†?.archive/
 - **Auto-pin**: top 10% skills pinned
 - **LLM review**: 5-dimension quality scoring
   - Completeness
@@ -47,7 +47,7 @@ const review = await curator.reviewSkill("error-handling")
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/skill-curator)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

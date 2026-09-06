@@ -19,13 +19,13 @@ graph.addNode("report", { conclusion: "Contract C is safe" })
 graph.addEdge("person", "contract", RelationType.DEPENDS_ON, 1.0)
 graph.addEdge("contract", "report", RelationType.DEPENDS_ON, 1.0)
 
-// Revise a root fact â€” cascade automatically invalidates dependents
+// Revise a root fact â€?cascade automatically invalidates dependents
 graph.updateNode("person", { status: "fraudster" }, "fraud detected")
 
 console.log(graph.getNode("contract")!.consistencyStatus) // "STALE"
 console.log(graph.getNode("report")!.consistencyStatus)   // "STALE"
 
-// Correct the parent â€” revalidate reverses the cascade
+// Correct the parent â€?revalidate reverses the cascade
 graph.revalidate("person", "fraud allegation cleared")
 console.log(graph.getNode("contract")!.consistencyStatus) // "VALID"
 
@@ -90,7 +90,7 @@ Stale entries are excluded without requiring explicit index rebuilds.
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/memory-graph)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

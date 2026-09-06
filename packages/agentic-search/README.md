@@ -7,7 +7,7 @@
 ## Install
 
 ```bash
-npm install @fengrru/agentic-search
+bun add @fengrru/agentic-search
 ```
 
 ## Quick Start
@@ -43,14 +43,14 @@ console.log(result.confidence) // 0-1
 ## 4-Layer Architecture
 
 1. **Intent**: 8 regex patterns, zero LLM cost
-2. **Strategy**: Intent â†’ tool combination + topological sort
+2. **Strategy**: Intent â†?tool combination + topological sort
 3. **Execution**: 3 search tools (code_symbol, code_graph, semantic)
 4. **Fusion**: Token budget truncation + confidence scoring
 
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/agentic-search)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

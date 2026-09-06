@@ -7,7 +7,7 @@ DAG execution engine with incremental replanning for AI agent task orchestration
 ## Install
 
 ```bash
-npm install @fengrru/taskdag
+bun add @fengrru/taskdag
 ```
 
 ## Quick Start
@@ -48,7 +48,7 @@ const newDag = replaceSubtree(repaired, "a", replacementNodes, replacementEdges)
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/taskdag)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

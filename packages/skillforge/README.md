@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/skillforge)](https://www.npmjs.com/package/@fengrru/skillforge) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/skillforge)](https://www.npmjs.com/package/@fengrru/skillforge) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 Agent-writeable skill creation and management system.
 
 ## Install
 
 ```bash
-npm install @fengrru/skillforge
+bun add @fengrru/skillforge
 ```
 
 ## Quick Start
@@ -52,14 +52,14 @@ await manager.patchSkill("error-handling", {
 
 - **SKILL.md format**: frontmatter + body
 - **Fuzzy patching**: 8-strategy matching
-- **Auto-archive**: delete â†’ .archive/
+- **Auto-archive**: delete â†?.archive/
 - **Pin/unpin**: prioritize important skills
 - **Usage tracking**: record access patterns
 
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/skillforge)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

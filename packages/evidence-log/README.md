@@ -75,16 +75,16 @@ A discriminated union over ten kinds, discriminated on `type`:
 
 Every event requires `id`, `ts`, `sessionId`, and a kind-specific payload.
 `parseEvent()` is the runtime guard that validates rows read back from storage
-(the hand-written replacement for the original zod schema â€” this package has no
+(the hand-written replacement for the original zod schema â€?this package has no
 `zod` dependency).
 
 ## Querying
 
-- `replay()` / `replaySince(ts)` â€” full or incremental history.
-- `replaySession(sessionId)` â€” one session, ascending.
-- `replayRecent(maxEvents)` â€” bounded tail for cheap statistics (guidance,
+- `replay()` / `replaySince(ts)` â€?full or incremental history.
+- `replaySession(sessionId)` â€?one session, ascending.
+- `replayRecent(maxEvents)` â€?bounded tail for cheap statistics (guidance,
   meta-cognition) no matter how large the log grows.
-- `eventsBefore(ts)` / `pruneBefore(ts)` â€” retention: archive then delete.
+- `eventsBefore(ts)` / `pruneBefore(ts)` â€?retention: archive then delete.
   Pruning intentionally breaks evidence citations into the pruned range; their
   verification fails from then on.
 

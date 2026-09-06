@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/dreamdistill)](https://www.npmjs.com/package/@fengrru/dreamdistill) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/dreamdistill)](https://www.npmjs.com/package/@fengrru/dreamdistill) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 7-day Dream + 30-day Distill self-improvement cycles for AI agents.
 
 ## Install
 
 ```bash
-npm install @fengrru/dreamdistill
+bun add @fengrru/dreamdistill
 ```
 
 ## Quick Start
@@ -46,9 +46,9 @@ const artifacts = await distill.run(memorySystem, skillManager)
 
 | Pattern | Artifact |
 |---------|----------|
-| â‰¥5 occurrences | command |
-| â‰¥4 steps | agent |
-| â‰¥5 steps + â‰¥7 uses | SOP |
+| â‰? occurrences | command |
+| â‰? steps | agent |
+| â‰? steps + â‰? uses | SOP |
 
 ## Features
 
@@ -60,7 +60,7 @@ const artifacts = await distill.run(memorySystem, skillManager)
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/dreamdistill)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/checkpoint-writer)](https://www.npmjs.com/package/@fengrru/checkpoint-writer) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/checkpoint-writer)](https://www.npmjs.com/package/@fengrru/checkpoint-writer) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 LLM-driven 11-field structured state extraction for agent checkpoints.
 
 ## Install
 
 ```bash
-npm install @fengrru/checkpoint-writer
+bun add @fengrru/checkpoint-writer
 ```
 
 ## Quick Start
@@ -53,13 +53,13 @@ const checkpoint = await writer.write({
 
 - **Independent LLM subagent**: doesn't share main agent attention
 - **Incremental updates**: only changed fields
-- **Discovery promotion**: â‰¥3 appearances â†’ project memory
+- **Discovery promotion**: â‰? appearances â†?project memory
 - **Dual format**: JSON + Markdown output
 
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/checkpoint-writer)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 

@@ -2,14 +2,14 @@
 
 [![npm version](https://img.shields.io/npm/v/@fengrru/llm-dag-generator)](https://www.npmjs.com/package/@fengrru/llm-dag-generator) [![npm downloads](https://img.shields.io/npm/dm/@fengrru/llm-dag-generator)](https://www.npmjs.com/package/@fengrru/llm-dag-generator) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 
-> **Experimental** â€” API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
+> **Experimental** â€?API may break in minor versions. See [STABILITY.md](../../STABILITY.md).
 
 LLM-driven task DAG generation with K-parallel variants.
 
 ## Install
 
 ```bash
-npm install @fengrru/llm-dag-generator
+bun add @fengrru/llm-dag-generator
 ```
 
 ## Quick Start
@@ -41,7 +41,7 @@ console.log(dag.strategy) // "adaptive" | "staged" | "k_parallel"
 
 ## Documentation
 
-- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€” TypeDoc-generated API docs
+- [API Reference](https://fengrru.github.io/awesome-agent-infra/api/) â€?TypeDoc-generated API docs
 - [Source Code](https://github.com/Fengrru/awesome-agent-infra/tree/main/packages/llm-dag-generator)
 - [Examples](https://github.com/Fengrru/awesome-agent-infra/tree/main/examples)
 
