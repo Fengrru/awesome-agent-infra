@@ -20,8 +20,8 @@ import type {
   ISkillRegistrar,
   ProviderAdapter,
   SessionPattern,
-} from "./types"
-import { DEFAULT_DISTILL_CONFIG } from "./types"
+} from "./types.js"
+import { DEFAULT_DISTILL_CONFIG } from "./types.js"
 
 export class DistillJob {
   readonly config: DistillConfig

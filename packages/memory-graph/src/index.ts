@@ -19,7 +19,7 @@ export {
   ConsistencyStatus,
   RelationType,
   RetrievalMode,
-} from "./types"
+} from "./types.js"
 
 export type {
   MemoryNodeVersion,
@@ -28,17 +28,17 @@ export type {
   StaleMessage,
   PropagationConfig,
   RetrievalConfig,
-} from "./types"
+} from "./types.js"
 
 export {
   DEFAULT_PROPAGATION_CONFIG,
   DEFAULT_RETRIEVAL_CONFIG,
   generateNodeId,
-} from "./types"
+} from "./types.js"
 
 // ─── Graph ──────────────────────────────────────────────────────────────
-export { MemoryGraph, createMemoryGraph } from "./graph"
+export { MemoryGraph, createMemoryGraph } from "./graph.js"
 
 // ─── Retrieval ──────────────────────────────────────────────────────────
-export { ConsistencyRetriever, createConsistencyRetriever } from "./retrieval"
-export type { RetrievalResult } from "./retrieval"
+export { ConsistencyRetriever, createConsistencyRetriever } from "./retrieval.js"
+export type { RetrievalResult } from "./retrieval.js"

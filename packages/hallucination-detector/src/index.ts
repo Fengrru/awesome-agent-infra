@@ -337,17 +337,7 @@ export class HallucinationDetector {
     return maxSim
   }
 
-  private jaccardSimilarity(a: Set<string>, b: Set<string>): number {
-    return computeJaccardSimilarity(a, b)
-  }
 
-  private cosineSimilarity(a: number[], b: number[]): number {
-    return computeCosineSimilarity(a, b)
-  }
-
-  private buildTFIDF(docs: string[]): { vectors: number[][]; terms: string[] } {
-    return buildTFIDFVectors(docs)
-  }
 }
 
 export class SpectralHallucinationDetector extends HallucinationDetector {

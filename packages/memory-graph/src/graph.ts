@@ -16,8 +16,8 @@
  * @module memory-graph/graph
  */
 
-import { ConsistencyStatus, DEFAULT_PROPAGATION_CONFIG, generateNodeId } from "./types"
-import type { CausalEdge, EdgeRef, MemoryNodeVersion, PropagationConfig, RelationType } from "./types"
+import { ConsistencyStatus, DEFAULT_PROPAGATION_CONFIG, generateNodeId } from "./types.js"
+import type { CausalEdge, EdgeRef, MemoryNodeVersion, PropagationConfig, RelationType } from "./types.js"
 
 // ─── Internal state types ───────────────────────────────────────────────
 

@@ -4,7 +4,7 @@ This file provides instructions for AI coding agents (Claude Code, Codex, Cursor
 
 ## Project Overview
 
-**awesome-agent-infra** is a TypeScript monorepo of 42 zero-dependency packages for building AI agent infrastructure. Scope: `@fengrru/*` on npm. Runtime: Bun. Monorepo tool: Turborepo. Testing: Bun test. Linting: Biome.
+**awesome-agent-infra** is a TypeScript monorepo of 47 zero-dependency packages for building AI agent infrastructure. Scope: `@fengrru/*` on npm. Runtime: Bun. Monorepo tool: Turborepo. Testing: Bun test. Linting: Biome.
 
 ## Commands
 
@@ -15,7 +15,7 @@ biome check --write .    # Lint and auto-fix all files
 bun run test             # Run all tests
 bun run build            # Build all packages (tsc)
 bun run integration      # Run integration tests
-bun run docs             # Generate TypeDoc documentation
+# bun run docs           # (not yet implemented)
 ```
 
 Never run `npm install` or `yarn` — use `bun` exclusively.

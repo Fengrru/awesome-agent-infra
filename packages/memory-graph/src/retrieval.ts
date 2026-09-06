@@ -18,9 +18,9 @@
  * @module memory-graph/retrieval
  */
 
-import type { MemoryGraph } from "./graph"
-import type { MemoryNodeVersion, RetrievalConfig, RetrievalMode } from "./types"
-import { ConsistencyStatus, DEFAULT_RETRIEVAL_CONFIG, RetrievalMode as RM } from "./types"
+import type { MemoryGraph } from "./graph.js"
+import type { MemoryNodeVersion, RetrievalConfig, RetrievalMode } from "./types.js"
+import { ConsistencyStatus, DEFAULT_RETRIEVAL_CONFIG, RetrievalMode as RM } from "./types.js"
 
 // ─── Result types ───────────────────────────────────────────────────────
 

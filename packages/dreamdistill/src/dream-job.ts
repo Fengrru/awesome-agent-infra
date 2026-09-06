@@ -17,8 +17,8 @@ import type {
   IProjectMemory,
   MemoryEntry,
   ProviderAdapter,
-} from "./types"
-import { DEFAULT_DREAM_CONFIG, clampConfidence, extractFilePaths, textSimilarity } from "./types"
+} from "./types.js"
+import { DEFAULT_DREAM_CONFIG, clampConfidence, extractFilePaths, textSimilarity } from "./types.js"
 
 export class DreamJob {
   readonly config: DreamConfig

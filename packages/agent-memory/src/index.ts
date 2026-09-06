@@ -28,7 +28,7 @@ export {
   type LongTermMemory as BridgeLongTermMemory,
   type WorkingMemory as BridgeWorkingMemory,
   type TransientMemory as BridgeTransientMemory,
-} from "./bridge"
+} from "./bridge.js"
 
 // ── Types ────────────────────────────────────────────────────────────────
 

@@ -30,6 +30,12 @@
       "inputs": ["__tests__/**/integration*.test.ts", "src/**", "package.json"],
       "outputs": [],
       "cache": true
+    },
+    "check-coverage": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**", "__tests__/**"],
+      "outputs": [],
+      "cache": false
     }
   }
 }

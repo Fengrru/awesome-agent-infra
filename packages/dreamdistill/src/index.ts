@@ -8,8 +8,8 @@
  * @module dreamdistill
  */
 
-export { DreamJob, createDreamJob } from "./dream-job"
-export { DistillJob, createDistillJob } from "./distill-job"
+export { DreamJob, createDreamJob } from "./dream-job.js"
+export { DistillJob, createDistillJob } from "./distill-job.js"
 
 export {
   DEFAULT_DREAM_CONFIG,
@@ -17,7 +17,7 @@ export {
   clampConfidence,
   textSimilarity,
   extractFilePaths,
-} from "./types"
+} from "./types.js"
 
 export type {
   ProviderAdapter,
@@ -35,4 +35,4 @@ export type {
   DistillMetrics,
   SessionPattern,
   DistilledArtifact,
-} from "./types"
+} from "./types.js"

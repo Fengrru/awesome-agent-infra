@@ -2,7 +2,7 @@
 
 # awesome-agent-infra
 
-> **Awesome Agent Infrastructure** — 42 battle-tested, zero-dependency TypeScript packages for building reliable AI agents.
+> **Awesome Agent Infrastructure** — 47 battle-tested, zero-external-dependency TypeScript packages for building reliable AI agents.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
@@ -10,15 +10,14 @@
 [![CI](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml/badge.svg)](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-100%25%20gate-success)](https://github.com/Fengrru/awesome-agent-infra/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![npm scope](https://img.shields.io/badge/npm_scope-%40fengrru-orange)](https://www.npmjs.com/org/fengru)
 
-**42 packages · 0 runtime dependencies · 100% line-coverage gate · strict TypeScript 5.8 · ESM-only**
+**47 packages · 0 external runtime dependencies · 100% line-coverage gate · strict TypeScript 5.8 · ESM-only**
 
 </div>
 
 ## Why awesome-agent-infra?
 
-- **Zero dependencies, zero conflicts.** Every one of the 42 packages ships with no external runtime dependencies — drop them into any agent stack without version fights or bloat.
+- **Zero external dependencies, zero conflicts.** Every one of the 47 packages ships with no external runtime dependencies (workspace-internal deps are allowed) — drop them into any agent stack without version fights or bloat.
 - **One package per concern.** Memory, patching, validation, search, workflows, self-evolution — each building block is isolated, typed, and testable on its own.
 - **Production-grade by default.** Every package carries tests, a 100% coverage gate, micro-benchmarks, and an explicit stability tier (stable / evolving / experimental).
 - **TypeScript-native.** Written in strict TypeScript 5.8 with ESM-only output, so your IDE and compiler see exactly what your agent runs.
@@ -39,10 +38,10 @@ If you already run an orchestration framework, these packages slot into the gaps
 
 ## Quick Start
 
-Install only what you need — every package is independent:
+Use packages directly from the workspace — every package is independent:
 
 ```bash
-npm install @fengrru/fuzzy-patch
+import { fuzzyFindAndReplace } from "@fengrru/fuzzy-patch"
 ```
 
 The examples below also use `@fengrru/agent-memory` and `@fengrru/codegraph`.
@@ -121,7 +120,7 @@ Numbers are reference points, not marketing — re-run `bun run benchmarks/run-a
 
 ## Architecture
 
-The 42 packages are organized in layers. Higher layers build on lower ones, but every package can also be used standalone:
+The 47 packages are organized in layers. Higher layers build on lower ones, but every package can also be used standalone:
 
 ```mermaid
 graph TB
@@ -138,13 +137,13 @@ graph TB
 ```
 
 - **Core Engines** — fuzzy-patch, valid8, txn-fs, taskdag, state-machine, event-bus, engine-db, worker
-- **Memory & Knowledge** — agent-memory, memory-engine-v2, memory-graph, embedding, project-memory, checkpoints
+- **Memory & Knowledge** — agent-memory, memory-engine-v2, memory-graph, embedding, project-memory, checkpoints, knowledge-vault, retrieval-feedback
 - **Search & Code Intelligence** — codegraph, agentic-search, reasoning-search
 - **Workflow & Execution** — taskdag, state-machine, dynamic-workflow, lifecycle-manager, cycle-controller
 - **Safety & Repair** — guardrail, healix, goal-verifier, confidence-gate, hallucination-detector, code-sandbox
 - **Reasoning & Calibration** — pomdp-planner, reasoning-search
 - **Self-Evolution** — skillforge, skill-curator, dreamdistill, learning-nudge, agent-metacog, process-reward
-- **Infrastructure** — tracing, replay, archiver, branch, event-bus
+- **Infrastructure** — tracing, replay, archiver, branch, event-bus, evidence-log, history-compact, mcp-client
 
 ## How to choose a package
 
@@ -152,20 +151,21 @@ graph TB
 |---|---|
 | Apply reliable edits to files | `fuzzy-patch`, `txn-fs`, `codegraph` |
 | Validate / verify agent output | `valid8`, `confidence-gate`, `goal-verifier` |
-| Give my agent memory | `agent-memory`, `memory-graph`, `memory-engine-v2`, `embedding`, `project-memory` |
+| Give my agent memory | `agent-memory`, `memory-graph`, `memory-engine-v2`, `embedding`, `project-memory`, `knowledge-vault`, `retrieval-feedback` |
 | Keep the agent safe | `guardrail`, `healix`, `hallucination-detector`, `code-sandbox` |
 | Orchestrate multi-step work | `taskdag`, `state-machine`, `dynamic-workflow` |
 | Search and reason | `agentic-search`, `reasoning-search`, `codegraph` |
-| Observe and replay sessions | `tracing`, `replay`, `archiver`, `event-bus` |
+| Observe and replay sessions | `tracing`, `replay`, `archiver`, `event-bus`, `evidence-log`, `history-compact` |
 | Let the agent improve itself | `skillforge`, `skill-curator`, `dreamdistill`, `learning-nudge` |
+| Talk to MCP servers | `mcp-client` |
 
-See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guide/choosing-packages) for the full decision flow.
+Pick packages by capability from the table below.
 
 ## Packages
 
 ### Core Engines
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [fuzzy-patch](./packages/fuzzy-patch) | 8-strategy fuzzy file patching for AI agents | `@fengrru/fuzzy-patch` |
 | [valid8](./packages/valid8) | 4-layer output validation (syntax/semantic/runtime/security) | `@fengrru/valid8` |
@@ -178,11 +178,13 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 ### Memory & Knowledge
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [agent-memory](./packages/agent-memory) | 4-tier memory with Ebbinghaus forgetting curve | `@fengrru/agent-memory` |
 | [memory-graph](./packages/memory-graph) | Causal dependency graph with CoW versioning + BFS cascade invalidation | `@fengrru/memory-graph` |
 | [project-memory](./packages/project-memory) | File-based MEMORY.md project knowledge | `@fengrru/project-memory` |
+| [knowledge-vault](./packages/knowledge-vault) | Append-only knowledge store with version chains and derivation edges | `@fengrru/knowledge-vault` |
+| [retrieval-feedback](./packages/retrieval-feedback) | Usage-based retrieval signals (isExpired, injectable, usageFactor) | `@fengrru/retrieval-feedback` |
 | [agent-checkpoint](./packages/agent-checkpoint) | 3-level checkpoint system (L1/L2/L3) | `@fengrru/agent-checkpoint` |
 | [checkpoint-writer](./packages/checkpoint-writer) | LLM-driven 11-field state extraction | `@fengrru/checkpoint-writer` |
 | [notes-manager](./packages/notes-manager) | Session scratchpad (notes.md) for MiMo Code | `@fengrru/notes-manager` |
@@ -190,7 +192,7 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 ### Safety & Repair
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [guardrail](./packages/guardrail) | Runtime safety guard with risk classification | `@fengrru/guardrail` |
 | [healix](./packages/healix) | Self-healing error classifier with Hamming distance matching | `@fengrru/healix` |
@@ -199,7 +201,7 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 ### Search & Code Intelligence
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [codegraph](./packages/codegraph) | In-memory code graph with PageRank centrality | `@fengrru/codegraph` |
 | [agentic-search](./packages/agentic-search) | 4-layer intent-driven search orchestrator | `@fengrru/agentic-search` |
@@ -207,7 +209,7 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 ### Workflow & Execution
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [dynamic-workflow](./packages/dynamic-workflow) | VM-sandboxed workflow engine | `@fengrru/dynamic-workflow` |
 | [llm-dag-generator](./packages/llm-dag-generator) | LLM-driven task DAG generation | `@fengrru/llm-dag-generator` |
@@ -215,7 +217,7 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 ### Self-Evolution
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [dreamdistill](./packages/dreamdistill) | 7-day Dream + 30-day Distill self-improvement cycles | `@fengrru/dreamdistill` |
 | [learning-nudge](./packages/learning-nudge) | Self-reflection trigger for continuous learning | `@fengrru/learning-nudge` |
@@ -227,17 +229,20 @@ See [choosing-packages guide](https://fengrru.github.io/awesome-agent-infra/guid
 
 ### Infrastructure
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [cycle-controller](./packages/cycle-controller) | Context window cycle manager (MiMo Code) | `@fengrru/cycle-controller` |
 | [tracing](./packages/tracing) | OpenTelemetry tracing abstraction (no-op fallback) | `@fengrru/tracing` |
 | [replay](./packages/replay) | Session event replay (dry-run/read-only/full) | `@fengrru/replay` |
 | [branch](./packages/branch) | Session forking and branching manager | `@fengrru/branch` |
 | [archiver](./packages/archiver) | Event archiver with hot/cold tiering + gzip | `@fengrru/archiver` |
+| [evidence-log](./packages/evidence-log) | Content-addressed append-only event log | `@fengrru/evidence-log` |
+| [history-compact](./packages/history-compact) | Deterministic history compaction for agent sessions | `@fengrru/history-compact` |
+| [mcp-client](./packages/mcp-client) | Model Context Protocol clients (stdio + HTTP) | `@fengrru/mcp-client` |
 
 ### Reasoning & Calibration
 
-| Package | Description | npm |
+| Package | Description | Name |
 |---------|-------------|-----|
 | [pomdp-planner](./packages/pomdp-planner) | POMDP LLM planner (particle filter + QMDP + iterative rollout) | `@fengrru/pomdp-planner` |
 | [hallucination-detector](./packages/hallucination-detector) | Spectral clustering hallucination detection + self-consistency | `@fengrru/hallucination-detector` |
@@ -258,7 +263,7 @@ Every package carries an explicit stability tier — see [STABILITY.md](STABILIT
 | Tier | Guarantee | Packages |
 |---|---|---|
 | Stable | Strict semver; breaking changes only in majors | txn-fs, event-bus, state-machine, engine-db, embedding, fuzzy-patch, valid8, tracing, archiver, worker |
-| Evolving | API stable in practice; minor versions may adjust details | agent-memory, memory-graph, memory-engine-v2, codegraph, code-sandbox, taskdag, reasoning-search, goal-verifier, healix, replay, notes-manager, project-memory, branch, lifecycle-manager, agentic-search |
+| Evolving | API stable in practice; minor versions may adjust details | agent-memory, memory-graph, memory-engine-v2, codegraph, code-sandbox, taskdag, reasoning-search, goal-verifier, healix, replay, notes-manager, project-memory, branch, lifecycle-manager, agentic-search, evidence-log, knowledge-vault, history-compact, retrieval-feedback, mcp-client |
 | Experimental | No guarantees; minor versions may break | dreamdistill, process-reward, agent-metacog, hallucination-detector, confidence-gate, pomdp-planner, guardrail, max-mode-sampler, cycle-controller, agent-checkpoint, checkpoint-writer, llm-dag-generator, dynamic-workflow, skillforge, skill-curator, learning-nudge |
 
 Experimental packages are marked with an **Experimental** notice in their README. All packages follow [Changesets](https://github.com/changesets/changesets) for versioning.
@@ -267,7 +272,7 @@ Experimental packages are marked with an **Experimental** notice in their README
 
 ```bash
 bun install                          # Install all dependencies
-bun run build                        # Build all packages (42 packages)
+bun run build                        # Build all packages (47 packages)
 bun run test                         # Run all tests
 bun run lint                         # Biome strict lint
 bun scripts/check-coverage.ts        # Coverage gate (100% per package)
